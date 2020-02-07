@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Résumé{% endblock %}
+{% block subtitle %}Survol rapide des choses importantes{% endblock %}
+
+{% block content %}
+Permettre de voir qui traîne
+<div class="app">
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Todo et échéances</div>
+        </div>
+        <div class="card-body">
+            <vue-good-table :columns="columns" :rows="rows"/>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tâche</th>
+                        <th>Deals</th>
+                        <th>Échéance</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in to_do %}
+                        <tr>
+                            <td data-th="Tâche">{{t.name}}</td>
+                            <td data-th="Deal"># de deals qui ont ça en todo</td>
+                            <td data-th="Échéance"><small>shortest échéance du lot</small></td>
+                            <td>
+                                <div>
+                                    <button class="btn btn-sm float-right">Voir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Budget des stands</div>
+        </div>
+        <div class="card-body">
+            <div class="container">
+                <div class="columns m-medium">
+                    <div class="col-6 text-center">
+                        <small>BUDGET CERTAIN</small>
+                        <p><span class="h3">CHF </span><span class="h3 text-success">+{{final_budget}}</span><span class="h4"> /1000</span></p>
+                    </div>
+                    <div class="col-6 text-center">
+                        <small>BUDGET PREVISIONNEL</small>
+                        <p><span class="h3">CHF </span><span class="h3 text-success">+{{unsure_budget}}</span><span class="h4"> /1000</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Deals flottants</div>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Stand</th>
+                        <th>Personne</th>
+                        <th>Email</th>
+                        <th>Explication</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in floating_deals %}
+                        <tr>
+                            <td data-th="Stand">{{d.contact.booth_name}}</td>
+                            <td data-th="Personne">{{d.contact.person_name}}</td>
+                            <td data-th="Email">{{d.contact.email_address}}</td>
+                            <td data-th="Explication"><small>{{d.floating}}</small></td>
+                            <td>
+                                <div>
+                                    <button class="btn btn-sm float-right">Voir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Emplacements libres</div>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Emplacement</th>
+                        <th>Bâtiment</th>
+                        <th>Prix usuel</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in free_booths %}
+                        <tr>
+                            <td data-th="Emplacement">{{b.name}}</td>
+                            <td data-th="Bâtiment">{{b.building}}</td>
+                            <td data-th="Prix usuel">CHF {{b.usual_price}}</td>
+                            <td>
+                                <div>
+                                    <button class="btn btn-sm float-right">Plan</button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script type='application/javascript'>
+'use strict'
+import VueGoodTablePlugin from 'vue-good-table';
+import 'vue-good-table/dist/vue-good-table.css';
+Vue.use(VueGoodTablePlugin);
+
+var app = new Vue({
+    el: '#app',
+    data: {
+
+    }
+});
+
+</script>
+{% endblock %}

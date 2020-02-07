@@ -1,0 +1,55 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Prospector</title>
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre-exp.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre-icons.min.css' %}">
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <div class="container p-2">
+            <div class="columns">
+                <!-- menu -->
+                <div class="column col-md-12 col-2 mb-2">
+                    <!-- menu header -->
+                    <a href="{% url 'prospector:index' %}" class="text-dark">
+                        <h2 class="mb-1">Prospector</h2>
+                        <h6 class="text-gray">L'outil d'un vrai <strong>pro</strong>!</h6>
+                    </a>
+                    <div class="divider"></div>
+                    <!-- menu items -->
+                    <ul class="nav p-2">
+                        <li class="nav-item"><a href="{% url 'prospector:index' %}">Résumé</a></li>
+                        <li class="nav-item"><a href="{% url 'prospector:contacts.list' %}">Contacts</a></li>
+                        <li class="nav-item"><a href="{% url 'prospector:plan' %}">Budget</a></li>
+                        <li class="nav-item"><a href="{% url 'prospector:deals.list' %}">Deals</a></li>
+                        <li class="nav-item"><a href="{% url 'prospector:plan' %}">Plan</a></li>
+                    </ul>
+                </div>
+                <!-- content -->
+                <div class="column col-md-12 col-10">
+                    <div class="columns">
+                        <div class="column col-12 mb-2">
+                            <h2 class="mb-1">{% block title %}{% endblock %}</h2>
+                            <h6 class="text-gray">{% block subtitle %}{% endblock %}</h6>
+                            <div class="divider"></div>
+                        </div>
+                        <div class="column col-12">
+                            {% block content %}
+                            {% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    {% block js %}
+    {% endblock %}
+</html>

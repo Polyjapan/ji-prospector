@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact : {{obj.booth_name}}{% endblock %}
+{% block subtitle %}Personne : {{obj.person_name | default:'Inconnu'}}{% endblock %}
+
+{% block content %}
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Deals liés</div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Événement</th>
+                    <th>Type</th>
+                    <th>Prix</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in deals %}
+                    <tr>
+                        <td data-th="Événement"><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d.event.name}}</a></td>
+                        <td data-th="Type">{{d.type | title}}</td>
+                        <td data-th="Prix">{{d.price}}{% if d.additional_price_modalities != '' %}+{% if d.additional_price_sum %}{{d.additional_price_sum}}{% else %}?{% endif %}{% endif %}</td>
+                        <td>
+                            <div>
+                                <!-- faire avec views utiles -->
+                                <button class="btn btn-sm float-right">Voir</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Données</div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            {% for k,v in kv.items %}
+                <tr>
+                    <th>{{k.verbose_name}}</th>
+                    <td th_data="{{k.verbose_name}}">{{v | linebreaksbr}}</td>
+                    <td class="text-right">
+                        <!-- helpful buttons -->
+                        {% if k.name == 'email_address' and v %}
+                            <button class="btn btn-sm">Chercher dans boîte pro</button>
+                        {% endif %}
+
+                        {% if not v %}
+                            <i class="icon icon-cross"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <div class="mt-2">
+            <button class="btn">Mail données manquantes</button>
+            <button class="btn btn-error">Supprimer</button>
+            <button class="btn btn-primary">Éditer</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}
