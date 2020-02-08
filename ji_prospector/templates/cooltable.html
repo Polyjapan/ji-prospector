@@ -1,5 +1,6 @@
 {% load macros %}
 
+<!-- Spawns a cooltable. Still needs a cooltable_js macro to make it work. -->
 {% macro cooltable table_id columns %}
     <div id="{{table_id}}">
         <table class="table table-hover">
@@ -18,38 +19,18 @@
     </div>
 {% endmacro %}
 
-{% macro coolrow columns bodysep='nextrow' %}
-    <tr>
-        {% for col in columns %}
-            <td class="{{col.1}}" data-th="{{col.0}}">{% macrobody next %}</td>
-        {% endfor %}
-    </tr>
+{% macro coolrows_js %}
+    <script></script>
 {% endmacro %}
 
-
-{% for b in free_booths.rows %}
-     {% call coolrows free_booths.cols %}
-        {{b.name}}
-        {% nextrow %}
-        {{b.building}}
-        {% nextrow %}
-        CHF {{b.usual_price}}
-        {% nextrow %}
-        <div>
-            <button class="btn btn-sm float-right">Plan</button>
-        </div>
-    {% endcall %}
-{% endfor %}
-
-{% for b in free_booths.rows %}
-    <tr>
-        <td class="name" data-th="Emplacement">{{b.name}}</td>
-        <td class="building" data-th="Bâtiment">{{b.building}}</td>
-        <td class="usual_price" data-th="Prix usuel">CHF {{b.usual_price}}</td>
-        <td>
-            <div>
-                <button class="btn btn-sm float-right">Plan</button>
-            </div>
-        </td>
-    </tr>
-{% endfor %}
+<!-- Transforms a table into a cooltable -->
+<!-- Make sure you have added the cooltable.js script for coolrows() -->
+{% macro cooltable_js json_id table_id columns %}
+    {{ columns | json_script:json_id }}
+    <script>
+        'use strict'
+        var cols = $.parseJSON($('#'+'{{json_id}}').get(0).textContent)
+        coolrows('{{table_id}}', cols)
+        var tasksList = new List({{table_id}}, {valueNames: cols.map( tuple => tuple[1] )});
+    </script>
+{% endmacro %}

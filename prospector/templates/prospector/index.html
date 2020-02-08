@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load macros %}
+{% load static %}
 
 {% loadmacros 'cooltable.html' %}
 
@@ -100,15 +101,12 @@ Permettre de voir qui traîne
             <div class="card-title h4">Emplacements libres</div>
         </div>
         <div class="card-body">
-            Trouver un moyen de templater ça.
-            Vue c'est relou... Créer un template tag django ! koumça pas de drogue de th, tr, et pas besoin de définir les colonnes en js
-            Automatiser les data-th. Les class="name" et tout peuvent rester je pense, pour faciliter le reordering si besoin
             {% call cooltable 'booths_table' free_booths.cols %}
                 {% for b in free_booths.rows %}
                     <tr>
-                        <td class="name" data-th="Emplacement">{{b.name}}</td>
-                        <td class="building" data-th="Bâtiment">{{b.building}}</td>
-                        <td class="usual_price" data-th="Prix usuel">CHF {{b.usual_price}}</td>
+                        <td>{{b.name}}</td>
+                        <td>{{b.building}}</td>
+                        <td>CHF {{b.usual_price}}</td>
                         <td>
                             <div>
                                 <button class="btn btn-sm float-right">Plan</button>
@@ -123,11 +121,9 @@ Permettre de voir qui traîne
 {% endblock %}
 
 {% block js %}
+    <script src="{% static 'node_modules/list.js/dist/list.js'%}"></script>
+    <script src="{% static 'node_modules/zepto/dist/zepto.js'%}"></script>
+    <script src="{% static 'js/cooltable.js'%}"></script>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
-<script type='application/javascript'>
-'use strict'
-
-var tasksList = new List('booths_table', {valueNames:['name', 'building', 'usual_price']});
-</script>
+    {% call cooltable_js 'booths_table_json' 'booths_table' free_booths.cols %}{% endcall %}
 {% endblock %}

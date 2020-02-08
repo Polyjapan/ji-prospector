@@ -32,8 +32,6 @@ class DefineMacroNode(template.Node):
                 name, value = a.split("=")
                 self.kwargs[name] = value
 
-        print('defined macro : {}, {}, {}'.format(name,nodelists,args))
-
     def render(self, context):
         # empty string - {% macro %} tag does no output
         return ''
@@ -50,13 +48,11 @@ def do_macro(parser, token):
 
     nodelists = [parser.parse(('macrobody', 'endmacro', ))]
     token = parser.next_token()
-    print(nodelists)
 
     # {% macrobody %} (repeatable)
     while token.contents == 'macrobody':
         nodelists += [parser.parse(('macrobody', 'endmacro', ))]
         token = parser.next_token()
-        print(nodelists)
 
     if token.contents != 'endmacro':
         raise TemplateSyntaxError('Malformed template tag at line {}: "{}"'.format(token.lineno, token.contents))
