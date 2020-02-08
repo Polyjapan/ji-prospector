@@ -1,7 +1,4 @@
 {% extends 'base.html' %}
-{% load macros %}
-
-{% loadmacros 'cooltable.html' %}
 
 {% block title %}Résumé{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
@@ -100,23 +97,32 @@ Permettre de voir qui traîne
             <div class="card-title h4">Emplacements libres</div>
         </div>
         <div class="card-body">
-            Trouver un moyen de templater ça.
-            Vue c'est relou... Créer un template tag django ! koumça pas de drogue de th, tr, et pas besoin de définir les colonnes en js
-            Automatiser les data-th. Les class="name" et tout peuvent rester je pense, pour faciliter le reordering si besoin
-            {% call cooltable 'booths_table' free_booths.cols %}
-                {% for b in free_booths.rows %}
-                    <tr>
-                        <td class="name" data-th="Emplacement">{{b.name}}</td>
-                        <td class="building" data-th="Bâtiment">{{b.building}}</td>
-                        <td class="usual_price" data-th="Prix usuel">CHF {{b.usual_price}}</td>
-                        <td>
-                            <div>
-                                <button class="btn btn-sm float-right">Plan</button>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            {% endcall %}
+            <div id="booths_table">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="sort" data-sort="name">Emplacement<small><i class="icon icon-resize-vert"></i></small></th>
+                            <th class="sort" data-sort="building"></i>Bâtiment</th>
+                            <th class="sort" data-sort="usual_price"></i>Prix usuel</th>
+                            <th><input class="search form-input" placeholder="Rechercher"/></th>
+                        </tr>
+                    </thead>
+                    <tbody class="list">
+                        {% for b in free_booths %}
+                            <tr>
+                                <td class="name" data-th="Emplacement">{{b.name}}</td>
+                                <td class="building" data-th="Bâtiment">{{b.building}}</td>
+                                <td class="usual_price" data-th="Prix usuel">CHF {{b.usual_price}}</td>
+                                <td>
+                                    <div>
+                                        <button class="btn btn-sm float-right">Plan</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -127,6 +133,8 @@ Permettre de voir qui traîne
 <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 <script type='application/javascript'>
 'use strict'
+
+
 
 var tasksList = new List('booths_table', {valueNames:['name', 'building', 'usual_price']});
 </script>

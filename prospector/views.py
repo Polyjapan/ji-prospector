@@ -3,7 +3,7 @@ from django.views import View
 from django.views.generic.detail import SingleObjectMixin
 from django.db.models import Sum
 
-from .models import Contact, Deal, DealTask, BoothSpace
+from .models import Contact, Deal, DealTask, BoothSpace, Task
 
 from collections import namedtuple
 
@@ -24,12 +24,15 @@ def index(request):
     * Floating deals
     """
     floating_deals = Deal.objects.exclude(floating='')
-    free_booths = BoothSpace.objects.filter(deal__isnull=True)
-    to_do = DealTask.objects.filter(todo_state='contact_waits_pro').order_by('deadline', 'deal')
+    free_booths_rows = BoothSpace.objects.filter(deal__isnull=True)
+    free_booths_cols = [('Emplacement', 'name'), ('Bâtiment', 'building'), ('Prix usuel', 'usual_price')]
+
+    #to_do = DealTask.objects.filter(todo_state='contact_waits_pro').order_by('deadline', 'deal')
+    #to_do = Task.objects.filter()
     final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
     unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
 
-    return render(request, 'prospector/index.html', {'floating_deals': floating_deals, 'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget})
+    return render(request, 'prospector/index.html', {'floating_deals': floating_deals, 'free_booths': {'cols':free_booths_cols, 'rows':free_booths_rows}, 'to_do': [], 'final_budget': final_budget, 'unsure_budget': unsure_budget})
 
 
 def plan(request):

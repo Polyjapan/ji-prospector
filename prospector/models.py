@@ -95,8 +95,8 @@ class Deal(models.Model):
     additional_price_sum = models.FloatField(blank=True, null=True, verbose_name='Montant supplément') # to be filled when known
 
     tasks = models.ManyToManyField('Task', through='DealTask', verbose_name='Tâches')
-    provisional_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, verbose_name='Besoins logistiques prévisionnels')
-    actual_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Besoins logistiques finaux')
+    logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Besoins logistiques prévisionnels', related_name='previsional_deals')
+    #actual_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, verbose_name='Besoins logistiques finaux', related_name='final_deals')
 
     floating = models.TextField(blank=True, verbose_name='Détail flottant ?') # if there are doubts over a big change, put in here.
 

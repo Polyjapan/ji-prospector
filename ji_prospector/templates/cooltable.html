@@ -1,0 +1,55 @@
+{% load macros %}
+
+{% macro cooltable table_id columns %}
+    <div id="{{table_id}}">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                        <th class="sort" data-sort="{{col.1}}">{{col.0}}<small><i class="icon icon-resize-vert"></i></small></th>
+                    {% endfor %}
+                    <th><input class="search form-input" placeholder="Rechercher"/></th>
+                </tr>
+            </thead>
+            <tbody class="list">
+                {% macrobody %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
+
+{% macro coolrow columns bodysep='nextrow' %}
+    <tr>
+        {% for col in columns %}
+            <td class="{{col.1}}" data-th="{{col.0}}">{% macrobody next %}</td>
+        {% endfor %}
+    </tr>
+{% endmacro %}
+
+
+{% for b in free_booths.rows %}
+     {% call coolrows free_booths.cols %}
+        {{b.name}}
+        {% nextrow %}
+        {{b.building}}
+        {% nextrow %}
+        CHF {{b.usual_price}}
+        {% nextrow %}
+        <div>
+            <button class="btn btn-sm float-right">Plan</button>
+        </div>
+    {% endcall %}
+{% endfor %}
+
+{% for b in free_booths.rows %}
+    <tr>
+        <td class="name" data-th="Emplacement">{{b.name}}</td>
+        <td class="building" data-th="Bâtiment">{{b.building}}</td>
+        <td class="usual_price" data-th="Prix usuel">CHF {{b.usual_price}}</td>
+        <td>
+            <div>
+                <button class="btn btn-sm float-right">Plan</button>
+            </div>
+        </td>
+    </tr>
+{% endfor %}
