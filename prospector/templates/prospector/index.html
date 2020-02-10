@@ -15,15 +15,15 @@
         </div>
         <div class="card-body">
             {% call cooltable 'to_do_table' to_do.cols %}
-                {% for t in to_do.rows %}
+                {% for r in to_do.rows %}
                     <tr>
-                        <td><a href="{% url 'prospector:tasks.show' pk=t.id %}">{{t.name}}</a></td>
-                        <td>pour {{t.deal_count}} deals</td>
-                        <td><span class="label label-{{t.worst_todo | todostatecolor}}">{{t.get_worst_todo_display}}</span></td>
-                        <td><span class="label label-{{t.min_deadline | deadlinecolor}}">{{t.min_deadline | deadline}}</span> pour <a href="{% url 'prospector:deals.show' pk=t.min_booth_deal_id%}">{{t.min_booth_name}}</a></td>
+                        <td><a href="{% url 'prospector:tasks.show' pk=r.id %}">{{r.name}}</a></td>
+                        <td>pour {{r.deal_count}} deals</td>
+                        <td><span class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</span></td>
+                        <td><span class="label label-{{r.deadline | deadlinecolor}}">{{r.deadline | deadline}}</span> pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
                         <td>
                             <div>
-                                <a href="{% url 'prospector:tasks.show' pk=t.id %}" class="btn btn-sm float-right">Voir</a>
+                                <a href="{% url 'prospector:tasks.show' pk=r.id %}" class="btn btn-sm float-right">Voir</a>
                             </div>
                         </td>
                     </tr>

@@ -33,7 +33,7 @@ def deadline(then):
 @register.filter(name='deadlinecolor')
 def deadlinecolor(deadline):
     if not deadline:
-        return 'primary'
+        return 'gray'
 
     delta = deadline - now()
     if delta > timedelta(weeks=2):

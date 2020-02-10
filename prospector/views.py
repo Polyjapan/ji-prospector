@@ -36,34 +36,41 @@ def index(request):
     }
 
     # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
-    # Maybe I should just do it in <number_of_task> queries... but dammit... performance !!
+    # Maybe I should just do it in <number_of_task> queries... get the tasks first, and then for each one, get the related data. but dammit... performance !!
     to_do_rows = Task.objects.raw('''
 SELECT
-	t.id AS id,
-    MAX(dt.todo_state) AS worst_todo,
-	COUNT(d.id) AS deal_count,
-	d.id AS min_booth_deal_id,
-	c.booth_name AS min_booth_name,
-	MIN(dt.deadline) AS min_deadline
+	t.id,
+	t.name,
+	c.booth_name,
+	dt.deadline,
+    dt2.deal_count,
+    dt2.worst_todo,
+    d.id AS deal_id
 FROM
 	prospector_dealtask dt
+	JOIN prospector_task t
+	ON dt.task_id = t.id
 	JOIN prospector_deal d
 	ON dt.deal_id = d.id
 	JOIN prospector_contact c
 	ON d.contact_id = c.id
-	INNER JOIN prospector_task t
-	ON dt.task_id = t.id
-WHERE
-    dt.todo_state <> '0_done'
-GROUP BY dt.task_id
+	JOIN (
+		SELECT MIN(deadline) as min_deadline, task_id, COUNT(*) AS deal_count, MAX(todo_state) AS worst_todo
+		FROM prospector_dealtask
+		WHERE todo_state <> '0_done'
+		GROUP BY task_id
+	) dt2
+	ON dt.task_id = dt2.task_id
+WHERE dt.deadline = dt2.min_deadline
+ORDER BY dt.deadline
     ''')
 
     # RawSQL-to-Model glue here :(
     for row in to_do_rows:
         # Parse datetime just as a real model would. Throws the same exceptions, too.
-        row.min_deadline = DateTimeField().to_python(row.min_deadline)
-        if not is_aware(row.min_deadline):
-            row.min_deadline = make_aware(row.min_deadline)
+        row.deadline = DateTimeField().to_python(row.deadline)
+        if not is_aware(row.deadline):
+            row.deadline = make_aware(row.deadline)
         # Add in display helper for todo-state
         row.get_worst_todo_display = lambda *, row=row : dict(DealTask.TODO_STATES).get(row.worst_todo)
 
