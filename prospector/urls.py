@@ -17,7 +17,7 @@ from django.urls import path
 
 import prospector.views as views
 
-app_name = 'polls'
+app_name = 'prospector'
 urlpatterns = [
     path('', views.index, name='index'),
     path('plan', views.plan, name='plan'),
@@ -25,4 +25,7 @@ urlpatterns = [
     path('contacts/<int:pk>', views.contacts_show, name='contacts.show'),
     path('deals', views.deals_list, name='deals.list'),
     path('deals/<int:pk>', views.deals_show, name='deals.show'),
+    path('tasks', views.tasks_list, name='tasks.list'),
+    path('dealtasks', views.dealtasks_list, name='dealtasks.list'),
+    path('tasks/<int:pk>', views.tasks_show, name='tasks.show'),
 ]

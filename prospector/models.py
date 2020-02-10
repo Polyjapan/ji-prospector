@@ -36,44 +36,19 @@ class Task(models.Model):
 class DealTask(models.Model):
     """Each time the todo-state changes, create a new DealTask object. That way, you can keep a history."""
     TODO_STATES = [
-        ('pro_waits_contact', 'Pro attend sur contact'),
-        ('pro_waits_treasury', 'Pro attend sur trésorerie'),
-        ('pro_waits_presidence', 'Pro attend sur présidence'),
-        ('contact_waits_pro', 'Contact attend sur pro'),
-        ('doing', 'Tâche en cours'),
-        ('done', 'Tâche terminée'),
+        ('5_contact_waits_pro', 'Contact attend sur pro'),
+        ('4_pro_waits_treasury', 'Pro attend sur trésorerie'),
+        ('3_pro_waits_presidence', 'Pro attend sur présidence'),
+        ('2_pro_waits_contact', 'Pro attend sur contact'),
+        ('1_doing', 'Tâche en cours'),
+        ('0_done', 'Tâche terminée'),
     ]
-
-    TODO_STATES_COLORS = {
-        'pro_waits_contact': 'gray-dark',
-        'pro_waits_treasury': 'gray-dark',
-        'pro_waits_presidence': 'gray-dark',
-        'contact_waits_pro': 'error',
-        'doing': 'warning',
-        'done': 'success',
-    }
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
     start_date = models.DateTimeField(auto_now_add=True)
-    deadline = models.DateTimeField(blank=True)
+    deadline = models.DateTimeField(blank=True, null=True)
     deal = models.ForeignKey('Deal', on_delete=models.CASCADE)
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
-
-    def get_todo_state_color(self):
-        return self.TODO_STATES_COLORS.get(self.todo_state)
-
-    def get_deadline_color(self):
-        delta = self.deadline - now()
-        if delta > timedelta(weeks=2):
-            return 'default'
-        elif delta > timedelta(weeks=1):
-            return 'gray-dark'
-        elif delta > timedelta(days=3):
-            return 'warning'
-        elif delta > timedelta(seconds=1):
-            return 'error'
-        else:
-            return 'dark'
 
 
 class Deal(models.Model):

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load prospector_filters %}
+
 {% block title %}Deal : {{obj.contact.booth_name}} à {{obj.event.name}}{% endblock %}
 {% block subtitle %}Type : {{obj.get_type_display}}{% endblock %}
 
@@ -25,8 +27,8 @@
                 {% for dt in dealtasks %}
                     <tr>
                         <td data-th="Tâche">{{dt.task.name}}</td>
-                        <td data-th="État"><small class="label label-{{dt.get_todo_state_color}}">{{dt.get_todo_state_display}}</small></td>
-                        <td data-th="Échéance"><small class="label label-{{dt.get_deadline_color}}">({{dt.deadline | timeuntil}})</small></td>
+                        <td data-th="État"><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
+                        <td data-th="Échéance"><small class="label label-{{dt.deadline | deadlinecolor}}">{{dt.deadline | deadline}}</small></td>
                         <td data-th="Description"><span class="text-small">{{dt.task.description}}</span></td>
                         <td>
                             <div>

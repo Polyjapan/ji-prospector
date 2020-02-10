@@ -1,4 +1,5 @@
 {% load macros %}
+{% load clean %}
 
 <!-- Spawns a cooltable. Still needs a cooltable_js macro to make it work. -->
 {% macro cooltable table_id columns %}
@@ -7,7 +8,7 @@
             <thead>
                 <tr>
                     {% for col in columns %}
-                        <th class="sort" data-sort="{{col.1}}">{{col.0}}<small><i class="icon icon-resize-vert"></i></small></th>
+                        <th class="sort" data-sort="{{'class_'|add:col|clean}}">{{col}}<small><i class="icon icon-resize-vert"></i></small></th>
                     {% endfor %}
                     <th><input class="search form-input" placeholder="Rechercher"/></th>
                 </tr>
@@ -19,18 +20,14 @@
     </div>
 {% endmacro %}
 
-{% macro coolrows_js %}
-    <script></script>
-{% endmacro %}
-
 <!-- Transforms a table into a cooltable -->
-<!-- Make sure you have added the cooltable.js script for coolrows() -->
+<!-- Make sure you have added the cooltable.js script for coolrows() and column_class_from_heading() -->
 {% macro cooltable_js json_id table_id columns %}
     {{ columns | json_script:json_id }}
     <script>
         'use strict'
         var cols = $.parseJSON($('#'+'{{json_id}}').get(0).textContent)
         coolrows('{{table_id}}', cols)
-        var tasksList = new List({{table_id}}, {valueNames: cols.map( tuple => tuple[1] )});
+        var tasksList = new List({{table_id}}, {valueNames: cols.map( column_class_from_heading )});
     </script>
 {% endmacro %}

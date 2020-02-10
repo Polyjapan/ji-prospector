@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% load prospector_filters %}
+{% loadmacros 'cooltable.html' %}
+
+{% block title %}Liste des tâches (par deal){% endblock %}
+{% block subtitle %}C'est moi que tu traites de tache ?{% endblock %}
+
+{% block content %}
+<a href="{% url 'prospector:tasks.list' %}" class="btn btn-lg">Voir les tâches par type de tâche</a>
+Ajouter un field par user pour savoir leurs droits (tréso peut sortir de l'état wait sur tréso, etc)
+Ajouter des field par event pour le templating des contrats (nom prés, nom prés agep)
+Faire que y'a des cases par défaut si la personne choisit pas d'option de paiement
+<div class="container">
+    <div class="columns">
+        {% call cooltable 'table' qs.cols%}
+            {% for dt in qs.rows %}
+                <tr>
+                    <td><a href="{% url 'prospector:tasks.show' pk=dt.task.pk %}">{{dt.task.name}}</a> pour <a href="{% url 'prospector:deals.show' pk=dt.deal.pk %}">{{dt.deal.contact.booth_name}}</a></td>
+                    <td><small class="label label-{{dt.deadline | deadlinecolor}}">{{dt.deadline | deadline}}</small></td>
+                    <td><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
+                    <td>
+                        <div>
+                            <button class="btn btn-sm float-right">Voir</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endcall %}
+    </div>
+</div>
+
+<div class="mt-2">
+    <button class="btn btn-success">Créer</button>
+</div>
+{% endblock %}
+
+{% block js %}
+    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
+{% endblock %}

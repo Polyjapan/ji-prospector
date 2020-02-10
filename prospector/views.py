@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
-from django.db.models import Sum
+from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F
+from django.db.models.fields import DateTimeField
+from django.utils.timezone import is_aware, make_aware
 
 from .models import Contact, Deal, DealTask, BoothSpace, Task
 
@@ -23,16 +25,57 @@ def index(request):
     * Tasks to do and their status and their deadline
     * Floating deals
     """
-    floating_deals = Deal.objects.exclude(floating='')
-    free_booths_rows = BoothSpace.objects.filter(deal__isnull=True)
-    free_booths_cols = [('Emplacement', 'name'), ('Bâtiment', 'building'), ('Prix usuel', 'usual_price')]
+    floating_deals = {
+        'rows': Deal.objects.exclude(floating=''),
+        'cols': ['Stand', 'Personne', 'Email', 'Explication'],
+    }
 
-    #to_do = DealTask.objects.filter(todo_state='contact_waits_pro').order_by('deadline', 'deal')
-    #to_do = Task.objects.filter()
+    free_booths = {
+        'rows': BoothSpace.objects.filter(deal__isnull=True),
+        'cols': ['Emplacement', 'Bâtiment', 'Prix usuel'],
+    }
+
+    # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
+    # Maybe I should just do it in <number_of_task> queries... but dammit... performance !!
+    to_do_rows = Task.objects.raw('''
+SELECT
+	t.id AS id,
+    MAX(dt.todo_state) AS worst_todo,
+	COUNT(d.id) AS deal_count,
+	d.id AS min_booth_deal_id,
+	c.booth_name AS min_booth_name,
+	MIN(dt.deadline) AS min_deadline
+FROM
+	prospector_dealtask dt
+	JOIN prospector_deal d
+	ON dt.deal_id = d.id
+	JOIN prospector_contact c
+	ON d.contact_id = c.id
+	INNER JOIN prospector_task t
+	ON dt.task_id = t.id
+WHERE
+    dt.todo_state <> '0_done'
+GROUP BY dt.task_id
+    ''')
+
+    # RawSQL-to-Model glue here :(
+    for row in to_do_rows:
+        # Parse datetime just as a real model would. Throws the same exceptions, too.
+        row.min_deadline = DateTimeField().to_python(row.min_deadline)
+        if not is_aware(row.min_deadline):
+            row.min_deadline = make_aware(row.min_deadline)
+        # Add in display helper for todo-state
+        row.get_worst_todo_display = lambda *, row=row : dict(DealTask.TODO_STATES).get(row.worst_todo)
+
+    to_do = {
+        'rows': to_do_rows,
+        'cols': ['Tâche', '# de Deals liés', 'État le plus grave', 'Échéance la plus proche']
+    }
+
     final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
     unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
 
-    return render(request, 'prospector/index.html', {'floating_deals': floating_deals, 'free_booths': {'cols':free_booths_cols, 'rows':free_booths_rows}, 'to_do': [], 'final_budget': final_budget, 'unsure_budget': unsure_budget})
+    return render(request, 'prospector/index.html', {'floating_deals': floating_deals, 'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget})
 
 
 def plan(request):
@@ -53,7 +96,10 @@ def plan(request):
     return render(request, 'prospector/index.html')
 
 def contacts_list(request):
-    qs = Contact.objects.order_by('booth_name')
+    qs = {
+        'rows': Contact.objects.order_by('booth_name'),
+        'cols': ['Stand', 'Personne', 'Email', 'Description'],
+    }
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
 def contacts_show(request, pk):
@@ -65,10 +111,35 @@ def contacts_show(request, pk):
     return render(request, 'prospector/contacts/show.html', {'kv': kv, 'obj': obj, 'deals': deals})
 
 def deals_list(request):
-    qs = Deal.objects.order_by('contact__booth_name')
+    qs = {
+        'rows': Deal.objects.order_by('contact__booth_name'),
+        'cols': ['Contact', 'Événement', 'Type', 'Prix', 'Emplacement', 'Flottant', 'Finalisé']
+    }
     return render(request, 'prospector/deals/list.html', {'qs': qs})
 
 def deals_show(request, pk):
+    obj = Deal.objects.get(pk=pk)
+    # Get all fields of this object, and their values, in a dictionary
+    kv = get_table_data(Deal, obj)
+    # Get all dealtasks related to this object
+    dealtasks = DealTask.objects.filter(deal__pk=obj.pk).order_by('-deadline')
+    return render(request, 'prospector/deals/show.html', {'kv': kv, 'obj': obj, 'dealtasks': dealtasks})
+
+def tasks_list(request):
+    qs = {
+        'rows': Task.objects.annotate(Count('dealtask__deal')).annotate(Min('dealtask__deadline')).order_by('dealtask__deadline__min'),
+        'cols': ['Nom', '# de Deals liés', 'Échéance la plus proche', 'Description'],
+    }
+    return render(request, 'prospector/tasks/list.html', {'qs': qs})
+
+def dealtasks_list(request):
+    qs = {
+        'rows': DealTask.objects.all(),
+        'cols': ['Nom', 'Échéance', 'État'],
+    }
+    return render(request, 'prospector/dealtasks/list.html', {'qs': qs})
+
+def tasks_show(request, pk):
     obj = Deal.objects.get(pk=pk)
     # Get all fields of this object, and their values, in a dictionary
     kv = get_table_data(Deal, obj)

@@ -1,44 +1,34 @@
 {% extends 'base.html' %}
-{% load macros %}
-{% load static %}
 
+{% load macros %}
+{% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
 
 {% block title %}Résumé{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
 
 {% block content %}
-Permettre de voir qui traîne
 <div class="app">
     <div class="card mb-2">
         <div class="card-header">
             <div class="card-title h4">Todo et échéances</div>
         </div>
         <div class="card-body">
-            <table class="table table-hover">
-                <thead>
+            {% call cooltable 'to_do_table' to_do.cols %}
+                {% for t in to_do.rows %}
                     <tr>
-                        <th>Tâche</th>
-                        <th>Deals</th>
-                        <th>Échéance</th>
-                        <th></th>
+                        <td><a href="{% url 'prospector:tasks.show' pk=t.id %}">{{t.name}}</a></td>
+                        <td>pour {{t.deal_count}} deals</td>
+                        <td><span class="label label-{{t.worst_todo | todostatecolor}}">{{t.get_worst_todo_display}}</span></td>
+                        <td><span class="label label-{{t.min_deadline | deadlinecolor}}">{{t.min_deadline | deadline}}</span> pour <a href="{% url 'prospector:deals.show' pk=t.min_booth_deal_id%}">{{t.min_booth_name}}</a></td>
+                        <td>
+                            <div>
+                                <a href="{% url 'prospector:tasks.show' pk=t.id %}" class="btn btn-sm float-right">Voir</a>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for t in to_do %}
-                        <tr>
-                            <td  data-th="Tâche">{{t.name}}</td>
-                            <td data-th="Deal"># de deals qui ont ça en todo</td>
-                            <td data-th="Échéance"><small>shortest échéance du lot</small></td>
-                            <td>
-                                <div>
-                                    <button class="btn btn-sm float-right">Voir</button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+            {% endcall %}
         </div>
     </div>
 
@@ -67,32 +57,21 @@ Permettre de voir qui traîne
             <div class="card-title h4">Deals flottants</div>
         </div>
         <div class="card-body">
-            <table class="table table-hover">
-                <thead>
+            {% call cooltable 'floating_deals_table' floating_deals.cols %}
+                {% for d in floating_deals.rows %}
                     <tr>
-                        <th>Stand</th>
-                        <th>Personne</th>
-                        <th>Email</th>
-                        <th>Explication</th>
-                        <th></th>
+                        <td>{{d.contact.booth_name}}</td>
+                        <td>{{d.contact.person_name}}</td>
+                        <td>{{d.contact.email_address}}</td>
+                        <td><small>{{d.floating}}</small></td>
+                        <td>
+                            <div>
+                                <button class="btn btn-sm float-right">Voir</button>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for d in floating_deals %}
-                        <tr>
-                            <td data-th="Stand">{{d.contact.booth_name}}</td>
-                            <td data-th="Personne">{{d.contact.person_name}}</td>
-                            <td data-th="Email">{{d.contact.email_address}}</td>
-                            <td data-th="Explication"><small>{{d.floating}}</small></td>
-                            <td>
-                                <div>
-                                    <button class="btn btn-sm float-right">Voir</button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+            {% endcall %}
         </div>
     </div>
 
@@ -121,9 +100,7 @@ Permettre de voir qui traîne
 {% endblock %}
 
 {% block js %}
-    <script src="{% static 'node_modules/list.js/dist/list.js'%}"></script>
-    <script src="{% static 'node_modules/zepto/dist/zepto.js'%}"></script>
-    <script src="{% static 'js/cooltable.js'%}"></script>
-
+    {% call cooltable_js 'to_do_table_json' 'to_do_table' to_do.cols %}{% endcall %}
     {% call cooltable_js 'booths_table_json' 'booths_table' free_booths.cols %}{% endcall %}
+    {% call cooltable_js 'floating_deals_table_json' 'floating_deals_table' floating_deals.cols %}{% endcall %}
 {% endblock %}

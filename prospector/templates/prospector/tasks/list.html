@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% load prospector_filters %}
+{% loadmacros 'cooltable.html' %}
+
+{% block title %}Liste des tâches (par type de tâche){% endblock %}
+{% block subtitle %}C'est moi que tu traites de tache ?{% endblock %}
+
+{% block content %}
+<a href="{% url 'prospector:dealtasks.list' %}" class="btn btn-lg">Voir les tâches par deal</a>
+
+<div class="container">
+    <div class="columns">
+        {% call cooltable 'table' qs.cols%}
+            {% for t in qs.rows %}
+                <tr>
+                    <td><a href="{% url 'prospector:tasks.show' pk=t.pk %}">{{t.name}}</a></td>
+                    <td>{{t.dealtask__deal__count}}</td>
+                    <td><small class="label label-{{t.dealtask__deadline__min | deadlinecolor}}">{{t.dealtask__deadline__min | deadline}}</small></td>
+                    <td>{{t.description}}</td>
+                    <td>
+                        <div>
+                            <button class="btn btn-sm float-right">Voir</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endcall %}
+    </div>
+</div>
+
+<div class="mt-2">
+    <button class="btn btn-success">Créer</button>
+</div>
+{% endblock %}
+
+{% block js %}
+    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
+{% endblock %}
