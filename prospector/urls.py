@@ -25,7 +25,7 @@ urlpatterns = [
     path('contacts/<int:pk>', views.contacts_show, name='contacts.show'),
     path('deals', views.deals_list, name='deals.list'),
     path('deals/<int:pk>', views.deals_show, name='deals.show'),
+    path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
+    path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
     path('tasks', views.tasks_list, name='tasks.list'),
-    path('dealtasks', views.dealtasks_list, name='dealtasks.list'),
-    path('tasks/<int:pk>', views.tasks_show, name='tasks.show'),
 ]

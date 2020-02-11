@@ -10,24 +10,24 @@
 {% block content %}
 <div class="container">
     <div class="columns">
-        {% call cooltable 'table' qs.cols %}
-            {% for c in qs.rows %}
-                <tr>
-                    <td><a href="{% url 'prospector:contacts.show' pk=c.pk %}">{{c.booth_name}}</a></td>
-                    <td>{{c.person_name | orcross}}</td>
-                    <td>{{c.email_address | orcross}}</td>
-                    <td><span class="text-small">{{c.private_description | linebreaksbr | orcross}}</span></td>
-                    <td>
-                        <div>
-                            <button class="btn btn-sm float-right">Éditer</button>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        {% endcall %}
+        <div class="col-12">
+            {% call cooltable 'table' qs.cols %}
+                {% for c in qs.rows %}
+                    <tr>
+                        <td><a href="{% url 'prospector:contacts.show' pk=c.pk %}">{{c.person_name | orcross}}</a></td>
+                        <td>{{c.email_address | orcross}}</td>
+                        <td><span class="text-small">{{c.private_description | linebreaksbr | orcross}}</span></td>
+                        <td>
+                            <div>
+                                <button class="btn btn-sm float-right">Éditer</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endcall %}
+        </div>
     </div>
 </div>
-
 <div class="mt-2">
     <button class="btn btn-success">Créer</button>
 </div>

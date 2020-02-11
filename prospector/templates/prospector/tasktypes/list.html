@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% load prospector_filters %}
+{% loadmacros 'cooltable.html' %}
+
+{% block title %}Liste des tâches rangées par type{% endblock %}
+{% block subtitle %}C'est qui que tu traites de tache ?{% endblock %}
+
+{% block content %}
+Colonne : temps d'attente max
+<div class="container">
+    <div class="columns">
+        <div class="col-12">
+            {% call cooltable 'table' qs.cols%}
+                {% for t in qs.rows %}
+                    <tr>
+                        <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=t.pk %}">{{t.name | lower}}</a></td>
+                        <td>pour {{t.task__deal__count}} deals</td>
+                        <td><small>{{t.task__deadline__min | deadline | orcross}}</small></td>
+                        <td>{{t.description}}</td>
+                        <td>
+                            <div>
+                                <button class="btn btn-sm float-right">Voir</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endcall %}
+        </div>
+    </div>
+</div>
+
+<div class="mt-2">
+    <button class="btn btn-success">Créer</button>
+</div>
+{% endblock %}
+
+{% block js %}
+    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
+{% endblock %}

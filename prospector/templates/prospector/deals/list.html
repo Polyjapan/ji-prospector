@@ -10,24 +10,26 @@
 {% block content %}
 <div class="container">
     <div class="columns">
-        {% call cooltable 'table' qs.cols %}
-            {% for d in qs.rows %}
-            <tr>
-                <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d.contact.booth_name}}</a></td>
-                <td>{{d.event.name}}</td>
-                <td>{{d.type | title}}</td>
-                <td>CHF {{d.price}}{% if d.additional_price_modalities != '' %}+{% if d.additional_price_sum %}{{d.additional_price_sum}}{% else %}?{% endif %}{% endif %}</td>
-                <td>{% if d.boothspace %}{{d.boothspace.name}} (CHF {{d.boothspace.usual_price}}){% else %}<div class="text-center"><i class="icon icon-cross"></i></div>{% endif %}</td>
-                <td>{{d.is_floating | checkorcross}}</td>
-                <td>{{d.is_finalized | checkorcross}}</td>
-                <td>
-                    <div>
-                        <button class="btn btn-sm float-right">Éditer</button>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        {% endcall %}
+        <div class="col-12">
+            {% call cooltable 'table' qs.cols %}
+                {% for d in qs.rows %}
+                <tr>
+                    <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d.booth_name}}</a></td>
+                    <td>{{d.event.name}}</td>
+                    <td>{{d.type | title}}</td>
+                    <td>CHF {{d.price}}{% if d.additional_price_modalities != '' %}+{% if d.additional_price_sum %}{{d.additional_price_sum}}{% else %}?{% endif %}{% endif %}</td>
+                    <td>{% if d.boothspace %}{{d.boothspace.name}} (CHF {{d.boothspace.usual_price}}){% else %}<div class="text-center"><i class="icon icon-cross"></i></div>{% endif %}</td>
+                    <td>{{d.is_floating | checkorcross}}</td>
+                    <td>{{d.is_finalized | checkorcross}}</td>
+                    <td>
+                        <div>
+                            <button class="btn btn-sm float-right">Éditer</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endcall %}
+        </div>
     </div>
 </div>
 

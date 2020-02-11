@@ -8,7 +8,7 @@
             <thead>
                 <tr>
                     {% for col in columns %}
-                        <th class="sort" data-sort="{{'class_'|add:col|clean}}">{{col}}<small><i class="icon icon-resize-vert"></i></small></th>
+                        <th class="sort" data-sort="{{'class_'|add:col|clean}}">{{col}} <small><i class="icon icon-resize-vert"></i></small></th>
                     {% endfor %}
                     <th><input class="search form-input" placeholder="Rechercher"/></th>
                 </tr>

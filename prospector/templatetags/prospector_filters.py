@@ -11,24 +11,14 @@ register = template.Library()
 def todostatecolor(todostate):
     colors = {
         '5_contact_waits_pro': 'error',
-        '4_pro_waits_treasury': 'gray-dark',
-        '3_pro_waits_presidence': 'gray-dark',
-        '2_pro_waits_contact': 'gray-dark',
-        '1_doing': 'warning',
+        '4_pro_waits_treasury': 'warning',
+        '3_pro_waits_presidence': 'warning',
+        '2_pro_waits_contact': 'default',
+        '1_doing': 'secondary',
         '0_done': 'success',
     }
 
     return colors.get(todostate)
-
-@register.filter(name='deadline')
-def deadline(then):
-    if not then:
-        return '?'
-
-    if now() < then:
-        return 'in {}'.format(timeuntil(then))
-    else:
-        return '{} ago !'.format(timesince(then))
 
 @register.filter(name='deadlinecolor')
 def deadlinecolor(deadline):
@@ -44,6 +34,19 @@ def deadlinecolor(deadline):
         return 'warning'
     else:
         return 'error'
+
+@register.filter(name='deadline', is_safe=True)
+def deadline(then):
+    if not then:
+        return ''
+
+    span = '<span class="label label-{color}">{{text}}</span>'.format(color=deadlinecolor(then))
+
+    if now() < then:
+        return mark_safe(span.format(text='in {}'.format(timeuntil(then))))
+    else:
+        return mark_safe(span.format(text='{} ago !'.format(timesince(then))))
+
 
 @register.filter(name='orcross', is_safe=True)
 def orcross(value):

@@ -17,14 +17,11 @@
             {% call cooltable 'to_do_table' to_do.cols %}
                 {% for r in to_do.rows %}
                     <tr>
-                        <td><a href="{% url 'prospector:tasks.show' pk=r.id %}">{{r.name}}</a></td>
+                        <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=r.id %}">{{r.name | lower}}</a></td>
                         <td>pour {{r.deal_count}} deals</td>
-                        <td><span class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</span></td>
-                        <td><span class="label label-{{r.deadline | deadlinecolor}}">{{r.deadline | deadline}}</span> pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
+                        <td>{{r.deadline | deadline | orcross}} pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
+                        <td><small class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</small></td>
                         <td>
-                            <div>
-                                <a href="{% url 'prospector:tasks.show' pk=r.id %}" class="btn btn-sm float-right">Voir</a>
-                            </div>
                         </td>
                     </tr>
                 {% endfor %}
@@ -38,6 +35,7 @@
         </div>
         <div class="card-body">
             <div class="container">
+                faire couleur du budget juste
                 <div class="columns m-medium">
                     <div class="col-6 text-center">
                         <small>BUDGET CERTAIN</small>
@@ -60,15 +58,9 @@
             {% call cooltable 'floating_deals_table' floating_deals.cols %}
                 {% for d in floating_deals.rows %}
                     <tr>
-                        <td>{{d.contact.booth_name}}</td>
-                        <td>{{d.contact.person_name}}</td>
-                        <td>{{d.contact.email_address}}</td>
+                        <td><a href="{% url 'prospector:deals.show' pk=d.pk%}">{{d.booth_name}}</a></td>
                         <td><small>{{d.floating}}</small></td>
-                        <td>
-                            <div>
-                                <button class="btn btn-sm float-right">Voir</button>
-                            </div>
-                        </td>
+                        <td></td>
                     </tr>
                 {% endfor %}
             {% endcall %}
@@ -83,12 +75,12 @@
             {% call cooltable 'booths_table' free_booths.cols %}
                 {% for b in free_booths.rows %}
                     <tr>
-                        <td>{{b.name}}</td>
-                        <td>{{b.building}}</td>
-                        <td>CHF {{b.usual_price}}</td>
+                        <td>{{b.name}}linker plan centré</td>
+                        <td>{{b.building}}linker plan cm</td>
+                        <td>CHF {{b.usual_price}}ajouter les prix des deals placés ici de manière pas sûre</td>
                         <td>
                             <div>
-                                <button class="btn btn-sm float-right">Plan</button>
+                                <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
                             </div>
                         </td>
                     </tr>

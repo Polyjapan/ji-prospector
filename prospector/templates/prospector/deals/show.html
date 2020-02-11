@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
+{% load macros %}
 {% load prospector_filters %}
+{% loadmacros 'cooltable.html' %}
 
-{% block title %}Deal : {{obj.contact.booth_name}} à {{obj.event.name}}{% endblock %}
+{% block title %}Deal : {{obj.booth_name}} à {{obj.event.name}}{% endblock %}
 {% block subtitle %}Type : {{obj.get_type_display}}{% endblock %}
 
 {% block content %}
@@ -13,35 +15,27 @@
         <div class="card-title h4">Tâches à faire</div>
     </div>
     <div class="card-body">
-        <table class="table table-hover">
-            <thead>
+        Avoir une ligne en + configurable dans cooltable qui permette d'ajouter une ligne (à la toggl/pvg), genre ici
+        {% call cooltable 'table' qs.cols%}
+            {% for dt in qs.rows %}
                 <tr>
-                    <th>Tâche</th>
-                    <th>État</th>
-                    <th>Échéance</th>
-                    <th>Description</th>
-                    <th></th>
+                    <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=dt.tasktype.pk %}">{{dt.tasktype.name | lower}}</a></td>
+                    <td><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
+                    <td><small>{{dt.deadline | deadline | orcross}}</small></td>
+                    <td><span class="text-small">{{dt.task.description}}</span></td>
+                    <td>
+                        <div>
+                            views utiles ici
+                        </div>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for dt in dealtasks %}
-                    <tr>
-                        <td data-th="Tâche">{{dt.task.name}}</td>
-                        <td data-th="État"><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
-                        <td data-th="Échéance"><small class="label label-{{dt.deadline | deadlinecolor}}">{{dt.deadline | deadline}}</small></td>
-                        <td data-th="Description"><span class="text-small">{{dt.task.description}}</span></td>
-                        <td>
-                            <div>
-                                <!-- faire avec views utiles -->
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            {% endfor %}
+        {% endcall %}
     </div>
 </div>
 
+Ajouter une card "Flottant"
+qui permette la vision/l'édition rapide du statut flottant
 
 <div class="card mb-2">
     <div class="card-header">
@@ -54,7 +48,7 @@
                     <th>{{k.verbose_name}}</th>
                     <td th_data="{{k.verbose_name}}">
                         {% if k.name == 'contact' and v %}
-                            <a href="{% url 'prospector:contacts.show' pk=v.pk %}">{{v.booth_name}}</a>
+                            <a href="{% url 'prospector:contacts.show' pk=v.pk %}">{{v.person_name}}</a>
                         {% else %}
                             {{v | linebreaksbr}}
                         {% endif %}

@@ -13,7 +13,6 @@ class Event(models.Model):
 
 class Contact(models.Model):
     person_name = models.CharField(max_length=128, blank=True, verbose_name='Nom de la personne')
-    booth_name = models.CharField(max_length=128, blank=True, verbose_name='Nom du stand')
     phone_number = models.CharField(max_length=16, blank=True, verbose_name='Téléphone')
     email_address = models.CharField(max_length=128, blank=True, verbose_name='Email')
 
@@ -25,16 +24,16 @@ class Contact(models.Model):
     pr_description = models.TextField(blank=True, verbose_name='Description comm')
 
 
-class Task(models.Model):
+class TaskType(models.Model):
     """e.g. 'Send the contract' or 'Set booth location'..."""
     name = models.CharField(max_length=128)
     description = models.TextField()
     typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
-    useful_views = models.TextField(blank=True) # A list of url names that point to views accepting an argument named pk, which is a DealTask's
+    useful_views = models.TextField(blank=True) # A list of url names that point to views accepting an argument named pk, which is a --Task's--
 
 
-class DealTask(models.Model):
-    """Each time the todo-state changes, create a new DealTask object. That way, you can keep a history."""
+class Task(models.Model):
+    """Each time the todo-state changes, create a new Task object. That way, you can keep a history."""
     TODO_STATES = [
         ('5_contact_waits_pro', 'Contact attend sur pro'),
         ('4_pro_waits_treasury', 'Pro attend sur trésorerie'),
@@ -48,7 +47,7 @@ class DealTask(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
     deal = models.ForeignKey('Deal', on_delete=models.CASCADE)
-    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    tasktype = models.ForeignKey('TaskType', on_delete=models.CASCADE)
 
 
 class Deal(models.Model):
@@ -64,12 +63,14 @@ class Deal(models.Model):
     contact = models.ForeignKey('Contact', on_delete=models.CASCADE, verbose_name='Contact')
     event = models.ForeignKey('Event', on_delete=models.CASCADE, verbose_name='Événement')
 
+    booth_name = models.CharField(max_length=128, blank=True, verbose_name='Nom du stand')
+
     price = models.FloatField(verbose_name='Prix')
     price_final = models.BooleanField(default=False, verbose_name='Prix certain ?')
     additional_price_modalities = models.TextField(blank=True, verbose_name='Supplément ?') # e.g. "10% CA"
     additional_price_sum = models.FloatField(blank=True, null=True, verbose_name='Montant supplément') # to be filled when known
 
-    tasks = models.ManyToManyField('Task', through='DealTask', verbose_name='Tâches')
+    tasks = models.ManyToManyField('TaskType', through='Task', verbose_name='Tâches')
     logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Besoins logistiques prévisionnels', related_name='previsional_deals')
     #actual_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, verbose_name='Besoins logistiques finaux', related_name='final_deals')
 
