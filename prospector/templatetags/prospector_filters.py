@@ -43,21 +43,6 @@ def deadline(then):
     span = '<span class="label label-{color}">{{text}}</span>'.format(color=deadlinecolor(then))
 
     if now() < then:
-        return mark_safe(span.format(text='in {}'.format(timeuntil(then))))
+        return mark_safe(span.format(text='dans {}'.format(timeuntil(then))))
     else:
-        return mark_safe(span.format(text='{} ago !'.format(timesince(then))))
-
-
-@register.filter(name='orcross', is_safe=True)
-def orcross(value):
-    if value:
-        return value
-    else:
-        return mark_safe('<div class="text-center"><i class="icon icon-cross"></i></div>')
-
-@register.filter(name='checkorcross', is_safe=True)
-def checkorcross(value):
-    if value:
-        return mark_safe('<div class="text-center"><i class="icon icon-check"></i></div>')
-    else:
-        return mark_safe('<div class="text-center"><i class="icon icon-cross"></i></div>')
+        return mark_safe(span.format(text='il y a {} !'.format(timesince(then))))

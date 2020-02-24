@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
 
@@ -11,11 +12,12 @@
 <div class="container">
     <div class="columns">
         <div class="col-12">
-            {% call cooltable 'table' qs.cols %}
+            {% call cooltable qs.cols %}
                 {% for c in qs.rows %}
                     <tr>
-                        <td><a href="{% url 'prospector:contacts.show' pk=c.pk %}">{{c.person_name | orcross}}</a></td>
-                        <td>{{c.email_address | orcross}}</td>
+                        {% url 'prospector:contacts.edit' pk=d.pk as edit_url %}
+                        <td><a href="{% url 'prospector:contacts.show' pk=c.pk %}">{{c.person_name | oredit:edit_url}}</a></td>
+                        <td>{{c.email_address | oredit:edit_url}}</td>
                         <td><span class="text-small">{{c.private_description | linebreaksbr | orcross}}</span></td>
                         <td>
                             <div>
@@ -32,8 +34,4 @@
     <button class="btn btn-success">Créer</button>
 </div>
 
-{% endblock %}
-
-{% block js %}
-    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
 {% endblock %}

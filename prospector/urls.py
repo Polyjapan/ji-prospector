@@ -28,4 +28,6 @@ urlpatterns = [
     path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
     path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
     path('tasks', views.tasks_list, name='tasks.list'),
+    path('events', views.index, name='events.list'),
+    path('events/<int:pk>', views.index, name='events.show'),
 ]

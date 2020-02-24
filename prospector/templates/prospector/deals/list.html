@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
 
@@ -8,22 +9,24 @@
 {% block subtitle %}Les fois où un contact veut un stand{% endblock %}
 
 {% block content %}
+Clarifier si les coches sont bien ou pas avec du vert/rouge
 <div class="container">
     <div class="columns">
         <div class="col-12">
-            {% call cooltable 'table' qs.cols %}
+            {% call cooltable qs.cols %}
                 {% for d in qs.rows %}
                 <tr>
+                    {% url 'prospector:deals.edit' pk=d.pk as edit_url %}
                     <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d.booth_name}}</a></td>
                     <td>{{d.event.name}}</td>
                     <td>{{d.type | title}}</td>
-                    <td>CHF {{d.price}}{% if d.additional_price_modalities != '' %}+{% if d.additional_price_sum %}{{d.additional_price_sum}}{% else %}?{% endif %}{% endif %}</td>
-                    <td>{% if d.boothspace %}{{d.boothspace.name}} (CHF {{d.boothspace.usual_price}}){% else %}<div class="text-center"><i class="icon icon-cross"></i></div>{% endif %}</td>
+                    <td>{{d.get_price_display}}</td>
+                    <td>{{d.get_boothspaces_usual_price_display | oredit:edit_url}}</td>
                     <td>{{d.is_floating | checkorcross}}</td>
                     <td>{{d.is_finalized | checkorcross}}</td>
                     <td>
                         <div>
-                            <button class="btn btn-sm float-right">Éditer</button>
+                            <a href="{{edit_url}}" class="btn btn-sm float-right">Éditer</a>
                         </div>
                     </td>
                 </tr>
@@ -36,8 +39,4 @@
 <div class="mt-2">
     <button class="btn btn-success">Créer</button>
 </div>
-{% endblock %}
-
-{% block js %}
-    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
 {% endblock %}

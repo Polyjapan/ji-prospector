@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
 
@@ -9,20 +10,40 @@
 
 {% block content %}
 <div class="app">
+    <div hidden>
+        Watcher les mails avec ton libellé, et te faire une notif quand un nouveau mail est arrivé
+        Garder les threads mail d'un deal en mémoire, (ou même, les stocker par task, mais moins easy car je veux) annoncer si un nouveau thread
+        mail a commencé, et du coup proposer un nouveau deal (ou une nouvelle task, mais c'est pas facile de détecter ça)
+        <br>
+        Check renvoi de contrat signé ??? S'il voit une pièce jointe nommée pareil que l'envoi, ou bien si c'est un pdf,
+        Il te demande si c'est bien ça.
+        <br>
+        Peut-être proposer par défaut : "deal lié = nouveau or (select un existant => ça devine en fonction de l'expéditeur)" et puis
+        "task liée = nouvelle or (select un TaskType)" et du coup ça lie le doc à la task(deal choisi, tasktype choisi)
+        <br>
+        Le trésorier peut laisser des commentaires sur les tâches, qui s'affichent quand tu les fais (dans les tasktype/list ou task/list)
+        <br>
+        Étendre à tout le monde, un système de commentaires soit sur un tasktype => propagé aux tasks, et aussi sur une task en particulier.
+        quoique ce serait doublon du status flottant ?
+        <br>
+        Intégration truffe génération des factures. Check si le gars a payé too. Annulation des factures too
+    </div>
     <div class="card mb-2">
         <div class="card-header">
-            <div class="card-title h4">Todo et échéances</div>
+            <div class="card-title h4">Tâches à faire par type</div>
         </div>
         <div class="card-body">
-            {% call cooltable 'to_do_table' to_do.cols %}
+            {% call cooltable to_do.cols %}
                 {% for r in to_do.rows %}
                     <tr>
-                        <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=r.id %}">{{r.name | lower}}</a></td>
-                        <td>pour {{r.deal_count}} deals</td>
-                        <td>{{r.deadline | deadline | orcross}} pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
+                        {% with late=r.deadline|past %}
+                        <td>{% if late %}Il fallait {% else %}Il faut {% endif %}<a href="{% url 'prospector:tasktypes.show' pk=r.id %}">{{r.name | lower}}</a></td>
+                        <td><small>pour {{r.deal_count}} deals</small></td>
+                        <td><small>{{r.deadline | deadline | orcross}}</small> pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
                         <td><small class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</small></td>
                         <td>
                         </td>
+                        {% endwith %}
                     </tr>
                 {% endfor %}
             {% endcall %}
@@ -52,32 +73,16 @@
 
     <div class="card mb-2">
         <div class="card-header">
-            <div class="card-title h4">Deals flottants</div>
-        </div>
-        <div class="card-body">
-            {% call cooltable 'floating_deals_table' floating_deals.cols %}
-                {% for d in floating_deals.rows %}
-                    <tr>
-                        <td><a href="{% url 'prospector:deals.show' pk=d.pk%}">{{d.booth_name}}</a></td>
-                        <td><small>{{d.floating}}</small></td>
-                        <td></td>
-                    </tr>
-                {% endfor %}
-            {% endcall %}
-        </div>
-    </div>
-
-    <div class="card mb-2">
-        <div class="card-header">
             <div class="card-title h4">Emplacements libres</div>
         </div>
         <div class="card-body">
-            {% call cooltable 'booths_table' free_booths.cols %}
+            {% call cooltable free_booths.cols %}
                 {% for b in free_booths.rows %}
                     <tr>
                         <td>{{b.name}}linker plan centré</td>
                         <td>{{b.building}}linker plan cm</td>
-                        <td>CHF {{b.usual_price}}ajouter les prix des deals placés ici de manière pas sûre</td>
+                        <td>{{b.get_usual_price_display}}</td>
+                        <td>prix des deals placés ici de manière pas sûre</td>
                         <td>
                             <div>
                                 <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
@@ -89,10 +94,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block js %}
-    {% call cooltable_js 'to_do_table_json' 'to_do_table' to_do.cols %}{% endcall %}
-    {% call cooltable_js 'booths_table_json' 'booths_table' free_booths.cols %}{% endcall %}
-    {% call cooltable_js 'floating_deals_table_json' 'floating_deals_table' floating_deals.cols %}{% endcall %}
 {% endblock %}

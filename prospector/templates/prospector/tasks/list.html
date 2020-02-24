@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
 
@@ -16,10 +17,11 @@ Colonne temps d'attente
 <div class="container">
     <div class="columns">
         <div class="col-12">
-            {% call cooltable 'table' qs.cols %}
+            {% call cooltable qs.cols %}
                 {% for t in qs.rows %}
                     <tr>
-                        <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=t.tasktype.pk %}">{{t.tasktype.name | lower}}</a> pour <a href="{% url 'prospector:deals.show' pk=t.deal.pk %}">{{t.deal.booth_name}}</a></td>
+                        <td>{{t.get_display}}</td>
+                        <td>pour <a href="{% url 'prospector:deals.show' pk=t.deal.pk %}">{{t.deal.booth_name}}</a></td>
                         <td><small>{{t.deadline | deadline | orcross}}</small></td>
                         <td><small class="label label-{{t.todo_state | todostatecolor}}">{{t.get_todo_state_display}}</small></td>
                         <td>
@@ -37,8 +39,4 @@ Colonne temps d'attente
 <div class="mt-2">
     <button class="btn btn-success">Créer</button>
 </div>
-{% endblock %}
-
-{% block js %}
-    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
 {% endblock %}

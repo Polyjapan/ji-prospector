@@ -1,5 +1,8 @@
 from django.db import models
 from django.utils.timezone import now
+from django.db.models import Sum
+from django.utils.safestring import mark_safe
+from django.urls import reverse
 
 
 from datetime import timedelta
@@ -7,9 +10,15 @@ from datetime import timedelta
 # Create your models here.
 
 class Event(models.Model):
-    name = models.CharField(max_length=128)
-    date = models.DateField()
-    budget = models.FloatField()
+    name = models.CharField(max_length=128, verbose_name='Nom')
+    date = models.DateField(verbose_name='Date')
+    budget = models.FloatField(verbose_name='Budget stands')
+
+    def get_absolute_url(self):
+        return reverse('prospector:events.show', args=[self.pk])
+
+    def __str__(self):
+        return '{}'.format(self.name)
 
 class Contact(models.Model):
     person_name = models.CharField(max_length=128, blank=True, verbose_name='Nom de la personne')
@@ -23,32 +32,60 @@ class Contact(models.Model):
     private_description = models.TextField(blank=True, verbose_name='Description privée')
     pr_description = models.TextField(blank=True, verbose_name='Description comm')
 
+    def __str__(self):
+        return '{}'.format(self.person_name)
+
+    def get_absolute_url(self):
+        return reverse('prospector:contacts.show', args=[self.pk])
 
 class TaskType(models.Model):
     """e.g. 'Send the contract' or 'Set booth location'..."""
-    name = models.CharField(max_length=128)
-    description = models.TextField()
-    typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
-    useful_views = models.TextField(blank=True) # A list of url names that point to views accepting an argument named pk, which is a --Task's--
+    name = models.CharField(max_length=128, verbose_name='Nom')
+    description = models.TextField(blank=True, verbose_name='Description')
+    typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tâche suivante typique')
+    useful_views = models.TextField(blank=True, verbose_name='Liens utiles') # A list of url names that point to views accepting an argument named pk, which is a --Task's--
 
+    def __str__(self):
+        return self.name.capitalize()
+
+    def get_absolute_url(self):
+        return reverse('prospector:tasktypes.show', args=[self.pk])
 
 class Task(models.Model):
-    """Each time the todo-state changes, create a new Task object. That way, you can keep a history."""
+    """Each time the todo-state changes, create a new Task object. That way, you can keep a history => No. Use another model, and show it with Spectre Timelines."""
     TODO_STATES = [
-        ('5_contact_waits_pro', 'Contact attend sur pro'),
-        ('4_pro_waits_treasury', 'Pro attend sur trésorerie'),
-        ('3_pro_waits_presidence', 'Pro attend sur présidence'),
-        ('2_pro_waits_contact', 'Pro attend sur contact'),
-        ('1_doing', 'Tâche en cours'),
         ('0_done', 'Tâche terminée'),
+        ('1_doing', 'Tâche en cours'),
+        ('2_pro_waits_contact', 'Pro attend sur contact'),
+        ('3_pro_waits_presidence', 'Pro attend sur présidence'),
+        ('4_pro_waits_treasury', 'Pro attend sur trésorerie'),
+        ('5_contact_waits_pro', 'Contact attend sur pro'),
     ]
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
     start_date = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
     deal = models.ForeignKey('Deal', on_delete=models.CASCADE)
     tasktype = models.ForeignKey('TaskType', on_delete=models.CASCADE)
 
+    def usual_next_states(self):
+        if 'pro_waits' in self.todo_state:
+            return TODO_STATES[5]
+        if self.todo_state == '1_doing':
+            return [TODO_STATES[0]]+TODO_STATES[2:5]
+        return [TODO_STATES[1]]
+
+    def usual_prev_states(self):
+        if self.todo_state == '5_contact_waits_pro':
+            return []
+
+    def get_display(self):
+        return mark_safe('{} <a href="{}">{}</a>'.format(
+            'Il faut' if not self.deadline or self.deadline > now() else 'Il fallait',
+            reverse('prospector:tasktypes.show', args=(self.tasktype.pk,)),
+            self.tasktype.name.lower()
+        ))
 
 class Deal(models.Model):
     DEAL_TYPES = [
@@ -74,17 +111,41 @@ class Deal(models.Model):
     logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Besoins logistiques prévisionnels', related_name='previsional_deals')
     #actual_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, verbose_name='Besoins logistiques finaux', related_name='final_deals')
 
-    floating = models.TextField(blank=True, verbose_name='Détail flottant ?') # if there are doubts over a big change, put in here.
-
     @property
     def is_floating(self):
-        return self.floating or not self.price_final or not self.boothspace.final
+        return not self.price_final or not self.boothspace.final
 
     @property
     def is_finalized(self):
         additional_price_ok = self.additional_price_sum if self.additional_price_modalities else True
-        return not self.is_floating and additional_price_ok and self.actual_logistical_needs
+        return not additional_price_ok and self.actual_logistical_needs
 
+    def __str__(self):
+        return '{} ({})'.format(self.booth_name, self.event.name)
+
+    def get_absolute_url(self):
+        return reverse('prospector:deals.show', args=[self.pk])
+
+    @property
+    def get_price_display(self):
+        if not self.price:
+            return ''
+
+        little_chf = '<small>CHF</small>'
+        price = '{}{}'.format(little_chf, self.price)
+        if self.additional_price_modalities:
+            price += '(+{})'.format(self.additional_price_sum if self.additional_price_sum else self.additional_price_modalities)
+
+        return mark_safe(price)
+
+    @property
+    def get_boothspaces_usual_price_display(self):
+        if not self.boothspace_set.exists():
+            return ''
+
+        little_chf = '<small>CHF</small>'
+        price = '{}{}'.format(little_chf,self.boothspace_set.aggregate(Sum('usual_price'))[0])
+        return mark_safe(price)
 
 class BoothSpace(models.Model):
     name = models.CharField(max_length=32)
@@ -93,7 +154,16 @@ class BoothSpace(models.Model):
     identifier = models.CharField(max_length=256) # To identify the booth with whatever indirection of the plans we have
     deal = models.ForeignKey('Deal', blank=True, null=True, on_delete=models.CASCADE)
     final = models.BooleanField(default=False) # For every deal, at most 1 linked booth space must be final !
+    # TODO : ^this shouldn't be here !!! it should be linked to event at least.
+    # or have the entire model be linked to event ? after all, numerotation changes every year...
+    # but in that case, allow easy copypaste from year to year.
 
+    def __str__(self):
+        return '{} ({})'.format(self.name, self.building)
+
+    @property
+    def get_usual_price_display(self):
+        return mark_safe('<small>CHF</small>{}'.format(self.usual_price))
 
 class LogisticalNeedSet(models.Model):
     name = models.CharField(max_length=128)

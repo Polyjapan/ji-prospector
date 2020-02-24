@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
+{% loadmacros 'show_data.html' %}
 
 {% block title %}Contact : {{obj.person_name}}{% endblock %}
 {% block subtitle %}{{obj.email_address | default:'Pas d\'adresse mail °o°'}}{% endblock %}
@@ -14,12 +16,12 @@
         <div class="card-title h4">Deals liés</div>
     </div>
     <div class="card-body">
-        {% call cooltable 'table' qs.cols%}
+        {% call cooltable qs.cols%}
             {% for d in qs.rows %}
                 <tr>
-                    <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d.booth_name}} à {{d.event.name}}</a></td>
+                    <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d}}</a></td>
                     <td>{{d.get_type_display}}</td>
-                    <td>CHF {{d.price}}{% if d.additional_price_modalities != '' %}+{% if d.additional_price_sum %}{{d.additional_price_sum}}{% else %}?{% endif %}{% endif %}</td>
+                    <td>{{d.get_price_display}}</td>
                     <td>
                         <div>
                             <!-- faire avec views utiles -->
@@ -37,25 +39,7 @@
         <div class="card-title h4">Données</div>
     </div>
     <div class="card-body">
-        <table class="table table-hover">
-            {% for k,v in kv.items %}
-                <tr>
-                    <th>{{k.verbose_name}}</th>
-                    <td th_data="{{k.verbose_name}}">{{v | linebreaksbr}}</td>
-                    <td class="text-right">
-                        <!-- helpful buttons -->
-                        {% if k.name == 'email_address' and v %}
-                            <button class="btn btn-sm">Chercher dans boîte pro</button>
-                        {% endif %}
-
-                        {% if not v %}
-                            <i class="icon icon-cross"></i>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-
+        {% call showdata show_data %}{% endcall %}
         <div class="mt-2">
             <button class="btn">Mail données manquantes</button>
             <button class="btn btn-error">Supprimer</button>
@@ -63,8 +47,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block js %}
-    {% call cooltable_js 'table_json' 'table' qs.cols %}{% endcall %}
 {% endblock %}

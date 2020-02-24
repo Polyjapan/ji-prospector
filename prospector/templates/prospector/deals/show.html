@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
 {% load macros %}
+{% load filters %}
 {% load prospector_filters %}
 {% loadmacros 'cooltable.html' %}
+{% loadmacros 'show_data.html' %}
 
 {% block title %}Deal : {{obj.booth_name}} à {{obj.event.name}}{% endblock %}
 {% block subtitle %}Type : {{obj.get_type_display}}{% endblock %}
@@ -12,17 +14,16 @@
 
 <div class="card mb-2">
     <div class="card-header">
-        <div class="card-title h4">Tâches à faire</div>
+        <div class="card-title h4">Tâches à faire pour ce deal</div>
     </div>
     <div class="card-body">
-        Avoir une ligne en + configurable dans cooltable qui permette d'ajouter une ligne (à la toggl/pvg), genre ici
-        {% call cooltable 'table' qs.cols%}
+        {% call cooltable qs.cols add_form=taskform %}
             {% for dt in qs.rows %}
                 <tr>
-                    <td>Il faut <a href="{% url 'prospector:tasktypes.show' pk=dt.tasktype.pk %}">{{dt.tasktype.name | lower}}</a></td>
-                    <td><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
+                    <td>{{dt.get_display}}</td>
                     <td><small>{{dt.deadline | deadline | orcross}}</small></td>
-                    <td><span class="text-small">{{dt.task.description}}</span></td>
+                    <td><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
+                    <td><span class="text-small">{{dt.comment | orcheck}}</span></td>
                     <td>
                         <div>
                             views utiles ici
@@ -42,29 +43,7 @@ qui permette la vision/l'édition rapide du statut flottant
         <div class="card-title h4">Données</div>
     </div>
     <div class="card-body">
-        <table class="table table-hover">
-            {% for k,v in kv.items %}
-                <tr>
-                    <th>{{k.verbose_name}}</th>
-                    <td th_data="{{k.verbose_name}}">
-                        {% if k.name == 'contact' and v %}
-                            <a href="{% url 'prospector:contacts.show' pk=v.pk %}">{{v.person_name}}</a>
-                        {% else %}
-                            {{v | linebreaksbr}}
-                        {% endif %}
-                    </td>
-                    <td class="text-right">
-                        <!-- helpful buttons -->
-                        {% if k.name == 'floating'%}
-                            {% if v %}<i class="icon icon-cross"></i>{% endif %}
-                        {% elif not v and k.name != 'additional_price_modalities'%}
-                            <i class="icon icon-cross"></i>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-
+        {% call showdata show_data %}{% endcall %}
         <div class="mt-2">
             <button class="btn">Mail données manquantes</button>
             <button class="btn btn-error">Supprimer</button>

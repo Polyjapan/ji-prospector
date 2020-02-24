@@ -1,38 +1,66 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
-from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F
-from django.db.models.fields import DateTimeField
+from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef
+from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import is_aware, make_aware
+from django.contrib import messages
+from django.utils.safestring import mark_safe
+
 
 from .models import Contact, Deal, Task, BoothSpace, TaskType
+from .forms import QuickTaskForm
 
 from collections import namedtuple
 
-def get_table_data(model_class, model_instance):
-    Key = namedtuple('Key', ['verbose_name', 'name'])
-    kv = {
-        Key(f.verbose_name, f.name) :
-        getattr(model_instance, 'get_{}_display'.format(f.name), getattr(model_instance, f.name))
-        for f in model_class._meta.local_fields if f.name != 'id'
-    }
-    return kv
+def show_model_data(cls, instance, exclude=[]):
+    fs = cls._meta.get_fields(include_hidden=False)
+    ret = dict()
+
+    for f in fs:
+        if not isinstance(f, Field) or f.name == 'id' or f.name in exclude:
+            continue
+
+        display_name = ''
+        value = None
+        display_value = ''
+        if f.is_relation:
+            if f.many_to_many or f.one_to_many:
+                set = getattr(instance, f.name)
+                for related in set.all():
+                    display_value += mark_safe('<a href="{}">{}</a>, '.format(related.get_absolute_url(), related))
+                display_name = f.verbose_name or f.related_model._meta.verbose_name_plural.capitalize()
+                value = set
+            else:
+                related = getattr(instance, f.name)
+                if related:
+                    display_value = mark_safe('<a href="{}">{}</a>'.format(related.get_absolute_url(), related))
+                display_name = f.verbose_name or f.related_model._meta.verbose_name.capitalize()
+                value = related
+        else:
+            display_value = getattr(instance, 'get_'+f.name+'_display', getattr(instance, f.name))
+            display_name = f.verbose_name
+            value = getattr(instance, f.name)
+
+        ret[f.name] = {
+            'display_name': display_name,
+            'value': value,
+            'display_value': display_value
+        }
+
+    return ret
 
 def index(request):
     """Gives overview :
     * Budget
     * Open booth spaces
     * Tasks to do and their status and their deadline
-    * Floating deals
     """
-    floating_deals = {
-        'rows': Deal.objects.exclude(floating=''),
-        'cols': ['Deal', 'Explication'],
-    }
 
     free_booths = {
         'rows': BoothSpace.objects.filter(deal__isnull=True),
-        'cols': ['Emplacement', 'Bâtiment', 'Prix usuel'],
+        'cols': ['Emplacement', 'Bâtiment', 'Prix usuel', 'Prix des deals qui vont peut-être ici'],
     }
 
     # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
@@ -59,28 +87,46 @@ FROM
 		GROUP BY tasktype_id
 	) t2
 	ON t.tasktype_id = t2.tasktype_id
-WHERE t.deadline = t2.min_deadline
+WHERE t.deadline = t2.min_deadline OR t.deadline IS NULL
 ORDER BY t.deadline
     ''')
+
+    # to_do_rows2 = TaskType.objects.annotate(
+    #     booth_name=Subquery(
+    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deal__booth_name')[:1]
+    #     ),
+    #     deal_id=Subquery(
+    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deal_id')[:1]
+    #     ),
+    #     deadline=Subquery(
+    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deadline')[:1]
+    #     ),
+    #     deal_count=Count('task__deal'),
+    #     worst_todo=Max('task__todo_state'),
+    # )
+    #
+    # print(to_do_rows2.query)
+    # print(to_do_rows2.values())
 
     # RawSQL-to-Model glue here :(
     for row in to_do_rows:
         # Parse datetime just as a real model would. Throws the same exceptions, too.
-        row.deadline = DateTimeField().to_python(row.deadline)
-        if not is_aware(row.deadline):
-            row.deadline = make_aware(row.deadline)
+        if row.deadline:
+            row.deadline = DateTimeField().to_python(row.deadline)
+            if not is_aware(row.deadline):
+                row.deadline = make_aware(row.deadline)
         # Add in display helper for todo-state
         row.get_worst_todo_display = lambda *, row=row : dict(Task.TODO_STATES).get(row.worst_todo)
 
     to_do = {
         'rows': to_do_rows,
-        'cols': ['Tâche', '', 'Prochaine échéance', 'État le plus grave']
+        'cols': ['Type de tâche', '', '1ère deadline', 'Pire état']
     }
 
     final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
     unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
 
-    return render(request, 'prospector/index.html', {'floating_deals': floating_deals, 'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget})
+    return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget})
 
 
 def plan(request):
@@ -110,13 +156,13 @@ def contacts_list(request):
 def contacts_show(request, pk):
     obj = Contact.objects.get(pk=pk)
     # Get all fields of this object, and their values, in a dictionary
-    kv = get_table_data(Contact, obj)
+    show_data = show_model_data(Contact, obj)
     # Get all deals related to this object
     qs = {
         'rows': Deal.objects.filter(contact__pk=obj.pk).order_by('-event__date'),
         'cols': ['Nom', 'Type', 'Prix'],
     }
-    return render(request, 'prospector/contacts/show.html', {'kv': kv, 'obj': obj, 'qs': qs})
+    return render(request, 'prospector/contacts/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 def deals_list(request):
     qs = {
@@ -127,36 +173,63 @@ def deals_list(request):
 
 def deals_show(request, pk):
     obj = Deal.objects.get(pk=pk)
-    # Get all fields of this object, and their values, in a dictionary
-    kv = get_table_data(Deal, obj)
+
+    if request.method == "POST":
+        taskform = QuickTaskForm(request.POST)
+        if taskform.is_valid():
+            tasktype, created = TaskType.objects.get_or_create(
+                name=taskform.cleaned_data['name']
+            )
+            task = Task.objects.create(
+                todo_state=taskform.cleaned_data['state'],
+                deadline=taskform.cleaned_data['deadline'],
+                deal=obj,
+                tasktype=tasktype,
+                comment=taskform.cleaned_data['comment'],
+            )
+            messages.success(request, mark_safe('Il faut maintenant <i>{}</i> pour <i>{}</i>.'.format(tasktype.name.lower(), obj.booth_name)))
+            if created:
+                messages.info(
+                    request,
+                    mark_safe('Le type de tâche <i>{}</i> a été créé car il n\'existait pas.<br><a href="{}">Voir ici</a>.'.format(
+                        tasktype.name,
+                        reverse('prospector:tasktypes.show', args=(tasktype.pk,))
+                    ))
+                )
+    else:
+        taskform = QuickTaskForm(initial={'state': '5_contact_waits_pro'})
+
+    show_data = show_model_data(Deal, obj, exclude=['tasks'])
     # Get all dealtasks related to this object
     qs = {
-        'rows': Task.objects.filter(deal__pk=obj.pk).order_by('-deadline'),
-        'cols': ['Tâche', 'État', 'Échéance', 'Description'],
+        'rows': Task.objects.filter(deal__pk=obj.pk).order_by('-deadline').exclude(todo_state='0_done'),
+        'cols': ['Tâche', 'Échéance', 'État', 'Commentaire ?'],
     }
-    return render(request, 'prospector/deals/show.html', {'kv': kv, 'obj': obj, 'qs': qs})
+    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs, 'taskform': taskform})
 
 def tasktypes_list(request):
     qs = {
         'rows': TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'),
-        'cols': ['Type de tâche', '', 'Prochaine échéance', 'Description'],
+        'cols': ['Type de tâche', 'Lié à', 'Description'],
     }
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
 
 def tasks_list(request):
     qs = {
         'rows': Task.objects.all(),
-        'cols': ['Nom', 'Échéance', 'État'],
+        'cols': ['Nom', 'Deal', 'Échéance', 'État'],
     }
     return render(request, 'prospector/tasks/list.html', {'qs': qs})
 
 def tasktypes_show(request, pk):
-    obj = Deal.objects.get(pk=pk)
-    # Get all fields of this object, and their values, in a dictionary
-    kv = get_table_data(Deal, obj)
+    obj = TaskType.objects.get(pk=pk)
+    show_data = show_model_data(TaskType, obj)
     # Get all dealtasks related to this object
-    dealtasks = Task.objects.filter(deal__pk=obj.pk).order_by('-deadline')
-    return render(request, 'prospector/tasktypes/show.html', {'kv': kv, 'obj': obj, 'dealtasks': dealtasks})
+    qs = {
+        'rows': Task.objects.filter(tasktype__pk=obj.pk).order_by('-deadline'),
+        'cols': ['Deal', 'État', 'Échéance', 'Commentaire ?'],
+    }
+    return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 # TODO: Find a way to select the fanzines
 

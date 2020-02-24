@@ -1,14 +1,19 @@
 {% load macros %}
 {% load clean %}
 
-<!-- Spawns a cooltable. Still needs a cooltable_js macro to make it work. -->
-{% macro cooltable table_id columns %}
-    <div id="{{table_id}}">
+<!-- Spawns a cooltable. Not fully functional until cooltables() is called in js. -->
+{% macro cooltable columns add_form=None %}
+    <div class="cooltable{% if add_form %} cooltable_modifiable{% endif %}">
+        {{ columns | json_script:'columns_json' }}
+        {% if add_form %}
+            <form action="" method="post">
+            {% csrf_token %}
+        {% endif %}
         <table class="table table-hover">
             <thead>
                 <tr>
                     {% for col in columns %}
-                        <th class="sort" data-sort="{{'class_'|add:col|clean}}">{{col}} <small><i class="icon icon-resize-vert"></i></small></th>
+                        <th class="sort" data-sort="class_{{col|clean}}">{{col}} <small><i class="icon icon-resize-vert"></i></small></th>
                     {% endfor %}
                     <th><input class="search form-input" placeholder="Rechercher"/></th>
                 </tr>
@@ -16,18 +21,24 @@
             <tbody class="list">
                 {% macrobody %}
             </tbody>
+            <tbody>
+                {% if add_form %}
+                    <tr class="cooltable_add_row" hidden>
+                        {% for field in add_form %}
+                            <td data-th="{{field.label}}">{% if not field.is_hidden %}{{ field.errors }}{{ field }}{% endif %}</td>
+                        {% endfor %}
+                        <td><button type="submit" class="btn btn-sm btn-primary">Ajouter</button></td>
+                    </tr>
+                    <tr class="cooltable_show_add_row">
+                        <td colspan="{{ columns|length|add:1 }} columns">
+                            <div class="btn btn-sm btn-link col-12"><i class="icon icon-plus"></i></div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
         </table>
+        {% if add_form %}
+            </form>
+        {% endif %}
     </div>
-{% endmacro %}
-
-<!-- Transforms a table into a cooltable -->
-<!-- Make sure you have added the cooltable.js script for coolrows() and column_class_from_heading() -->
-{% macro cooltable_js json_id table_id columns %}
-    {{ columns | json_script:json_id }}
-    <script>
-        'use strict'
-        var cols = $.parseJSON($('#'+'{{json_id}}').get(0).textContent)
-        coolrows('{{table_id}}', cols)
-        var tasksList = new List({{table_id}}, {valueNames: cols.map( column_class_from_heading )});
-    </script>
 {% endmacro %}

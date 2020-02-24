@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,7 +27,7 @@
                         <li class="nav-item"><a href="{% url 'prospector:contacts.list' %}">Contacts</a></li>
                         <li class="nav-item"><a href="{% url 'prospector:deals.list' %}">Deals</a></li>
                         <li class="nav-item"><a href="{% url 'prospector:tasks.list' %}">Tâches</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:tasktypes.list' %}">Tâches par type</a></li>
+                        <li class="nav-item"><a href="{% url 'prospector:tasktypes.list' %}">Types de tâche</a></li>
                         <li class="nav-item"><a href="{% url 'prospector:plan' %}">Budget</a></li>
                         <li class="nav-item"><a href="{% url 'prospector:plan' %}">Plan</a></li>
                     </ul>
@@ -41,6 +41,16 @@
                             <div class="divider"></div>
                         </div>
                         <div class="column col-12">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="toast {% if message.tags != 'info' %}toast-{{ message.tags }}{% endif %} mb-1">
+                                        <button class="btn btn-clear float-right"></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="column col-12">
                             {% block content %}
                             {% endblock %}
                         </div>
@@ -52,7 +62,9 @@
     <script src="{% static 'node_modules/list.js/dist/list.js'%}"></script>
     <script src="{% static 'node_modules/zepto/dist/zepto.js'%}"></script>
     <script src="{% static 'js/cooltable.js'%}"></script>
-
+    <script>
+        $('.toast .btn-clear').on('click', e => {$(e.target).parent().hide();});
+    </script>
 
     {% block js %}
     {% endblock %}

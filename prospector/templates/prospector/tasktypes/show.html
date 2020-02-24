@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% load filters %}
+{% load prospector_filters %}
+{% loadmacros 'cooltable.html' %}
+{% loadmacros 'show_data.html' %}
+
+{% block title %}Type de tâche : {{obj.name}}{% endblock %}
+{% block subtitle %}C'est qui que tu traites de tache ?{% endblock %}
+
+{% block content %}
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Deals avec cette tâche</div>
+        <div class="card-subtitle text-gray">
+            Cette page est pensée pour que tu l'utilise pendant que tu fais la dite tâche.<br>
+            Genre tu "envoie le contrat" pour 30 stands en même temps => y'a des boutons pour marquer ta progression.
+        </div>
+    </div>
+    <div class="card-body">
+        {% call cooltable qs.cols%}
+            {% for r in qs.rows %}
+                <tr>
+                    <td>Pour <a href="{% url 'prospector:tasktypes.show' pk=r.tasktype.pk %}">{{r.deal.booth_name}}</a></td>
+                    <td><small class="label label-{{r.todo_state | todostatecolor}}">{{r.get_todo_state_display}}</small></td>
+                    <td><small>{{r.deadline | deadline | orcross}}</small></td>
+                    <td><small>{{r.comment | orcheck}}</small></td>
+                    <td>
+                        <div>
+                            prev/next status (ajax ? vue ?)
+                            views utiles ici
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endcall %}
+    </div>
+</div>
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Données</div>
+    </div>
+    <div class="card-body">
+        Mettre un bouton pour merger into un autre tasktype si jamais deux choses sont same shit
+        {% call showdata show_data %}{% endcall %}
+        <div class="mt-2">
+            <button class="btn">Merger avec un autre type de tâche</button>
+            <button class="btn btn-error">Supprimer</button>
+            <button class="btn btn-primary">Éditer</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
