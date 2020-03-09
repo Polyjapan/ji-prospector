@@ -6,6 +6,7 @@ from django.urls import reverse
 
 
 from datetime import timedelta
+import json
 
 # Create your models here.
 
@@ -43,13 +44,17 @@ class TaskType(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')
     description = models.TextField(blank=True, verbose_name='Description')
     typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tâche suivante typique')
-    useful_views = models.TextField(blank=True, verbose_name='Liens utiles') # A list of url names that point to views accepting an argument named pk, which is a --Task's--
+    useful_views = models.TextField(blank=True, verbose_name='Liens utiles', help_text='JSON object. Key=Name of button, Value=django URL name') # A list of url names that point to views accepting an argument named pk, which is a --Task's--
 
     def __str__(self):
         return self.name.capitalize()
 
     def get_absolute_url(self):
         return reverse('prospector:tasktypes.show', args=[self.pk])
+
+    @property
+    def useful_views_dict(self):
+        return json.loads(self.useful_views) if self.useful_views else {}
 
 class Task(models.Model):
     """Each time the todo-state changes, create a new Task object. That way, you can keep a history => No. Use another model, and show it with Spectre Timelines."""
@@ -70,15 +75,30 @@ class Task(models.Model):
     tasktype = models.ForeignKey('TaskType', on_delete=models.CASCADE)
 
     def usual_next_states(self):
-        if 'pro_waits' in self.todo_state:
-            return TODO_STATES[5]
+        pro_waits = ['2_pro_waits_contact', '3_pro_waits_presidence', '4_pro_waits_treasury']
+
+        if self.todo_state in pro_waits:
+            ret = pro_waits + ['1_doing']
+            ret.remove(self.todo_state)
+            return ret
+        if self.todo_state == '5_contact_waits_pro':
+            return ['1_doing']
         if self.todo_state == '1_doing':
-            return [TODO_STATES[0]]+TODO_STATES[2:5]
-        return [TODO_STATES[1]]
+            return ['0_done']
+        if self.todo_state == '0_done':
+            return []
+        return ['5_contact_waits_pro']
 
     def usual_prev_states(self):
+        pro_waits = ['2_pro_waits_contact', '3_pro_waits_presidence', '4_pro_waits_treasury']
+
+        if self.todo_state == '0_done':
+            return ['1_doing']
+        if self.todo_state == '1_doing':
+            return ['5_contact_waits_pro']
         if self.todo_state == '5_contact_waits_pro':
-            return []
+            return ['2_pro_waits_contact']
+        return ['5_contact_waits_pro']
 
     def get_display(self):
         return mark_safe('{} <a href="{}">{}</a>'.format(

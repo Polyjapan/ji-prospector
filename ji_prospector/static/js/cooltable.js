@@ -18,11 +18,16 @@ function cooltables() {
         $(table).attr('id', 'cooltable_'+index);
         var tasksList = new List($(table).attr('id'), {valueNames: cols.map( column_class_from_heading )});
 
+        var form = $('.cooltable_add_form', table)
+        form.attr('id', 'cooltable_add_form_'+index)
+
         if(modifiable){
+            $('.cooltable_add_row input, .cooltable_add_row select, .cooltable_add_row textarea', table).attr('form', form.attr('id'))
             $('.cooltable_show_add_row .btn', table).on('click', e => {
                 $('.cooltable_show_add_row', table).attr('hidden', true);
                 $('.cooltable_add_row', table).removeAttr('hidden');
             });
+            $('.cooltable_add_row input[type="submit"]', table).attr('id', 'cooltable_add_submit_'+index)
         }
     });
 }

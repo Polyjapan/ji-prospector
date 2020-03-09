@@ -7,6 +7,7 @@
 
 {% block title %}Résumé{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
+{% block active_menu %}index{% endblock %}
 
 {% block content %}
 <div class="app">
@@ -28,9 +29,27 @@
         <br>
         Intégration truffe génération des factures. Check si le gars a payé too. Annulation des factures too
     </div>
+    <form action="{% url 'prospector:quickstart' %}" method="get">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Quick start</div>
+                <div class="card-subtitle text-gray">
+                    Entre un type de tâche ou le nom d'un deal pour y aller vite. (Ou bien, rien du tout).<br>
+                </div>
+            </div>
+            <div class="card-body">
+                {% for field in quickstartform %}
+                    <div>{% if not field.is_hidden %}{{ field.errors }}{{ field }}{% endif %}</div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary float-right">Allez!</button>
+            </div>
+        </div>
+    </form>
     <div class="card mb-2">
         <div class="card-header">
-            <div class="card-title h4">Tâches à faire par type</div>
+            <div class="card-title h4">Tâches à faire groupées par type</div>
         </div>
         <div class="card-body">
             {% call cooltable to_do.cols %}

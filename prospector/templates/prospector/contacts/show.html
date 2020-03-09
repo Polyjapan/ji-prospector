@@ -8,6 +8,7 @@
 
 {% block title %}Contact : {{obj.person_name}}{% endblock %}
 {% block subtitle %}{{obj.email_address | default:'Pas d\'adresse mail °o°'}}{% endblock %}
+{% block active_menu %}contacts{% endblock %}
 
 {% block content %}
 
@@ -35,13 +36,12 @@
 </div>
 
 <div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Données</div>
-    </div>
     <div class="card-body">
         {% call showdata show_data %}{% endcall %}
-        <div class="mt-2">
-            <button class="btn">Mail données manquantes</button>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary">Mail données manquantes</button>
+        <div class="float-right">
             <button class="btn btn-error">Supprimer</button>
             <button class="btn btn-primary">Éditer</button>
         </div>

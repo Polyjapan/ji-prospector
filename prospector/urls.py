@@ -20,14 +20,25 @@ import prospector.views as views
 app_name = 'prospector'
 urlpatterns = [
     path('', views.index, name='index'),
+    path('quickstart', views.quickstart, name='quickstart'),
     path('plan', views.plan, name='plan'),
+
     path('contacts', views.contacts_list, name='contacts.list'),
     path('contacts/<int:pk>', views.contacts_show, name='contacts.show'),
+
     path('deals', views.deals_list, name='deals.list'),
     path('deals/<int:pk>', views.deals_show, name='deals.show'),
+
     path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
     path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
+
     path('tasks', views.tasks_list, name='tasks.list'),
+    path('tasks/settodostate/pk=<int:pk>/state=<str:state>', views.tasks_set_todostate, name='tasks.set_todostate'),
+    path('tasks/embed', views.tasks_list_embed, name='tasks.list_embed'),
+    path('tasks/embed/tasktype=<int:fixed_tasktype>', views.tasks_list_embed, name='tasks.list_embed_fixed_tasktype'),
+    path('tasks/embed/deal=<int:fixed_deal>', views.tasks_list_embed, name='tasks.list_embed_fixed_deal'),
+    path('tasks/embed/tasktype=<int:fixed_tasktype>/deal=<int:fixed_deal>', views.tasks_list_embed, name='tasks.list_embed_fixed_both'),
+
     path('events', views.index, name='events.list'),
     path('events/<int:pk>', views.index, name='events.show'),
 ]

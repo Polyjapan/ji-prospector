@@ -23,13 +23,13 @@
                     <div class="divider"></div>
                     <!-- menu items -->
                     <ul class="nav p-2">
-                        <li class="nav-item"><a href="{% url 'prospector:index' %}">Résumé</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:contacts.list' %}">Contacts</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:deals.list' %}">Deals</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:tasks.list' %}">Tâches</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:tasktypes.list' %}">Types de tâche</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:plan' %}">Budget</a></li>
-                        <li class="nav-item"><a href="{% url 'prospector:plan' %}">Plan</a></li>
+                        <li class="nav-item nav-index"><a href="{% url 'prospector:index' %}">Résumé</a></li>
+                        <li class="nav-item nav-budgets"><a href="{% url 'prospector:plan' %}">Budget</a></li>
+                        <li class="nav-item nav-plan"><a href="{% url 'prospector:plan' %}">Plan</a></li>
+                        <li class="nav-item nav-contacts"><a href="{% url 'prospector:contacts.list' %}">Contacts</a></li>
+                        <li class="nav-item nav-deals"><a href="{% url 'prospector:deals.list' %}">Deals</a></li>
+                        <li class="nav-item nav-tasks"><a href="{% url 'prospector:tasks.list' %}">Tâches</a></li>
+                        <li class="nav-item nav-tasktypes"><a href="{% url 'prospector:tasktypes.list' %}">Types de tâche</a></li>
                     </ul>
                 </div>
                 <!-- content -->
@@ -64,6 +64,11 @@
     <script src="{% static 'js/cooltable.js'%}"></script>
     <script>
         $('.toast .btn-clear').on('click', e => {$(e.target).parent().hide();});
+        var menu = '{% block active_menu %}{% endblock %}';
+
+        if (menu != '') {
+            $('.nav-item.nav-'+menu).addClass('active');
+        }
     </script>
 
     {% block js %}

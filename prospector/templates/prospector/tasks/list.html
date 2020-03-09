@@ -7,6 +7,7 @@
 
 {% block title %}Liste des tâches{% endblock %}
 {% block subtitle %}C'est qui que tu traites de tache ?{% endblock %}
+{% block active_menu %}tasks{% endblock %}
 
 {% block content %}
 Ajouter un field par user pour savoir leurs droits (tréso peut sortir de l'état wait sur tréso, etc)
@@ -17,21 +18,28 @@ Colonne temps d'attente
 <div class="container">
     <div class="columns">
         <div class="col-12">
-            {% call cooltable qs.cols %}
-                {% for t in qs.rows %}
-                    <tr>
-                        <td>{{t.get_display}}</td>
-                        <td>pour <a href="{% url 'prospector:deals.show' pk=t.deal.pk %}">{{t.deal.booth_name}}</a></td>
-                        <td><small>{{t.deadline | deadline | orcross}}</small></td>
-                        <td><small class="label label-{{t.todo_state | todostatecolor}}">{{t.get_todo_state_display}}</small></td>
-                        <td>
-                            <div>
-                                <button class="btn btn-sm float-right">views utiles</button>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
+            <div class="text-gray">
+                Utilise cette table si tu fais des tâches en vrac.<br>
+                Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.<br>
+                Utilise la recherche pour te faciliter la navigation.
+            </div>
+            {% call cooltable qs.cols add_form=taskform %}
+                <tr hidden id="tasktable_placeholder">
             {% endcall %}
+            <!-- {% for t in qs.rows %}
+                <tr>
+                    <td>{{t.get_display}}</td>
+                    <td>pour <a href="{% url 'prospector:deals.show' pk=t.deal.pk %}">{{t.deal.booth_name}}</a></td>
+                    <td><small>{{t.deadline | deadline | orcross}}</small></td>
+                    <td><small>{{t | tasktodostate}}</small></td>
+                    <td><small>{{t.start_date | since}}</small></td>
+                    <td>
+                        <div>
+                            <button class="btn btn-sm float-right">views utiles</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %} -->
         </div>
     </div>
 </div>
@@ -39,4 +47,23 @@ Colonne temps d'attente
 <div class="mt-2">
     <button class="btn btn-success">Créer</button>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    function loadList(){
+        $.get('{% url "prospector:tasks.list_embed" %}', function(response){
+            $('#tasktable_placeholder').siblings().remove();
+            $('#tasktable_placeholder').after(response);
+            $('#state_buttons button').on('click', function(event){
+                var button = $(event.target).closest('button')
+                $.get(button.attr('link'), function(response){
+                    loadList();
+                });
+            });
+        });
+    }
+
+    loadList();
+</script>
 {% endblock %}

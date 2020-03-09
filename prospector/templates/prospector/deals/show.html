@@ -8,35 +8,23 @@
 
 {% block title %}Deal : {{obj.booth_name}} à {{obj.event.name}}{% endblock %}
 {% block subtitle %}Type : {{obj.get_type_display}}{% endblock %}
+{% block active_menu %}deals{% endblock %}
 
 {% block content %}
-
-
 <div class="card mb-2">
     <div class="card-header">
         <div class="card-title h4">Tâches à faire pour ce deal</div>
+        <div class="card-subtitle text-gray">
+            Utilise cette table si tu veux t'occuper de ce deal.<br>
+            Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.
+        </div>
     </div>
     <div class="card-body">
         {% call cooltable qs.cols add_form=taskform %}
-            {% for dt in qs.rows %}
-                <tr>
-                    <td>{{dt.get_display}}</td>
-                    <td><small>{{dt.deadline | deadline | orcross}}</small></td>
-                    <td><small class="label label-{{dt.todo_state | todostatecolor}}">{{dt.get_todo_state_display}}</small></td>
-                    <td><span class="text-small">{{dt.comment | orcheck}}</span></td>
-                    <td>
-                        <div>
-                            views utiles ici
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
+            <tr hidden id="tasktable_placeholder">
         {% endcall %}
     </div>
 </div>
-
-Ajouter une card "Flottant"
-qui permette la vision/l'édition rapide du statut flottant
 
 <div class="card mb-2">
     <div class="card-header">
@@ -51,4 +39,23 @@ qui permette la vision/l'édition rapide du statut flottant
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    function loadList(){
+        $.get('{% url "prospector:tasks.list_embed_fixed_deal" fixed_deal=obj.pk %}', function(response){
+            $('#tasktable_placeholder').siblings().remove();
+            $('#tasktable_placeholder').after(response);
+            $('#state_buttons button').on('click', function(event){
+                var button = $(event.target).closest('button')
+                $.get(button.attr('link'), function(response){
+                    loadList();
+                });
+            });
+        });
+    }
+
+    loadList();
+</script>
 {% endblock %}

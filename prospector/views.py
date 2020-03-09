@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
@@ -6,11 +6,12 @@ from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subqu
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import is_aware, make_aware
 from django.contrib import messages
+from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 
 
 from .models import Contact, Deal, Task, BoothSpace, TaskType
-from .forms import QuickTaskForm
+from .forms import QuickTaskForm, QuickStartForm
 
 from collections import namedtuple
 
@@ -50,6 +51,28 @@ def show_model_data(cls, instance, exclude=[]):
         }
 
     return ret
+
+
+def quickstart(request):
+    if request.method == "GET":
+        form = QuickStartForm(request.GET)
+        if form.is_valid():
+            if form.cleaned_data['what']:
+                try:
+                    obj = TaskType.objects.get(name=form.cleaned_data['what'])
+                    return redirect(reverse('prospector:tasktypes.show', args=(obj.pk,)))
+                except TaskType.DoesNotExist:
+                    pass
+
+                try:
+                    obj = Deal.objects.get(booth_name=form.cleaned_data['what'])
+                    return redirect(reverse('prospector:deals.show', args=(obj.pk,)))
+                except Deal.DoesNotExist:
+                    messages.error(request, mark_safe('Il n\'y a ni type de tâche, ni deal nommé <i>{}</i>.'.format(form.cleaned_data['what'])))
+                    return redirect(reverse('prospector:index'))
+
+    return redirect(reverse('prospector:tasks.list'))
+
 
 def index(request):
     """Gives overview :
@@ -126,7 +149,9 @@ ORDER BY t.deadline
     final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
     unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
 
-    return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget})
+    quickstartform = QuickStartForm()
+
+    return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget, 'quickstartform': quickstartform})
 
 
 def plan(request):
@@ -199,13 +224,12 @@ def deals_show(request, pk):
     else:
         taskform = QuickTaskForm(initial={'state': '5_contact_waits_pro'})
 
-    show_data = show_model_data(Deal, obj, exclude=['tasks'])
-    # Get all dealtasks related to this object
     qs = {
-        'rows': Task.objects.filter(deal__pk=obj.pk).order_by('-deadline').exclude(todo_state='0_done'),
-        'cols': ['Tâche', 'Échéance', 'État', 'Commentaire ?'],
+        'cols': tasks_list_embed_cols(fixed_deal=True),
     }
-    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs, 'taskform': taskform})
+
+    show_data = show_model_data(Deal, obj, exclude=['tasks'])
+    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'qs': qs, 'obj': obj, 'taskform': taskform})
 
 def tasktypes_list(request):
     qs = {
@@ -216,18 +240,41 @@ def tasktypes_list(request):
 
 def tasks_list(request):
     qs = {
-        'rows': Task.objects.all(),
-        'cols': ['Nom', 'Deal', 'Échéance', 'État'],
+        'cols': tasks_list_embed_cols(),
     }
     return render(request, 'prospector/tasks/list.html', {'qs': qs})
+
+def tasks_list_embed_cols(fixed_tasktype=False, fixed_deal=False):
+    return (
+        ([] if fixed_tasktype else ['Nom']) +
+        ([] if fixed_deal else ['Deal']) +
+        ['Échéance', 'État', 'État depuis', 'Commentaire']
+    )
+
+def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
+    rows = Task.objects.all()
+    if fixed_tasktype:
+        rows = rows.filter(tasktype__pk=fixed_tasktype)
+    if fixed_deal:
+        rows = rows.filter(deal__pk=fixed_deal)
+    qs = {
+        'rows': rows
+    }
+    return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
+
+#TODO : use good POST and form or vue or something idk
+# but for now, this works.
+def tasks_set_todostate(request, pk, state):
+    obj = Task.objects.get(pk=pk)
+    obj.todo_state = state
+    obj.save()
+    return HttpResponse()
 
 def tasktypes_show(request, pk):
     obj = TaskType.objects.get(pk=pk)
     show_data = show_model_data(TaskType, obj)
-    # Get all dealtasks related to this object
     qs = {
-        'rows': Task.objects.filter(tasktype__pk=obj.pk).order_by('-deadline'),
-        'cols': ['Deal', 'État', 'Échéance', 'Commentaire ?'],
+        'cols': tasks_list_embed_cols(fixed_tasktype=True),
     }
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 

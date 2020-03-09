@@ -1,0 +1,29 @@
+{% load filters %}
+{% load prospector_filters %}
+
+{% for task in qs.rows %}
+    <tr>
+        {% if not fixed_tasktype %}<td>{{task.get_display}}</td>{% endif %}
+        {% if not fixed_deal %}<td><a href="{% url 'prospector:deals.show' pk=task.deal.pk %}">{{task.deal.booth_name}}</a></td>{% endif %}
+        <td><small>{{task.deadline | deadline | orcross}}</small></td>
+        <td><small class="label label-{{task.todo_state | todostatecolor}}">{{task.get_todo_state_display}}</small></td>
+        <td><span class="text-small">{{task.comment}}</span></td>
+        <td>
+            <!-- <form action method="post"> -->
+                <div class="text-right">
+                    {% for button, link in task.tasktype.useful_views_dict.items %}
+                        <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
+                    {% endfor %}
+                    <span id="state_buttons">
+                        {% for prev in task.usual_prev_states %}
+                            <button class="btn btn-action btn-sm btn-error tooltip tooltip-left" data-tooltip="Basculer à {{prev | todostate}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"><i class="icon icon-arrow-left"></i></button>
+                        {% endfor %}
+                        {% for next in task.usual_next_states %}
+                            <button class="btn btn-action btn-sm btn-success tooltip tooltip-left" data-tooltip="Basculer à {{next | todostate}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"><i class="icon icon-arrow-right"></i></button>
+                        {% endfor %}
+                    </span>
+                </div>
+            <!-- </form> -->
+        </td>
+    </tr>
+{% endfor %}
