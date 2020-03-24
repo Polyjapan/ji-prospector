@@ -17,21 +17,23 @@
         <div class="card-title h4">Deals liés</div>
     </div>
     <div class="card-body">
-        {% call cooltable qs.cols%}
-            {% for d in qs.rows %}
-                <tr>
-                    <td><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d}}</a></td>
-                    <td>{{d.get_type_display}}</td>
-                    <td>{{d.get_price_display}}</td>
-                    <td>
-                        <div>
-                            <!-- faire avec views utiles -->
-                            <button class="btn btn-sm float-right">view utile</button>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        {% endcall %}
+        <cooltable>
+            <rows>
+                {% for d in qs.rows %}
+                    <r>
+                        <d><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d}}</a></d>
+                        <d>{{d.get_type_display}}</d>
+                        <d>{{d.get_price_display}}</d>
+                        <d>
+                            <div>
+                                <!-- faire avec views utiles -->
+                                <button class="btn btn-sm float-right">view utile</button>
+                            </div>
+                        </d>
+                    </r>
+                {% endfor %}
+            </rows>
+        </cooltable>
     </div>
 </div>
 
@@ -47,4 +49,10 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    var t = new NiceTable($('cooltable'), ['Nom', 'Type', 'Prix', '']);
+</script>
 {% endblock %}

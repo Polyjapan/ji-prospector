@@ -255,12 +255,17 @@ def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     rows = Task.objects.all()
     if fixed_tasktype:
         rows = rows.filter(tasktype__pk=fixed_tasktype)
+        refresh_url = reverse('prospector:tasks.list_embed_fixed_tasktype', args=(fixed_tasktype,))
     if fixed_deal:
         rows = rows.filter(deal__pk=fixed_deal)
+        refresh_url = reverse('prospector:tasks.list_embed_fixed_deal', args=(fixed_deal,))
+    if fixed_tasktype and fixed_deal:
+        refresh_url = reverse('prospector:tasks.list_embed_fixed_both', args=(fixed_tasktype,fixed_deal,))
+
     qs = {
         'rows': rows
     }
-    return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
+    return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype, 'refresh_url': refresh_url})
 
 #TODO : use good POST and form or vue or something idk
 # but for now, this works.

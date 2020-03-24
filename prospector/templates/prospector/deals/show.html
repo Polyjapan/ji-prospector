@@ -20,9 +20,8 @@
         </div>
     </div>
     <div class="card-body">
-        {% call cooltable qs.cols add_form=taskform %}
-            <tr hidden id="tasktable_placeholder">
-        {% endcall %}
+        <cooltable id="tasks_list_embed">
+        </cooltable>
     </div>
 </div>
 
@@ -43,19 +42,8 @@
 
 {% block js %}
 <script>
-    function loadList(){
-        $.get('{% url "prospector:tasks.list_embed_fixed_deal" fixed_deal=obj.pk %}', function(response){
-            $('#tasktable_placeholder').siblings().remove();
-            $('#tasktable_placeholder').after(response);
-            $('#state_buttons button').on('click', function(event){
-                var button = $(event.target).closest('button')
-                $.get(button.attr('link'), function(response){
-                    loadList();
-                });
-            });
-        });
-    }
-
-    loadList();
+    $.get('{% url "prospector:tasks.list_embed_fixed_deal" fixed_deal=obj.pk %}', function(response){
+        $(document.body).append(response); // The script auto-inits the table!
+    });
 </script>
 {% endblock %}

@@ -1,0 +1,10 @@
+un component vue or something :
+* une table paginée, searchable, sortable.
+    * idéalement, option pour donner une fonction de search et sort : lambda data => boolean de hit ou bien int d'ordering
+* source 1 : colonnes, données par une liste, pas forcément dans la view,
+    car au final c'est du rendu donc c'est dans le template que ça doit aller.
+    du coup, faire une liste en js en dur dans la page, qui est passée en argument du component semble bien.
+* source 2 : rows, donnée en html direct, à cause du pouvoir de rendu de djangotemplate OU alors ajax
+    il faut aussi que le component soit refreshable si ajax.
+* source 3 : donner le html du form d'ajout si on en veut un, faire que ça refresh si ajax.
+* permettre d'avoir le champ de recherche ailleurs
