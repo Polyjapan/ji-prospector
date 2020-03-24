@@ -1,11 +1,26 @@
 'use strict';
 
+function getRemoteNiceTable(selector) {
+    var url = $(selector).attr('href');
+    $.get(url, function(response) {
+        $(selector).append(response);
+    });
+}
+
 class NiceTable {
     constructor (selector, columns) {
-        // Take data from the component. Hide the component.
-        var rows = $('rows', this.marker); // a bunch of <tr> tags // <--- MARKER DEFINED LATER => THIS TAKES ANY <ROWS> IT FINDS, HENCE WHY IT WORKS MDR
-        var addform = $('add-form', this.marker); // a <form> tag with all due <td> inside, and the <input type="submit"> too, already connected to a callback.
+        // Is the marker a <remote-cooltable> or not ?
         this.marker = $(selector);
+        if (this.marker.attr('href')){
+            this.href = this.marker.attr('href');
+            this.remote = true;
+        } else {
+            this.remote = false;
+        }
+
+        // Take data from the marker. Hide the marker.
+        var rows = $('rows', this.marker); // a bunch of <tr> tags
+        var addform = $('add-form', this.marker); // a <form> tag with all due <d> cells inside, and the <input type="submit"> too, already connected to a callback.
         this.columns = columns;
         this.modifiable = (addform.size() != 0);
         this.marker.hide();
@@ -91,6 +106,17 @@ class NiceTable {
             var tr = document.createElement('tr');
             tr.innerHTML = r.innerHTML;
             r.parentNode.replaceChild(tr, r);
+        }
+    }
+
+    refreshRemoteRows (callback) {
+        if (this.remote){
+            var self = this;
+            $.get(this.href, function(response){
+                var rows = $(response).find('rows');
+                self.setRows(rows.contents());
+                callback();
+            });
         }
     }
 

@@ -20,8 +20,8 @@
         </div>
     </div>
     <div class="card-body">
-        <cooltable id="tasks_list_embed">
-        </cooltable>
+        <remote-cooltable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
+        </remote-cooltable>
     </div>
 </div>
 
@@ -42,8 +42,6 @@
 
 {% block js %}
 <script>
-    $.get('{% url "prospector:tasks.list_embed_fixed_deal" fixed_deal=obj.pk %}', function(response){
-        $(document.body).append(response); // The script auto-inits the table!
-    });
+    getRemoteNiceTable('#tasks_list_remote');
 </script>
 {% endblock %}
