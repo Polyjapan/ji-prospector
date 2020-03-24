@@ -38,6 +38,7 @@ class QuickTaskForm(forms.Form):
     name = forms.CharField(max_length=128)
     deadline = forms.DateTimeField(required=False, widget=forms.TextInput(attrs={'class': 'form-select select-sm', 'type': 'date'}))
     state = forms.ChoiceField(choices=Task.TODO_STATES, widget=forms.Select(attrs={'class': 'form-select select-sm'}))
+    empty = forms.CharField(required=False, widget=forms.HiddenInput())
     comment = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-input input-sm'}))
 
     def __init__(self, *args, **kwargs):

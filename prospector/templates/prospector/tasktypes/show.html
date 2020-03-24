@@ -3,7 +3,7 @@
 {% load macros %}
 {% load filters %}
 {% load prospector_filters %}
-{% loadmacros 'cooltable.html' %}
+
 {% loadmacros 'show_data.html' %}
 
 {% block title %}Type de tâche : {{obj.name}}{% endblock %}
@@ -21,22 +21,25 @@
         </div>
     </div>
     <div class="card-body">
-        {% call cooltable qs.cols%}
-            {% for r in qs.rows %}
-                <tr>
-                    <td>Pour <a href="{% url 'prospector:tasktypes.show' pk=r.tasktype.pk %}">{{r.deal.booth_name}}</a></td>
-                    <td><small class="label label-{{r.todo_state | todostatecolor}}">{{r.get_todo_state_display}}</small></td>
-                    <td><small>{{r.deadline | deadline | orcross}}</small></td>
-                    <td><small>{{r.comment | orcheck}}</small></td>
-                    <td>
-                        <div>
-                            prev/next status (ajax ? vue ?)
-                            views utiles ici
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        {% endcall %}
+        <nicetable>
+            <rows>
+                {% for r in qs %}
+                    <r>
+                        <d>Pour <a href="{% url 'prospector:deals.show' pk=r.deal.pk %}">{{r.deal.booth_name}}</a></d>
+                        <d><small class="label label-{{r.todo_state | todostatecolor}}">{{r.get_todo_state_display}}</small></d>
+                        <d><small>{{r.deadline | deadline | orcross}}</small></d>
+                        <d></d>
+                        <d><small>{{r.comment | orcheck}}</small></d>
+                        <d>
+                            <div>
+                                prev/next status (ajax ? vue ?)
+                                views utiles ici
+                            </div>
+                        </d>
+                    </r>
+                {% endfor %}
+            </rows>
+        </nicetable>
     </div>
 </div>
 
@@ -55,4 +58,10 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block js %}
+<script>
+    var t = new NiceTable($('nicetable'), ['Deal', 'Échéance', 'État', 'État depuis', 'Commentaire', '<search>']);
+</script>
 {% endblock %}

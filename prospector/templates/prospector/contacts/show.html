@@ -3,7 +3,7 @@
 {% load macros %}
 {% load filters %}
 {% load prospector_filters %}
-{% loadmacros 'cooltable.html' %}
+
 {% loadmacros 'show_data.html' %}
 
 {% block title %}Contact : {{obj.person_name}}{% endblock %}
@@ -17,9 +17,9 @@
         <div class="card-title h4">Deals liés</div>
     </div>
     <div class="card-body">
-        <cooltable>
+        <nicetable>
             <rows>
-                {% for d in qs.rows %}
+                {% for d in qs %}
                     <r>
                         <d><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d}}</a></d>
                         <d>{{d.get_type_display}}</d>
@@ -33,7 +33,7 @@
                     </r>
                 {% endfor %}
             </rows>
-        </cooltable>
+        </nicetable>
     </div>
 </div>
 
@@ -53,6 +53,6 @@
 
 {% block js %}
 <script>
-    var t = new NiceTable($('cooltable'), ['Nom', 'Type', 'Prix', '']);
+    var t = new NiceTable($('nicetable'), ['Nom', 'Type', 'Prix', '<search>']);
 </script>
 {% endblock %}

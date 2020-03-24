@@ -81,14 +81,11 @@ def index(request):
     * Tasks to do and their status and their deadline
     """
 
-    free_booths = {
-        'rows': BoothSpace.objects.filter(deal__isnull=True),
-        'cols': ['Emplacement', 'Bâtiment', 'Prix usuel', 'Prix des deals qui vont peut-être ici'],
-    }
+    free_booths = BoothSpace.objects.filter(deal__isnull=True)
 
     # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
     # Maybe I should just do it in <number_of_task> queries... get the tasks first, and then for each one, get the related data. but dammit... performance !!
-    to_do_rows = TaskType.objects.raw('''
+    to_do = TaskType.objects.raw('''
 SELECT
 	tt.id,
 	tt.name,
@@ -132,7 +129,7 @@ ORDER BY t.deadline
     # print(to_do_rows2.values())
 
     # RawSQL-to-Model glue here :(
-    for row in to_do_rows:
+    for row in to_do:
         # Parse datetime just as a real model would. Throws the same exceptions, too.
         if row.deadline:
             row.deadline = DateTimeField().to_python(row.deadline)
@@ -140,11 +137,6 @@ ORDER BY t.deadline
                 row.deadline = make_aware(row.deadline)
         # Add in display helper for todo-state
         row.get_worst_todo_display = lambda *, row=row : dict(Task.TODO_STATES).get(row.worst_todo)
-
-    to_do = {
-        'rows': to_do_rows,
-        'cols': ['Type de tâche', '', '1ère deadline', 'Pire état']
-    }
 
     final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
     unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
@@ -172,10 +164,7 @@ def plan(request):
     return render(request, 'prospector/index.html')
 
 def contacts_list(request):
-    qs = {
-        'rows': Contact.objects.order_by('person_name'),
-        'cols': ['Personne', 'Email', 'Description'],
-    }
+    qs = Contact.objects.order_by('person_name'),
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
 def contacts_show(request, pk):
@@ -183,17 +172,11 @@ def contacts_show(request, pk):
     # Get all fields of this object, and their values, in a dictionary
     show_data = show_model_data(Contact, obj)
     # Get all deals related to this object
-    qs = {
-        'rows': Deal.objects.filter(contact__pk=obj.pk).order_by('-event__date'),
-        'cols': ['Nom', 'Type', 'Prix'],
-    }
+    qs = Deal.objects.filter(contact__pk=obj.pk).order_by('-event__date')
     return render(request, 'prospector/contacts/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 def deals_list(request):
-    qs = {
-        'rows': Deal.objects.order_by('booth_name'),
-        'cols': ['Nom', 'Événement', 'Type', 'Prix', 'Emplacement', 'Flottant', 'Finalisé']
-    }
+    qs = Deal.objects.order_by('booth_name')
     return render(request, 'prospector/deals/list.html', {'qs': qs})
 
 def deals_show(request, pk):
@@ -224,48 +207,24 @@ def deals_show(request, pk):
     else:
         taskform = QuickTaskForm(initial={'state': '5_contact_waits_pro'})
 
-    qs = {
-        'cols': tasks_list_embed_cols(fixed_deal=True),
-    }
-
     show_data = show_model_data(Deal, obj, exclude=['tasks'])
-    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'qs': qs, 'obj': obj, 'taskform': taskform})
+    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'taskform': taskform})
 
 def tasktypes_list(request):
-    qs = {
-        'rows': TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'),
-        'cols': ['Type de tâche', 'Lié à', 'Description'],
-    }
+    qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'),
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
 
 def tasks_list(request):
-    qs = {
-        'cols': tasks_list_embed_cols(),
-    }
-    return render(request, 'prospector/tasks/list.html', {'qs': qs})
-
-def tasks_list_embed_cols(fixed_tasktype=False, fixed_deal=False):
-    return (
-        ([] if fixed_tasktype else ['Nom']) +
-        ([] if fixed_deal else ['Deal']) +
-        ['Échéance', 'État', 'État depuis', 'Commentaire']
-    )
+    return render(request, 'prospector/tasks/list.html')
 
 def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
-    rows = Task.objects.all()
+    qs = Task.objects.all()
     if fixed_tasktype:
-        rows = rows.filter(tasktype__pk=fixed_tasktype)
-        refresh_url = reverse('prospector:tasks.list_embed_fixed_tasktype', args=(fixed_tasktype,))
+        qs = qs.filter(tasktype__pk=fixed_tasktype)
     if fixed_deal:
-        rows = rows.filter(deal__pk=fixed_deal)
-        refresh_url = reverse('prospector:tasks.list_embed_fixed_deal', args=(fixed_deal,))
-    if fixed_tasktype and fixed_deal:
-        refresh_url = reverse('prospector:tasks.list_embed_fixed_both', args=(fixed_tasktype,fixed_deal,))
+        qs = qs.filter(deal__pk=fixed_deal)
 
-    qs = {
-        'rows': rows
-    }
-    return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype, 'refresh_url': refresh_url})
+    return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
 
 #TODO : use good POST and form or vue or something idk
 # but for now, this works.
@@ -278,9 +237,7 @@ def tasks_set_todostate(request, pk, state):
 def tasktypes_show(request, pk):
     obj = TaskType.objects.get(pk=pk)
     show_data = show_model_data(TaskType, obj)
-    qs = {
-        'cols': tasks_list_embed_cols(fixed_tasktype=True),
-    }
+    qs = Task.objects.filter(tasktype__pk=obj.pk)
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 # TODO: Find a way to select the fanzines

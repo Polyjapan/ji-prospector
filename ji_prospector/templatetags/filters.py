@@ -15,7 +15,7 @@ def orcross(value):
     if value:
         return value
     else:
-        return mark_safe('<div class="text-left"><i class="icon icon-cross"></i></div>')
+        return mark_safe('<span><i class="icon icon-cross"></i></span>')
 
 
 @register.filter(name='orcheck', is_safe=True)
@@ -23,7 +23,7 @@ def orcheck(value):
     if value:
         return value
     else:
-        return mark_safe('<div class="text-left"><i class="icon icon-check"></i></div>')
+        return mark_safe('<span><i class="icon icon-check"></i></span>')
 
 
 @register.filter(name='oredit', is_safe=True)
@@ -31,11 +31,11 @@ def oredit(value, url):
     if value:
         return value
     else:
-        return mark_safe('<div class="text-left"><a href="{}" class="icon icon-edit"></a></div>'.format(url))
+        return mark_safe('<span><a href="{}" class="icon icon-edit"></a></span>'.format(url))
 
 @register.filter(name='checkorcross', is_safe=True)
 def checkorcross(value):
     if value:
-        return mark_safe('<div class="text-left"><i class="icon icon-check"></i></div>')
+        return mark_safe('<span><i class="icon icon-check"></i></span>')
     else:
-        return mark_safe('<div class="text-left"><i class="icon icon-cross"></i></div>')
+        return mark_safe('<span><i class="icon icon-cross"></i></span>')

@@ -9,7 +9,7 @@ function getRemoteNiceTable(selector) {
 
 class NiceTable {
     constructor (selector, columns) {
-        // Is the marker a <remote-cooltable> or not ?
+        // Is the marker a <remote-nicetable> or not ?
         this.marker = $(selector);
         if (this.marker.attr('href')){
             this.href = this.marker.attr('href');
@@ -32,43 +32,57 @@ class NiceTable {
         this.rowsTbody = $('<tbody></tbody>').appendTo(this.table);
         if (this.modifiable){
             var formTbody = $('<tbody></tbody>').appendTo(this.table);
-            var formRow = $('<tr><tr/>').appendTo(formTbody);
-            var showFormRow = $('<tr><tr/>').appendTo(formTbody);
+            var formRow = $('<tr></tr>').appendTo(formTbody);
+            var showFormRow = $('<tr></tr>').appendTo(formTbody);
         }
 
         // Column titles. Sort logic. Search logic.
-        for(const c of this.columns){
-            if (c){
-                var th = $(`<th>${c}</th>`).appendTo(this.thead).on(
-                    'click', e => { this.sort(c, e); }
-                ).append('<small><i class="icon icon-resize-vert"></i></small>');
-            } else {
+        for(const [index, c] of this.columns.entries()){
+            if (c == '<search>'){
                 // Unnamed, non-sortable column
                 var th = $(`<th></th>`).appendTo(this.thead)
                 // Add search box
-                this.searchBox = $('<input class="search form-input" placeholder="Rechercher"/>').appendTo(th);
-                this.searchBox.on('input', e => {
-                    this.search(this.searchBox.val());
-                });
+                this.setSearchBox(
+                    $('<input class="search form-input" placeholder="Rechercher"/>').appendTo(th)
+                );
+            } else {
+                var th = $(`<th>${c}</th>`).appendTo(this.thead).on(
+                    'click', e => { this.sort(index, e); }
+                ).append('<small><i class="icon icon-resize-vert"></i></small>');
             }
         }
 
+        // Content rows
         this.setRows(rows.contents());
+        rows.remove();
 
+        // Form row, rename tags for cells, hide the form at first
         if (this.modifiable){
-            // Form row, rename tags for cells, hide the form at first
+            // TODO : find a correct way to give a UUID to every nicetable, because some shit still depends on IDs...
+            this.addFormId = 'form_'+(Math.floor(Math.random() * Math.floor(1000000)))
+
+            // Actual form tag, transfer attributes
+            var formTag = $('<form></form>').appendTo(this.marker);
+            formTag.attr('id', this.addFormId)
+            for(const a of ['accept', 'accept-charset', 'action', 'autocomplete', 'enctype', 'method', 'name', 'novalidate', 'target']){
+                formTag.attr(a, addform.attr(a));
+            }
+
+            // Form row
             formRow.append(addform.contents());
+            addform.remove();
             for(const d of $('d', formRow).get()){
                 var td = document.createElement('td');
                 td.innerHTML = d.innerHTML;
                 d.parentNode.replaceChild(td, d);
             }
+            $('input, button, textarea, select, label, keygen, output, fieldset', formRow).attr('form', this.addFormId)
             formRow.hide();
 
             // Show form row
-            $('<td />', { colspan:columns.length+1, class:'columns' }).appendTo(showFormRow).append(
-                '<div class="btn btn-sm btn-link col-12"><i class="icon icon-plus"></i></div>'
-            );
+            var td = $('<td />', { colspan:columns.length, columns:'' });
+            td = td.appendTo(showFormRow);
+            $('<div class="btn btn-sm btn-link col-12"><i class="icon icon-plus"></i></div>').appendTo(td);
             showFormRow.on('click', e => {
                 formRow.show();
                 showFormRow.hide();
@@ -94,6 +108,8 @@ class NiceTable {
     }
 
     setRows (contents) {
+        // TODO : SET DATA-TH ON EVERY TD ACCORD. TO COLUMNS LIST
+
         // Add rows, rename tags for rows and cells
         this.rowsTbody.children().remove()
         this.rowsTbody.append(contents);
@@ -120,8 +136,14 @@ class NiceTable {
         }
     }
 
-    sort (column, event) {
-        var index = this.columns.indexOf(column);
+    setSearchBox (collection) {
+        this.searchBox = $(collection)
+        this.searchBox.on('input', e => {
+            this.search(this.searchBox.val());
+        });
+    }
+
+    sort (columnIndex, event) {
         var button = $(event.currentTarget);
 
         // Order toggle logic
@@ -134,9 +156,9 @@ class NiceTable {
         // Sort the list in the right order
         var list = this.rowsTbody.children().get();
         if (button.attr('order') == 'asc'){
-            list.sort((a, b) => {return this.sortFunction(a, b, index);});
+            list.sort((a, b) => {return this.sortFunction(a, b, columnIndex);});
         } else {
-            list.sort((a, b) => {return this.sortFunction(b, a, index);});
+            list.sort((a, b) => {return this.sortFunction(b, a, columnIndex);});
         }
 
         // Replace list

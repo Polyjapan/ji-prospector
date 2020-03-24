@@ -3,7 +3,7 @@
 {% load macros %}
 {% load filters %}
 {% load prospector_filters %}
-{% loadmacros 'cooltable.html' %}
+
 {% loadmacros 'show_data.html' %}
 
 {% block title %}Deal : {{obj.booth_name}} à {{obj.event.name}}{% endblock %}
@@ -20,8 +20,14 @@
         </div>
     </div>
     <div class="card-body">
-        <remote-cooltable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
-        </remote-cooltable>
+        <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
+            <add-form action="" method="post">
+                {% for field in taskform %}
+                    <d data-th="{{field.label}}">{% if not field.is_hidden %}{{ field.errors }}{{ field }}{% endif %}</d>
+                {% endfor %}
+                <d>{% csrf_token %}<input type="submit" class="btn btn-sm btn-primary" value="Ajouter"></d>
+            </add-form>
+        </remote-nicetable>
     </div>
 </div>
 

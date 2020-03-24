@@ -3,7 +3,7 @@
 {% load macros %}
 {% load filters %}
 {% load prospector_filters %}
-{% loadmacros 'cooltable.html' %}
+
 
 {% block title %}Résumé{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
@@ -49,23 +49,34 @@
     </form>
     <div class="card mb-2">
         <div class="card-header">
-            <div class="card-title h4">Tâches à faire groupées par type</div>
+            <div class="container">
+                <div class="columns">
+                    <div class="column col-auto">
+                        <div class="card-title h4">Tâches à faire groupées par type</div>
+                    </div>
+                    <div class="column col">
+                        <input class="search form-input" placeholder="Rechercher" id="tasks_table_search"/>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="card-body">
-            {% call cooltable to_do.cols %}
-                {% for r in to_do.rows %}
-                    <tr>
-                        {% with late=r.deadline|past %}
-                        <td>{% if late %}Il fallait {% else %}Il faut {% endif %}<a href="{% url 'prospector:tasktypes.show' pk=r.id %}">{{r.name | lower}}</a></td>
-                        <td><small>pour {{r.deal_count}} deals</small></td>
-                        <td><small>{{r.deadline | deadline | orcross}}</small> pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></td>
-                        <td><small class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</small></td>
-                        <td>
-                        </td>
-                        {% endwith %}
-                    </tr>
-                {% endfor %}
-            {% endcall %}
+            <nicetable id="tasks_table">
+                <rows>
+                    {% for r in to_do %}
+                        <r>
+                            {% with late=r.deadline|past %}
+                            <d>{% if late %}Il fallait {% else %}Il faut {% endif %}<a href="{% url 'prospector:tasktypes.show' pk=r.id %}">{{r.name | lower}}</a></d>
+                            <d><small>pour {{r.deal_count}} deals</small></d>
+                            <d><small>{{r.deadline | deadline | orcross}}</small> pour <a href="{% url 'prospector:deals.show' pk=r.deal_id%}">{{r.booth_name}}</a></d>
+                            <d><small class="label label-{{r.worst_todo | todostatecolor}}">{{r.get_worst_todo_display}}</small></d>
+                            <d>
+                            </d>
+                            {% endwith %}
+                        </r>
+                    {% endfor %}
+                </rows>
+            </nicetable>
         </div>
     </div>
 
@@ -95,22 +106,32 @@
             <div class="card-title h4">Emplacements libres</div>
         </div>
         <div class="card-body">
-            {% call cooltable free_booths.cols %}
-                {% for b in free_booths.rows %}
-                    <tr>
-                        <td>{{b.name}}linker plan centré</td>
-                        <td>{{b.building}}linker plan cm</td>
-                        <td>{{b.get_usual_price_display}}</td>
-                        <td>prix des deals placés ici de manière pas sûre</td>
-                        <td>
-                            <div>
-                                <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            {% endcall %}
+            <nicetable id="free_booths_table">
+                <rows>
+                    {% for b in free_booths %}
+                        <r>
+                            <d>{{b.name}}linker plan centré</d>
+                            <d>{{b.building}}linker plan cm</d>
+                            <d>{{b.get_usual_price_display}}</d>
+                            <d>prix des deals placés ici de manière pas sûre</d>
+                            <d>
+                                <div>
+                                    <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
+                                </div>
+                            </d>
+                        </r>
+                    {% endfor %}
+                </rows>
+            </nicetable>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    var t = new NiceTable($('#tasks_table'), ['Type de tâche', '', '1ère deadline', 'Pire état']);
+    t.setSearchBox($('#tasks_table_search'))
+    var t2 = new NiceTable($('#free_booths_table'), ['Emplacement', 'Bâtiment', 'Prix usuel', 'Prix des deals qui vont peut-être ici', '<search>']);
+</script>
 {% endblock %}
