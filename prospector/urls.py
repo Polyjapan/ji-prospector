@@ -39,6 +39,6 @@ urlpatterns = [
     path('tasks/embed/deal=<int:fixed_deal>', views.tasks_list_embed, name='tasks.list_embed_fixed_deal'),
     path('tasks/embed/tasktype=<int:fixed_tasktype>/deal=<int:fixed_deal>', views.tasks_list_embed, name='tasks.list_embed_fixed_both'),
 
-    path('events', views.index, name='events.list'),
-    path('events/<int:pk>', views.index, name='events.show'),
+    path('events', views.events_list, name='events.list'),
+    path('events/<int:pk>', views.events_show, name='events.show'),
 ]

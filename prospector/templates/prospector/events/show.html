@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% load filters %}
+{% load prospector_filters %}
+
+{% loadmacros 'show_data.html' %}
+
+{% block title %}Événement : {{obj.name}}{% endblock %}
+{% block subtitle %}Date : {{obj.date}}{% endblock %}
+{% block active_menu %}events{% endblock %}
+
+{% block content %}
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Événement actuel</div>
+    </div>
+    <div class="card-body">
+        Cet événement <strong>{% if obj.current %}est{% else %}n'est pas{% endif %}</strong> l'événement actuel.<br>
+    </div>
+    <div class="card-footer">
+        <form action="{% url 'prospector:events.show' pk=obj.pk %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="what" value="please_make_this_current"/>
+            {% if not obj.current %}<button type="submit" class="btn btn-primary">Rendre cet événement actuel</button>{% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Données</div>
+    </div>
+    <div class="card-body">
+        {% call showdata show_data %}{% endcall %}
+        <div class="mt-2">
+            <button class="btn">Mail données manquantes</button>
+            <button class="btn btn-error">Supprimer</button>
+            <button class="btn btn-primary">Éditer</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    getRemoteNiceTable('#tasks_list_remote');
+</script>
+{% endblock %}

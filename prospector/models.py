@@ -13,6 +13,7 @@ import json
 class Event(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')
     date = models.DateField(verbose_name='Date')
+    current = models.BooleanField(default=False, verbose_name='Événement actuel ?')
     budget = models.FloatField(verbose_name='Budget stands')
 
     def get_absolute_url(self):
@@ -20,6 +21,13 @@ class Event(models.Model):
 
     def __str__(self):
         return '{}'.format(self.name)
+
+    @property
+    def get_budget_display(self):
+        little_chf = '<small>CHF</small>'
+        price = '{}{}'.format(little_chf, self.budget)
+        return mark_safe(price)
+
 
 class Contact(models.Model):
     person_name = models.CharField(max_length=128, blank=True, verbose_name='Nom de la personne')

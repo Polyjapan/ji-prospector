@@ -39,3 +39,10 @@ def checkorcross(value):
         return mark_safe('<span><i class="icon icon-check"></i></span>')
     else:
         return mark_safe('<span><i class="icon icon-cross"></i></span>')
+
+@register.filter(name='checkorempty', is_safe=True)
+def checkorempty(value):
+    if value:
+        return mark_safe('<span><i class="icon icon-check"></i></span>')
+    else:
+        return mark_safe('')

@@ -16,7 +16,7 @@
                 <rows>
                     {% for c in qs %}
                         <r>
-                            {% url 'prospector:contacts.edit' pk=d.pk as edit_url %}
+                            {% url 'prospector:contacts.edit' pk=c.pk as edit_url %}
                             <d><a href="{% url 'prospector:contacts.show' pk=c.pk %}">{{c.person_name | oredit:edit_url}}</a></d>
                             <d>{{c.email_address | oredit:edit_url}}</d>
                             <d><span class="text-small">{{c.private_description | linebreaksbr | orcross}}</span></d>

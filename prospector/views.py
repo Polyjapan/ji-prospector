@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
+from django.db import transaction
 from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import is_aware, make_aware
@@ -10,7 +11,7 @@ from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 
 
-from .models import Contact, Deal, Task, BoothSpace, TaskType
+from .models import Contact, Deal, Task, BoothSpace, TaskType, Event
 from .forms import QuickTaskForm, QuickStartForm
 
 from collections import namedtuple
@@ -164,7 +165,7 @@ def plan(request):
     return render(request, 'prospector/index.html')
 
 def contacts_list(request):
-    qs = Contact.objects.order_by('person_name'),
+    qs = Contact.objects.order_by('person_name')
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
 def contacts_show(request, pk):
@@ -211,7 +212,7 @@ def deals_show(request, pk):
     return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'taskform': taskform})
 
 def tasktypes_list(request):
-    qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'),
+    qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'), pk
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
 
 def tasks_list(request):
@@ -239,6 +240,24 @@ def tasktypes_show(request, pk):
     show_data = show_model_data(TaskType, obj)
     qs = Task.objects.filter(tasktype__pk=obj.pk)
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
+
+def events_list(request):
+    qs = Event.objects.order_by('-date')
+    return render(request, 'prospector/events/list.html', {'qs': qs})
+
+def events_show(request, pk):
+    if request.method == 'POST':
+        if request.POST['what'] == 'please_make_this_current':
+            old_current = Event.objects.select_for_update().filter(current=True)
+            new_current = Event.objects.select_for_update().filter(pk=pk)
+            with transaction.atomic():
+                old_current.update(current=False)
+                new_current.update(current=True)
+            messages.success(request, 'L\'événement {} est maintenant actuel !'.format(new_current.get().name))
+
+    obj = Event.objects.get(pk=pk)
+    show_data = show_model_data(Event, obj)
+    return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
 
 # TODO: Find a way to select the fanzines
 
