@@ -9,6 +9,11 @@ from prospector.models import Task
 
 register = template.Library()
 
+@register.filter(name='price')
+def price(text):
+    little_chf = '<small>CHF</small>'
+    return mark_safe('{}{}'.format(little_chf, text))
+
 @register.filter(name='todostatecolor')
 def todostatecolor(todostate):
     colors = {

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% load macros %}
-{% load filters %}
-{% load prospector_filters %}
+
+
 
 {% loadmacros 'show_data.html' %}
 
@@ -21,9 +21,9 @@
             <rows>
                 {% for d in qs %}
                     <r>
-                        <d><a href="{% url 'prospector:deals.show' pk=d.pk %}">{{d}}</a></d>
-                        <d>{{d.get_type_display}}</d>
-                        <d>{{d.get_price_display}}</d>
+                        <d>{{d | model:'a'}}</d>
+                        <d>{{d | display:'type'}}</d>
+                        <d>{{d | model:'price'}}</d>
                         <d>
                             <div>
                                 <!-- faire avec views utiles -->

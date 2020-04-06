@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'prospector.context_processors.current_event',
             ],
+            'builtins': ['app.templatetags.filters', 'prospector.templatetags.filters'],
         },
     },
 ]

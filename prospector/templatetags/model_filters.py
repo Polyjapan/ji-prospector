@@ -1,0 +1,123 @@
+from django.utils.html import format_html
+from django.utils.timezone import now
+from django.urls import reverse
+from django import template
+
+from prospector.models import Contact, Deal, Task, BoothSpace, TaskType, Event
+import prospector.templatetags.filters as normal_filters
+
+# This class aims at removing render logic from Model definitions, where it almost certainly does not belong.
+# It also handles type-based dispatching.
+
+# app.templatetags.filters defines a 'model' filter which just calls this class's filter() function directly.
+
+class ModelFilters:
+    def __init__(self):
+        self.filters = {}
+
+    def new_filter(self, model_class):
+        def decorator(function):
+            self.filters[model_class] = function
+            return function
+        return decorator
+
+    def filter(self, model_inst, argument=None):
+        return self.filters[type(model_inst)](model_inst, argument)
+
+# To extend, simply add a new function and decorate it with @mf.new_filter(MyModelClassHere)
+# Do not hesitate to call mf.filter(...) recursively if you need it. e.g. for related models.
+# Normal filters are accessible too, by virtue of being simply imported under 'normal_filters'.
+
+# Do not rename 'mf', because it is imported from app.templatetags.filters !!
+mf = ModelFilters()
+
+@mf.new_filter(Contact)
+def contact(inst, argument):
+    url = reverse('prospector:contacts.show', args=[inst.pk])
+    string = inst.name
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    else:
+        return string
+
+@mf.new_filter(Event)
+def events(inst, argument):
+    url = reverse('prospector:events.show', args=[inst.pk])
+    string = inst.name
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    else:
+        return string
+
+@mf.new_filter(TaskType)
+def tasktype(inst, argument):
+    url = reverse('prospector:tasktypes.show', args=[inst.pk])
+    string = inst.name
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    else:
+        return string
+
+@mf.new_filter(BoothSpace)
+def boothspace(inst, argument):
+    url = 'plan.polyjapon.ch/du/cul'
+    string = '{} ({})'.format(inst.name, inst.building)
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    else:
+        return string
+
+@mf.new_filter(Deal)
+def deal(inst, argument):
+    url = reverse('prospector:deals.show', args=[inst.pk])
+    string = '{} ({})'.format(inst.booth_name, mf.filter(inst.event))
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    elif argument == 'price':
+        t = normal_filters.price(inst.price)
+        if inst.additional_price_modalities:
+            format_html('{}(+{})', t, inst.additional_price_sum if inst.additional_price_sum else inst.additional_price_modalities)
+        return t
+    else:
+        return string
+
+@mf.new_filter(Task)
+def task(inst, argument):
+    url = reverse('prospector:tasktypes.show', args=[inst.tasktype.pk])
+    string = inst.tasktype.name
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    elif argument == 'timed':
+        t = '{} {}'.format(
+            'Il faut' if not inst.deadline or inst.deadline > now() else 'Il fallait',
+            url,
+            string.lower(),
+        )
+        return t
+    elif argument == 'timed_a':
+        t = format_html('{} <a href="{}">{}</a>',
+            'Il faut' if not inst.deadline or inst.deadline > now() else 'Il fallait',
+            url,
+            string.lower(),
+        )
+        return t
+    else:
+        return string

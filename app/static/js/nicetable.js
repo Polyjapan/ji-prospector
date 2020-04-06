@@ -29,12 +29,12 @@ class NiceTable {
         this.marker.after(`<table class="table"></table>`);
         this.table = this.marker.next();
         this.thead = $('<thead></thead>').appendTo(this.table);
-        this.rowsTbody = $('<tbody></tbody>').appendTo(this.table);
         if (this.modifiable){
             var formTbody = $('<tbody></tbody>').appendTo(this.table);
             var formRow = $('<tr></tr>').appendTo(formTbody);
             var showFormRow = $('<tr></tr>').appendTo(formTbody);
         }
+        this.rowsTbody = $('<tbody></tbody>').appendTo(this.table);
 
         // Column titles. Sort logic. Search logic.
         for(const [index, c] of this.columns.entries()){

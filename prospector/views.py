@@ -212,7 +212,7 @@ def deals_show(request, pk):
     return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'taskform': taskform})
 
 def tasktypes_list(request):
-    qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min'), pk
+    qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min')
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
 
 def tasks_list(request):

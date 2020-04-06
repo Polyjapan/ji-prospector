@@ -1,11 +1,11 @@
-{% load filters %}
-{% load prospector_filters %}
+
+
 
 <embed-nicetable>
     <rows>
         {% for task in qs %}
             <r>
-                {% if not fixed_tasktype %}<d>{{task.get_display}}</d>{% endif %}
+                {% if not fixed_tasktype %}<d>{{task | model:'timed_a'}}</d>{% endif %}
                 {% if not fixed_deal %}<d><a href="{% url 'prospector:deals.show' pk=task.deal.pk %}">{{task.deal.booth_name}}</a></d>{% endif %}
                 <d><small>{{task.deadline | deadline | orcross}}</small></d>
                 <d><small class="label label-{{task.todo_state | todostatecolor}}">{{task.get_todo_state_display}}</small></d>

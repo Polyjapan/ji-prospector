@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% load macros %}
-{% load filters %}
-{% load prospector_filters %}
+
+
 
 {% loadmacros 'show_data.html' %}
 
@@ -22,10 +22,13 @@
     <div class="card-body">
         <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
             <add-form action="" method="post">
-                {% for field in taskform %}
-                    <d data-th="{{field.label}}">{% if not field.is_hidden %}{{ field.errors }}{{ field }}{% endif %}</d>
-                {% endfor %}
+                <d>{{taskform.name}}</d>
+                <d>{{taskform.deadline}}</d>
+                <d>{{taskform.state}}</d>
+                <d></d>
+                <d>{{taskform.comment}}</d>
                 <d>{% csrf_token %}<input type="submit" class="btn btn-sm btn-primary" value="Ajouter"></d>
+                <d></d>
             </add-form>
         </remote-nicetable>
     </div>
