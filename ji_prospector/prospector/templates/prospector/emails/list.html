@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% block title %}Rappels de suivi mail automatiques{% endblock %}
+{% block subtitle %}La magie du cul °o°{% endblock %}
+{% block active_menu %}tasks{% endblock %}
+
+{% block content %}
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Tutoriel : Rappels de suivi mail automatiques</div>
+    </div>
+    <div class="card-body">
+        <small>
+            <strong>Prospector vous aide à tenir votre suivi à jour !</strong>
+            <ul>
+                <li>Si vous avez tendance à oublier votre suivi, alors Prospector peut vous garantir que vous n'oublierez pas.</li>
+                <li>Prospector retient une liste d'adresses mail, liées à des contacts.</li>
+                <li>Si vous recevez un mail de la part d'une de ces adresses, Prospector vous fera un rappel de suivi <i class="icon icon-mail"></i> visible en tout temps dans le menu à gauche.</li>
+                <li>Une fois que vous avez mis à jour le suivi de ce contact, vous pouvez éteindre le rappel <i class="icon icon-mail"></i>.</li>
+            </ul>
+        </small>
+
+        <div class="accordion">
+            <input id="accordion-1" type="checkbox" hidden="">
+            <label class="accordion-header c-hand" for="accordion-1">
+                <i class="icon icon-arrow-right"></i> <strong>Voir plus</strong>
+            </label>
+            <div class="accordion-body">
+                <small>
+                    <strong>Mais la vie n'est pas si simple !</strong>
+                    <ul>
+                        <li>Certains contacts ont plusieurs adresses mail, ou bien ils en changent.</li>
+                        <li>Vos nouveaux contacts n'ont pas forcément été enregistrés.</li>
+                        <li>Et Prospector ne peut pas faire de rappel si l'adresse d'un nouveau mail n'est pas liée ! Catastrophe.</li>
+                    </ul>
+
+                    <strong>Comment faire pour garantir que rien ne passera entre les gouttes ?</strong>
+                    <ul>
+                        <li>Un système de labels Gmail peut vous aider à garder une vision d'ensemble. Les labels marchent par thread, donc nous parlerons beaucoup de threads.</li>
+                        <li>Si un thread possède le label <span class="label label-success">prospector-all-ok</span>, alors chaque nouveau mail dans ce thread fera sonner le rappel <i class="icon icon-mail"></i>.
+                        <li>Si un thread possède le label <span class="label label-warning">prospector-some-ok</span>, alors il contient des adresses mail non liées.<br/>
+                            Si ces personnes-là envoient un mail dans le thread, il n'y aura pas de rappel <i class="icon icon-mail"></i>.
+                        </li>
+                        <li>Si un thread ne possède aucun des deux, ou alors le label <span class="label label-error">prospector-none-ok</span>, alors aucun nouveau mail ne fera sonner de rappel <i class="icon icon-mail"></i>.</li>
+                    </ul>
+
+                    <strong>
+                        Donc, quand vous regardez tous vos mails de stands, si vous avez des </strong><span class="label label-success">prospector-all-ok</span><strong> partout, vous pouvez dormir tranquille.<br/>
+                        Mais comment faire pour y arriver ? Il faut utiliser la file d'attente !
+                    </strong>
+                    <ul>
+                        <li>C'est chiant d'entrer 50 adresses à la main dans des champs de textes. C'est pourquoi Prospector vous permet un raccourci !</li>
+                        <li>Il y a une file d'attente d'adresses mail, ci-dessous. Elle vous permet de les lier rapidement à un contact.</li>
+                        <li>Cette file se remplit automatiquement de deux façons :
+                            <ol>
+                                <li>Chaque thread possédant déjà un des trois labels <span class="label">prospector-xxx-ok</span> est scanné à chaque nouveau mail.</li>
+                                <li>Chaque thread auquel vous ajouterez le label <span class="label label-primary">prospector-scan-please</span> sera scanné peu après.</li>
+                            </ol>
+                        </li>
+                        <li>Un thread peut occasionnellement contenir des adresses n'appartenant pas à vos contacts. Vous pouvez alors les retirer de la liste d'attente avec le bouton 'Ignorer' correspondant.</li>
+                        <li>Tant qu'il y a des adresses en attente, un témoin <i class="icon icon-flag"></i> sera visible en tout temps dans le menu à gauche, en plus du fait qu'il y aura des <span class="label label-warning">prospector-some-ok</span> dans votre Gmail.</li>
+                    </ul>
+
+                    <strong>Quand y a-t-il un scan ?</strong>
+                    <ul>
+                        <li>À chaque nouveau mail dans un thread marqué d'un des quatres labels, ce thread est (re)scanné. (Si ça se trouve, une adresse inconnue aura somehow envoyé un mail dans ce thread).</li>
+                        <li>À chaque fois qu'une nouvelle adresse est liée à un contact, les threads contenant des mails de cette adresse sont rescannés.</li>
+                    </ul>
+
+                    <strong>Que fait le scan ?</strong>
+                    <ul>
+                        <li>Comme dit, à chaque scan d'un thread, toutes les adresses ayant envoyé un mail là-dedans sont ajoutées à la liste d'attente.<br/>
+                            Sauf bien entendu, les adresses déjà liées à un contact ou bien déjà ignorées.
+                        </li>
+                        <li>À chaque scan d'un thread, un des trois labels <span class="label">prospector-xxx-ok</span> lui est assigné, et le précédent est retiré s'il y en avait un.</li>
+                        <li>Donc, il vous faut rechecker périodiquement si des <span class="label label-warning">prospector-some-ok</span> apparaissent !</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Liste d'attente des adresses mail</div>
+    </div>
+    <div class="card-body">
+        <nicetable id="nicetable1">
+            <rows>
+                {% for row in waiting_list %}
+                    <r>
+                        <d>{{row.address}}</d>
+                        <d>...</d>
+                        <d>lien -> email</d>
+                        <d>
+                            <button class="btn btn-primary">Voir dans Gmail</button>
+                            <button class="btn btn-primary">Ignorer</button>
+                        </d>
+                    </r>
+                {% endfor %}
+            </rows>
+        </nicetable>
+    </div>
+</div>
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Adresses mail ignorées</div>
+    </div>
+    <div class="card-body">
+        <nicetable id="nicetable2">
+            <rows>
+                {% for row in ignored_list %}
+                    <r>
+                        <d>{{row.address}}</d>
+                        <d>
+                            <button class="btn btn-primary">Voir dans Gmail</button>
+                            <button class="btn btn-primary">Remettre en attente</button>
+                        </d>
+                    </r>
+                {% endfor %}
+            </rows>
+        </nicetable>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    var t1 = new NiceTable($('#nicetable1'), ['Adresse', 'En attente depuis', 'Lier à un contact', '<search>']);
+    var t2 = new NiceTable($('#nicetable2'), ['Adresse', '<search>']);
+</script>
+{% endblock %}

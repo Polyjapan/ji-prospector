@@ -1,0 +1,49 @@
+
+
+
+<embed-nicetable>
+    <rows>
+        {% for task in qs %}
+            <r>
+                {% if not fixed_tasktype %}<d>{{task | model:'timed_a'}}</d>{% endif %}
+                {% if not fixed_deal %}<d>{{task.deal | model:'a'}}<small> ({{task.deal.event | model:'a'}})</small></d>{% endif %}
+                <d><small>{{task.deadline | deadline | or_cross}}</small></d>
+                <d><small>{{task | model:'todo_state'}}</small></d>
+                <d><span class="text-small">- - - -</span></d>
+                <d><span class="text-small">{{task.comment}}</span></d>
+                <d>
+                    <!-- <form action method="post"> -->
+                        <div class="text-right">
+                            {% for button, link in task.tasktype.useful_views_dict.items %}
+                                <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
+                            {% endfor %}
+                            <span class="state-buttons">
+                                {% for prev in task.usual_prev_states %}
+                                    <button class="btn btn-action btn-sm btn-error tooltip tooltip-left" data-tooltip="Basculer à {{prev | todo_state}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"><i class="icon icon-arrow-left"></i></button>
+                                {% endfor %}
+                                {% for next in task.usual_next_states %}
+                                    <button class="btn btn-action btn-sm btn-success tooltip tooltip-left" data-tooltip="Basculer à {{next | todo_state}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"><i class="icon icon-arrow-right"></i></button>
+                                {% endfor %}
+                            </span>
+                        </div>
+                    <!-- </form> -->
+                </d>
+            </r>
+        {% endfor %}
+    </rows>
+    <script>
+        // The table's placeholder must be a <remote-nicetable> tag with id #tasks_list_remote.
+        var columns = [{% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'État depuis', 'Commentaire', '<search>'];
+        var t = new NiceTable($('#tasks_list_remote'), columns);
+
+        function setupCallbacks(){
+            $('.state-buttons button', t.rowsTbody).on('click', function(event){
+                var button = $(event.target).closest('button');
+                $.get(button.attr('link'), function(response){
+                    t.refreshRemoteRows(setupCallbacks);
+                });
+            });
+        }
+        setupCallbacks();
+    </script>
+</embed-nicetable>

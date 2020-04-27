@@ -1,0 +1,13 @@
+{% load macros %}
+
+
+{% macro showdata dict %}
+    <table class="table table-hover">
+        {% for name, data in dict.items %}
+            <tr>
+                <th>{{data.display_name}}</th>
+                <td th_data="{{data.display_name}}">{{data.display_value | or_cross | linebreaksbr}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endmacro %}
