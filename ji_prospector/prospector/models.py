@@ -3,19 +3,19 @@ from django.utils.timezone import now
 from django.db.models import Sum
 from django.utils.safestring import mark_safe
 from django.urls import reverse
-
-
-from gmail_link.models import EmailAddress
+#
+#
+# from gmail_link.models import EmailAddress
 
 
 from datetime import timedelta
 import json
 
 # Create your models here.
-
-class EmailAddressContact(models.Model):
-    emailaddress = models.ForeignKey('EmailAddress', on_delete=models.CASCADE)
-    contact = models.ForeignKey('Contact', on_delete=models.CASCADE)
+#
+# class EmailAddressContact(models.Model):
+#     emailaddress = models.ForeignKey('EmailAddress', on_delete=models.CASCADE)
+#     contact = models.ForeignKey('Contact', on_delete=models.CASCADE)
 
 class Event(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')

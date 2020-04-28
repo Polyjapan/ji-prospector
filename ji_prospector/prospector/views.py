@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 
 
-from .models import Contact, Deal, Task, BoothSpace, TaskType, Event, EmailAddress
+from .models import Contact, Deal, Task, BoothSpace, TaskType, Event
 from .forms import QuickTaskForm, QuickStartForm
 
 from prospector.templatetags.model_filters import mf as prospector_mf
