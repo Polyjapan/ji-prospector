@@ -102,6 +102,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+## django_cas_ng STUFF
+
+CAS_SERVER_URL = 'https://auth.japan-impact.ch/cas/'
+CAS_APPLY_ATTRIBUTES_TO_USER = True
+CAS_RENAME_ATTRIBUTES = {
+    'firstname': 'first_name',
+    'lastname': 'last_name',
+}
+
 try:
     from app.settings_local import *
 except ImportError:

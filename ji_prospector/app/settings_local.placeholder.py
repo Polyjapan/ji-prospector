@@ -24,5 +24,5 @@ STATIC_ROOT = ''
 
 ## django_cas_ng STUFF
 
-CAS_SERVER_URL = ''
+# Depends on your server
 CAS_FORCE_SSL_SERVICE_URL = False
