@@ -1,3 +1,4 @@
 *.sqlite3
+app/settings_local.py
 **/__pycache__/
 node_modules/
