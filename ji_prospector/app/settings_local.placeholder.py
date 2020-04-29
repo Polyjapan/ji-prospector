@@ -1,5 +1,7 @@
 import os
 
+## django STUFF
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,4 +22,7 @@ DATABASES = {
 
 STATIC_ROOT = ''
 
+## django_cas_ng STUFF
+
 CAS_SERVER_URL = ''
+CAS_FORCE_SSL_SERVICE_URL = False
