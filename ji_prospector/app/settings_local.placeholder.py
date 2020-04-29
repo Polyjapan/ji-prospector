@@ -19,3 +19,5 @@ DATABASES = {
 }
 
 STATIC_ROOT = ''
+
+CAS_SERVER_URL = ''
