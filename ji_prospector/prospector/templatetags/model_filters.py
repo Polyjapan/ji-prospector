@@ -31,6 +31,10 @@ class ModelFilters:
 # Do not rename 'mf', because it is imported from app.templatetags.filters !!
 mf = ModelFilters()
 
+@mf.new_filter(NoneType)
+def none(inst, argument):
+    return ''
+
 @mf.new_filter(Contact)
 def contact(inst, argument):
     url = reverse('prospector:contacts.show', args=[inst.pk])
