@@ -57,7 +57,7 @@ class Task(models.Model):
     ]
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
-    todo_state_logged = models.BooleanField(default=True)
+    todo_state_logged = models.BooleanField(default=False)
     start_date = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
@@ -94,6 +94,7 @@ class TaskLog(models.Model):
     class Meta:
         get_latest_by = 'date'
 
+    old_todo_state = models.CharField(max_length=32, choices=Task.TODO_STATES, blank=True, null=True)
     new_todo_state = models.CharField(max_length=32, choices=Task.TODO_STATES)
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)

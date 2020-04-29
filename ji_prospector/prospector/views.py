@@ -172,7 +172,7 @@ def contacts_list(request):
 
 
 def contacts_show(request, pk):
-    obj = Contact.objects.get(pk=pk)
+    obj = get_object_or_404(Contact, pk=pk)
     # Get all fields of this object, and their values, in a dictionary
     show_data = show_model_data(Contact, obj)
     # Get all deals related to this object
@@ -186,7 +186,7 @@ def deals_list(request):
 
 
 def deals_show(request, pk):
-    obj = Deal.objects.get(pk=pk)
+    obj = get_object_or_404(Deal, pk=pk)
 
     if request.method == "POST":
         taskform = QuickTaskForm(request.POST)
@@ -217,6 +217,11 @@ def tasks_list(request):
     return render(request, 'prospector/tasks/list.html')
 
 
+def tasks_history(request, pk):
+    obj = get_object_or_404(Task, pk=pk)
+    return render(request, 'prospector/tasks/history.html', {'obj': obj})
+
+
 def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     qs = Task.objects.all()
     if fixed_tasktype:
@@ -238,16 +243,17 @@ def tasks_set_todostate(request, pk, state):
 
     return HttpResponse()
 
+
 def tasks_log_todostate(request, pk):
     if request.method == "POST":
         with transaction.atomic():
             obj = Task.objects.select_for_update().get(pk=pk)
             if not obj.tasklog_set.exists():
-                TaskLog.objects.create(new_todo_state=obj.todo_state, task=obj)
+                TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=None, task=obj)
             else:
                 log = obj.tasklog_set.latest()
                 if log.new_todo_state != obj.todo_state:
-                    TaskLog.objects.create(new_todo_state=obj.todo_state, task=obj)
+                    TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=log.new_todo_state, task=obj)
 
             obj.todo_state_logged = True
             obj.save()

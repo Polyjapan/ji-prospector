@@ -3,7 +3,7 @@ from django.utils.timezone import now, make_aware, is_aware
 from django.urls import reverse
 from django import template
 
-from prospector.models import Contact, Deal, Task, BoothSpace, TaskType, Event
+from prospector.models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event
 import prospector.templatetags.filters as normal_filters
 
 # This class aims at removing render logic from Model definitions, where it almost certainly does not belong.
@@ -140,3 +140,33 @@ def task(inst, argument):
         return t
     else:
         return string
+
+@mf.new_filter(TaskLog)
+def tasklog(inst, argument):
+    if argument == 'old_todo_state':
+        t = format_html('<span class="label label-{}">{}</span>',
+            mf.filter(inst, 'old_todo_state_color'),
+            inst.get_old_todo_state_display()
+        )
+        return t
+    elif argument == 'new_todo_state':
+        t = format_html('<span class="label label-{}">{}</span>',
+            mf.filter(inst, 'new_todo_state_color'),
+            inst.get_new_todo_state_display()
+        )
+        return t
+    elif argument == 'old_todo_state_color' or argument == 'new_todo_state_color':
+        colors = {
+            '5_contact_waits_pro': 'error',
+            '4_pro_waits_treasury': 'warning',
+            '3_pro_waits_presidence': 'warning',
+            '2_pro_waits_contact': 'default',
+            '1_doing': 'success',
+            '0_done': 'success',
+        }
+        if argument == 'old_todo_state_color':
+            return colors.get(inst.old_todo_state)
+        else:
+            return colors.get(inst.new_todo_state)
+    else:
+        return ''

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique de {{obj | model:'a'}} pour {{obj.deal | model:'a'}}{% endblock %}
+{% block subtitle %}Quand c'est que j'ai envoyé le contrat déjà ?{% endblock %}
+{% block active_menu %}tasks{% endblock %}
+
+{% block content %}
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Historique des états d'avancement</div>
+    </div>
+    <div class="card-body">
+        {% if obj.tasklog_set.exists %}
+            <div class="timeline">
+                {% for log in obj.tasklog_set.all %}
+                    <div class="timeline-item" id="log_{{log.pk}}">
+                        <div class="timeline-left">
+                            <a class="timeline-icon" href="#log_{{log.pk}}"></a>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="tile tile-centered">
+                                <div class="tile-content">
+                                    <div class="tile-subtitle">{{log.date}} <small>(il y a {{log.date | timesince}})</small></div>
+                                    <div class="tile-title">Validé un changement d'état</div>
+                                    <small class="tile-subtitle">
+                                        {{log | model:'old_todo_state'}}
+                                        <i class="icon icon-forward"></i>
+                                        {{log | model:'new_todo_state'}}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">
+                <i class="icon icon-4x icon-time"></i>
+            </div>
+            <p class="empty-title h5">Il n'y a rien ici</p>
+            <p class="empty-subtitle">Soit la DB est cassée, soit vous n'avez jamais validé l'état de cette tâche.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -2,8 +2,6 @@
 
 {% load macros %}
 
-
-
 {% loadmacros 'show_data.html' %}
 
 {% block title %}Type de tâche : {{obj.name}}{% endblock %}
@@ -21,7 +19,6 @@
         </div>
     </div>
     <div class="card-body">
-        Utiliser la table remote ici !
         <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_tasktype' fixed_tasktype=obj.pk %}" id="tasks_list_remote">
         </remote-nicetable>
     </div>

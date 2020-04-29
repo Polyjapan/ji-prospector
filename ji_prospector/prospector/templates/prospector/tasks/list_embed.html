@@ -9,52 +9,63 @@
                 {% if not fixed_deal %}<d>{{task.deal | model:'a'}}<small> ({{task.deal.event | model:'a'}})</small></d>{% endif %}
                 <d><small>{{task.deadline | deadline | or_cross}}</small></d>
                 <d><small>{{task | model:'todo_state'}}</small></d>
-                <d><span class="text-small">- - - -</span></d>
+                <d>
+                    <small>
+                        {% if task.todo_state_logged %}
+                            {{task.tasklog_set.latest.date | timesince}}
+                        {% else %}
+                            <span class="label label-warning">Pas validé</span>
+                        {% endif %}
+                        <a class="btn btn-sm btn-link tooltip tooltip-right"
+                            data-tooltip="Historique des états"
+                            href="{% url 'prospector:tasks.history' pk=task.pk %}">
+                            <i class="icon icon-time"></i>
+                        </a>
+                    </small>
+                </d>
                 <d><span class="text-small">{{task.comment}}</span></d>
                 <d>
-                    <!-- <form action method="post"> -->
-                        <div class="text-right">
-                            {% for button, link in task.tasktype.useful_views_dict.items %}
-                                <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
-                            {% endfor %}
-                            <span class="state-buttons">
-                                <form action="" method="post">
-                                    {% csrf_token %}
-                                    {% for prev in task.usual_prev_states %}
-                                        <button type="submit"
-                                                formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"
-                                                data-tooltip="Basculer à {{prev | todo_state}}"
-                                                class="btn btn-sm btn-error tooltip tooltip-left">
-                                            {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
-                                        </button>
-                                    {% endfor %}
-                                    {% for next in task.usual_next_states %}
-                                        <button type="submit"
-                                                formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"
-                                                data-tooltip="Basculer à {{next | todo_state}}"
-                                                class="btn btn-sm btn-success tooltip tooltip-left">
-                                            {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
-                                        </button>
-                                    {% endfor %}
-                                    {% if not task.todo_state_logged %}
-                                        <button type="submit"
-                                                formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
-                                                data-tooltip="Valider le nouvel état"
-                                                class="btn btn-sm btn-primary tooltip tooltip-left">
-                                            <i class="icon icon-check"></i>
-                                        </button>
-                                    {% endif %}
-                                </form>
-                            </span>
-                        </div>
-                    <!-- </form> -->
+                    <div class="text-right">
+                        {% for button, link in task.tasktype.useful_views_dict.items %}
+                            <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
+                        {% endfor %}
+                        <span class="state-buttons">
+                            <form action="" method="post">
+                                {% csrf_token %}
+                                {% for prev in task.usual_prev_states %}
+                                    <button type="submit"
+                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"
+                                            data-tooltip="Basculer à {{prev | todo_state}}"
+                                            class="btn btn-sm btn-error tooltip tooltip-left">
+                                        {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
+                                    </button>
+                                {% endfor %}
+                                {% for next in task.usual_next_states %}
+                                    <button type="submit"
+                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"
+                                            data-tooltip="Basculer à {{next | todo_state}}"
+                                            class="btn btn-sm btn-success tooltip tooltip-left">
+                                        {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
+                                    </button>
+                                {% endfor %}
+                                {% if not task.todo_state_logged %}
+                                    <button type="submit"
+                                            formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
+                                            data-tooltip="Valider le nouvel état"
+                                            class="btn btn-sm btn-primary tooltip tooltip-left">
+                                        <i class="icon icon-check"></i>
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </span>
+                    </div>
                 </d>
             </r>
         {% endfor %}
     </rows>
     <script>
         // The table's placeholder must be a <remote-nicetable> tag with id #tasks_list_remote.
-        var columns = [{% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'État depuis', 'Commentaire', '<search>'];
+        var columns = [{% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'État validé depuis', 'Commentaire', '<search>'];
         var t = new NiceTable($('#tasks_list_remote'), columns);
 
         function setupCallbacks(){

@@ -70,10 +70,8 @@ def sincecolor(date):
         return 'gray'
 
     delta = now() - date
-    if delta < timedelta(weeks=1):
+    if delta < timedelta(weeks=2):
         return 'default'
-    elif delta < timedelta(weeks=2):
-        return 'gray-dark' #TODO: doesn't work
     elif delta < timedelta(weeks=3):
         return 'warning'
     else:
