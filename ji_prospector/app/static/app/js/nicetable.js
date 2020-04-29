@@ -46,7 +46,7 @@ class NiceTable {
                     $('<input class="search form-input" placeholder="Rechercher"/>').appendTo(th)
                 );
             } else {
-                var th = $(`<th>${c}</th>`).appendTo(this.thead).on(
+                var th = $(`<th class="c-hand">${c}</th>`).appendTo(this.thead).on(
                     'click', e => { this.sort(index, e); }
                 ).append('<small><i class="icon icon-resize-vert"></i></small>');
             }

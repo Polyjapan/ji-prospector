@@ -9,6 +9,7 @@ from django.utils.timezone import make_aware
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
+from django.contrib.auth.decorators import login_required
 
 
 from .models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event
@@ -51,6 +52,7 @@ def show_model_data(cls, instance, exclude=[]):
     return ret
 
 
+@login_required
 def quickstart(request):
     if request.method == "GET":
         form = QuickStartForm(request.GET)
@@ -71,7 +73,7 @@ def quickstart(request):
 
     return redirect(reverse('prospector:tasks.list'))
 
-
+@login_required
 def index(request):
     """Gives overview :
     * Budget
@@ -148,6 +150,7 @@ ORDER BY t.deadline
     return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': model_to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget, 'quickstartform': quickstartform})
 
 
+@login_required
 def plan(request):
     """Helps with modifiying booth spaces and such
     * Asks to confirm that the mutex has been taken
@@ -166,11 +169,13 @@ def plan(request):
     return render(request, 'prospector/index.html')
 
 
+@login_required
 def contacts_list(request):
     qs = Contact.objects.order_by('person_name')
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
 
+@login_required
 def contacts_show(request, pk):
     obj = get_object_or_404(Contact, pk=pk)
     # Get all fields of this object, and their values, in a dictionary
@@ -180,11 +185,13 @@ def contacts_show(request, pk):
     return render(request, 'prospector/contacts/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 
+@login_required
 def deals_list(request):
     qs = Deal.objects.order_by('booth_name')
     return render(request, 'prospector/deals/list.html', {'qs': qs})
 
 
+@login_required
 def deals_show(request, pk):
     obj = get_object_or_404(Deal, pk=pk)
 
@@ -208,20 +215,24 @@ def deals_show(request, pk):
     return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'taskform': taskform})
 
 
+@login_required
 def tasktypes_list(request):
     qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min')
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
 
 
+@login_required
 def tasks_list(request):
     return render(request, 'prospector/tasks/list.html')
 
 
+@login_required
 def tasks_history(request, pk):
     obj = get_object_or_404(Task, pk=pk)
     return render(request, 'prospector/tasks/history.html', {'obj': obj})
 
 
+@login_required
 def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     qs = Task.objects.all()
     if fixed_tasktype:
@@ -232,6 +243,7 @@ def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
 
 
+@login_required
 def tasks_set_todostate(request, pk, state):
     if request.method == "POST":
         with transaction.atomic():
@@ -244,6 +256,7 @@ def tasks_set_todostate(request, pk, state):
     return HttpResponse()
 
 
+@login_required
 def tasks_log_todostate(request, pk):
     if request.method == "POST":
         with transaction.atomic():
@@ -261,6 +274,7 @@ def tasks_log_todostate(request, pk):
     return HttpResponse()
 
 
+@login_required
 def tasktypes_show(request, pk):
     obj = TaskType.objects.get(pk=pk)
     show_data = show_model_data(TaskType, obj)
@@ -268,11 +282,13 @@ def tasktypes_show(request, pk):
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
 
+@login_required
 def events_list(request):
     qs = Event.objects.order_by('-date')
     return render(request, 'prospector/events/list.html', {'qs': qs})
 
 
+@login_required
 def events_show(request, pk):
     if request.method == 'POST':
         if request.POST['what'] == 'please_make_this_current':
@@ -287,6 +303,7 @@ def events_show(request, pk):
     show_data = show_model_data(Event, obj)
     return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
 
+@login_required
 def emails_list(request):
     waiting_list = EmailAddress.objects.filter(contact=None)
     ignored_list = EmailAddress.objects.filter(ignore_unlinked=True)

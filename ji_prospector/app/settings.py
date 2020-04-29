@@ -46,6 +46,8 @@ AUTHENTICATION_BACKENDS = [
     'django_cas_ng.backends.CASBackend',
 ]
 
+LOGIN_URL = 'users:cas_ng_login'
+
 ROOT_URLCONF = 'app.urls'
 
 TEMPLATES = [
