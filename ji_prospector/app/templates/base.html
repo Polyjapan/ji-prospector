@@ -6,9 +6,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Prospector</title>
-        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre.min.css' %}">
-        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre-exp.min.css' %}">
-        <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/spectre-icons.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-exp.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-icons.min.css' %}">
     </head>
     <body>
         <div class="off-canvas off-canvas-sidebar-show">
@@ -76,8 +76,8 @@
         </div>
     </body>
 
-    <script src="{% static 'node_modules/zepto/dist/zepto.js'%}"></script>
-    <script src="{% static 'js/nicetable.js'%}"></script>
+    <script src="{% static 'app/node_modules/zepto/dist/zepto.js'%}"></script>
+    <script src="{% static 'app/js/nicetable.js'%}"></script>
     <script>
         $('.toast .btn-clear').on('click', e => {$(e.target).parent().hide();});
         var menu = '{% block active_menu %}{% endblock %}';
