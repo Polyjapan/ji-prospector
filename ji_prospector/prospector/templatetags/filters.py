@@ -21,6 +21,22 @@ def todo_state(str):
             return mapping[1]
     return ''
 
+@register.filter(name='todo_state_short')
+def todo_state_short(str):
+    translation = [
+        ('0_done', 'Terminé'),
+        ('1_doing', 'En cours'),
+        ('2_pro_waits_contact', 'Pro att C'),
+        ('3_pro_waits_presidence', 'Pro att P'),
+        ('4_pro_waits_treasury', 'Pro att T'),
+        ('5_contact_waits_pro', 'C att pro'),
+    ]
+
+    for mapping in translation:
+        if str == mapping[0]:
+            return mapping[1]
+    return ''
+
 @register.filter(name='deadlinecolor')
 def deadlinecolor(deadline):
     if not deadline:

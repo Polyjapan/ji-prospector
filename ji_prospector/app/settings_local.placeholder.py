@@ -18,5 +18,4 @@ DATABASES = {
     }
 }
 
-STATIC_URL = ''
 STATIC_ROOT = ''

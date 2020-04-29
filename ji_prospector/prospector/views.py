@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 
 
-from .models import Contact, Deal, Task, BoothSpace, TaskType, Event
+from .models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event
 from .forms import QuickTaskForm, QuickStartForm
 
 from prospector.templatetags.model_filters import mf as prospector_mf
@@ -227,12 +227,31 @@ def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
 
 
-# TODO : use good POST and form or vue or something idk
-# but for now, this works.
 def tasks_set_todostate(request, pk, state):
-    obj = Task.objects.get(pk=pk)
-    obj.todo_state = state
-    obj.save()
+    if request.method == "POST":
+        with transaction.atomic():
+            obj = Task.objects.select_for_update().get(pk=pk)
+            if obj.todo_state != state:
+                obj.todo_state_logged = False
+                obj.todo_state = state
+                obj.save()
+
+    return HttpResponse()
+
+def tasks_log_todostate(request, pk):
+    if request.method == "POST":
+        with transaction.atomic():
+            obj = Task.objects.select_for_update().get(pk=pk)
+            if not obj.tasklog_set.exists():
+                TaskLog.objects.create(new_todo_state=obj.todo_state, task=obj)
+            else:
+                log = obj.tasklog_set.latest()
+                if log.new_todo_state != obj.todo_state:
+                    TaskLog.objects.create(new_todo_state=obj.todo_state, task=obj)
+
+            obj.todo_state_logged = True
+            obj.save()
+
     return HttpResponse()
 
 

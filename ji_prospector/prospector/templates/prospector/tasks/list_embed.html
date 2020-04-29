@@ -18,12 +18,33 @@
                                 <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
                             {% endfor %}
                             <span class="state-buttons">
-                                {% for prev in task.usual_prev_states %}
-                                    <button class="btn btn-action btn-sm btn-error tooltip tooltip-left" data-tooltip="Basculer à {{prev | todo_state}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"><i class="icon icon-arrow-left"></i></button>
-                                {% endfor %}
-                                {% for next in task.usual_next_states %}
-                                    <button class="btn btn-action btn-sm btn-success tooltip tooltip-left" data-tooltip="Basculer à {{next | todo_state}}" link="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"><i class="icon icon-arrow-right"></i></button>
-                                {% endfor %}
+                                <form action="" method="post">
+                                    {% csrf_token %}
+                                    {% for prev in task.usual_prev_states %}
+                                        <button type="submit"
+                                                formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"
+                                                data-tooltip="Basculer à {{prev | todo_state}}"
+                                                class="btn btn-sm btn-error tooltip tooltip-left">
+                                            {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
+                                        </button>
+                                    {% endfor %}
+                                    {% for next in task.usual_next_states %}
+                                        <button type="submit"
+                                                formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"
+                                                data-tooltip="Basculer à {{next | todo_state}}"
+                                                class="btn btn-sm btn-success tooltip tooltip-left">
+                                            {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
+                                        </button>
+                                    {% endfor %}
+                                    {% if not task.todo_state_logged %}
+                                        <button type="submit"
+                                                formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
+                                                data-tooltip="Valider le nouvel état"
+                                                class="btn btn-sm btn-primary tooltip tooltip-left">
+                                            <i class="icon icon-check"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
                             </span>
                         </div>
                     <!-- </form> -->
@@ -37,11 +58,16 @@
         var t = new NiceTable($('#tasks_list_remote'), columns);
 
         function setupCallbacks(){
-            $('.state-buttons button', t.rowsTbody).on('click', function(event){
-                var button = $(event.target).closest('button');
-                $.get(button.attr('link'), function(response){
-                    t.refreshRemoteRows(setupCallbacks);
-                });
+            $('.state-buttons form', t.rowsTbody).on('submit', function(event){
+                event.preventDefault(); // Don't open a new page on submit.
+                $.post(
+                    $(event.submitter).attr('formaction'),
+                    $(event.target).serialize(),
+                    function(response){
+                        t.refreshRemoteRows(setupCallbacks);
+                    }
+                );
+                return false; // Don't open a new page on submit.
             });
         }
         setupCallbacks();

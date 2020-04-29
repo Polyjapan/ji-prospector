@@ -57,6 +57,7 @@ class Task(models.Model):
     ]
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
+    todo_state_logged = models.BooleanField(default=True)
     start_date = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
@@ -88,6 +89,14 @@ class Task(models.Model):
         if self.todo_state == '5_contact_waits_pro':
             return ['2_pro_waits_contact']
         return ['5_contact_waits_pro']
+
+class TaskLog(models.Model):
+    class Meta:
+        get_latest_by = 'date'
+
+    new_todo_state = models.CharField(max_length=32, choices=Task.TODO_STATES)
+    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
 
 class Deal(models.Model):
     DEAL_TYPES = [

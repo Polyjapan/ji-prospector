@@ -34,6 +34,7 @@ urlpatterns = [
 
     path('tasks', views.tasks_list, name='tasks.list'),
     path('tasks/settodostate/pk=<int:pk>/state=<str:state>', views.tasks_set_todostate, name='tasks.set_todostate'),
+    path('tasks/logtodostate/pk=<int:pk>', views.tasks_log_todostate, name='tasks.log_todostate'),
     path('tasks/embed', views.tasks_list_embed, name='tasks.list_embed'),
     path('tasks/embed/tasktype=<int:fixed_tasktype>', views.tasks_list_embed, name='tasks.list_embed_fixed_tasktype'),
     path('tasks/embed/deal=<int:fixed_deal>', views.tasks_list_embed, name='tasks.list_embed_fixed_deal'),
