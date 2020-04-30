@@ -1,0 +1,60 @@
+<div class="modal-header">
+    <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
+    <div class="modal-title h5">Commentaires</div>
+    <div class="modal-subtitle h6">{{obj | model:'a'}} pour {{obj.deal | model:'a'}}</div>
+</div>
+<div class="modal-body">
+    {% if not obj.taskcomment_set.exists %}
+        <div class="empty">
+            <div class="empty-icon">
+                <i class="icon icon-4x icon-message"></i>
+            </div>
+            <p class="empty-title h5">Il n'y a rien ici</p>
+            <p class="empty-subtitle">Tout va bien :D</p>
+        </div>
+    {% endif %}
+    {% for comment in obj.taskcomment_set.all %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <div class="tile">
+                    <div class="tile-icon">
+                        <figure class="avatar avatar-lg"
+                            data-initial="{{comment.author.first_name|make_list|first}}{{comment.author.last_name|make_list|first}}">
+                        </figure>
+                    </div>
+                    <div class="tile-content">
+                        <div>
+                            <span class="tile-title">{{comment.author.get_full_name}}</span>
+                            <small class="tile-subtitle text-gray">le {{comment.date}}</small>
+                        </div>
+                        <small class="tile-subtitle">{{comment.text | linebreaksbr}}</small>
+                    </div>
+                    <div class="tile-action">
+                        <form class="delete-form" action="" method="post">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    formaction="{% url 'prospector:tasks.delete_comment' pk=comment.pk %}"
+                                    data-tooltip="Supprimer"
+                                    class="btn btn-sm btn-primary tooltip tooltip-left">
+                                <i class="icon icon-delete"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="modal-footer">
+    <h6>Poster un commentaire</h6>
+    <form class="post-form" action="{% url 'prospector:tasks.comments' pk=obj.pk %}" method="post">
+        {% csrf_token %}
+        <div class="mb-2">
+            {{form}}
+        </div>
+        <div>
+            <button class="btn">Poster</button>
+            <a href="#close" class="btn btn-primary">Fermer</a>
+        </div>
+    </form>
+</div>

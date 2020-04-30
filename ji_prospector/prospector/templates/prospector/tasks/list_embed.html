@@ -1,6 +1,3 @@
-
-
-
 <embed-nicetable>
     <rows>
         {% for task in qs %}
@@ -23,7 +20,13 @@
                         </a>
                     </small>
                 </d>
-                <d><span class="text-small">{{task.comment}}</span></d>
+                <d>
+                    <button class="btn btn-sm btn-link {% if task.taskcomment_set.exists %}badge{% endif %}"
+                        data-badge="{{task.taskcomment_set.count}}"
+                        onclick="getCommentModal({{task.pk}});">
+                        <i class="icon icon-message"></i>
+                    </button>
+                </d>
                 <d>
                     <div class="text-right">
                         {% for button, link in task.tasktype.useful_views_dict.items %}
@@ -63,6 +66,14 @@
             </r>
         {% endfor %}
     </rows>
+    <other>
+        <div class="modal fade" id="mymodal">
+            <a href="#close" class="modal-overlay" aria-label="Close"></a>
+            <div class="modal-container">
+                <!-- content here. -->
+            </div>
+        </div>
+    </other>
     <script>
         // The table's placeholder must be a <remote-nicetable> tag with id #tasks_list_remote.
         var columns = [{% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'État validé depuis', 'Commentaire', '<search>'];
@@ -82,5 +93,45 @@
             });
         }
         setupCallbacks();
+
+        function getCommentModal(task_pk){
+            $.get(
+                '{% url "prospector:tasks.comments" pk=42 %}'.replace(42, task_pk),
+                function(response){
+                    $('#mymodal .modal-container').empty();
+                    $('#mymodal .modal-container').append(response);
+                    setupCommentsCallbacks();
+                    location.hash = '#mymodal';
+                }
+            );
+        }
+
+        function setupCommentsCallbacks(){
+            $('.delete-form', '#mymodal').on('submit', function(event){
+                event.preventDefault();
+                $.post(
+                    $(event.submitter).attr('formaction'),
+                    $(event.target).serialize(),
+                    function(response){
+                        location.hash = '#close';
+                        t.refreshRemoteRows(setupCallbacks);
+                    }
+                );
+                return false; // Don't open a new page on submit.
+            });
+            $('.post-form', '#mymodal').on('submit', function(event){
+                event.preventDefault();
+                $.post(
+                    $(event.target).attr('action'),
+                    $(event.target).serialize(),
+                    function(response){
+                        location.hash = '#close';
+                        t.refreshRemoteRows(setupCallbacks);
+                    }
+                );
+                return false; // Don't open a new page on submit.
+            });
+        }
+
     </script>
 </embed-nicetable>

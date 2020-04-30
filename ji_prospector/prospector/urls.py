@@ -34,6 +34,8 @@ urlpatterns = [
 
     path('tasks', views.tasks_list, name='tasks.list'),
     path('tasks/history/<int:pk>', views.tasks_history, name='tasks.history'),
+    path('tasks/comments/<int:pk>', views.tasks_comments, name='tasks.comments'),
+    path('tasks/comments/delete/<int:pk>', views.tasks_delete_comment, name='tasks.delete_comment'),
     path('tasks/settodostate/pk=<int:pk>/state=<str:state>', views.tasks_set_todostate, name='tasks.set_todostate'),
     path('tasks/logtodostate/pk=<int:pk>', views.tasks_log_todostate, name='tasks.log_todostate'),
     path('tasks/embed', views.tasks_list_embed, name='tasks.list_embed'),
@@ -44,5 +46,4 @@ urlpatterns = [
     path('events', views.events_list, name='events.list'),
     path('events/<int:pk>', views.events_show, name='events.show'),
 
-    path('emails', views.emails_list, name='emails.list'),
 ]

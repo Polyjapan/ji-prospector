@@ -16,6 +16,9 @@ class FanzineVoteForm(forms.Form):
     pass
 
 
+class TaskCommentForm(forms.Form):
+    text = forms.CharField(max_length=128, label='', widget=forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Ton commentaire ici', 'rows':'3'}))    
+
 class QuickStartForm(forms.Form):
     what = forms.CharField(max_length=128, required=False)
 

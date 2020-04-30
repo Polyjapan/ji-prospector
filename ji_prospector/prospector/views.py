@@ -12,8 +12,8 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.decorators import login_required
 
 
-from .models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event
-from .forms import QuickTaskForm, QuickStartForm
+from .models import Contact, Deal, Task, TaskComment, TaskLog, BoothSpace, TaskType, Event
+from .forms import QuickTaskForm, QuickStartForm, TaskCommentForm
 
 from prospector.templatetags.model_filters import mf as prospector_mf
 
@@ -233,6 +233,27 @@ def tasks_history(request, pk):
 
 
 @login_required
+def tasks_comments(request, pk):
+    obj = get_object_or_404(Task, pk=pk)
+    if request.method == "POST":
+        form = TaskCommentForm(request.POST)
+        if form.is_valid():
+            TaskComment.objects.create(task=obj, author=request.user, text=form.cleaned_data['text'])
+    else:
+        form = TaskCommentForm()
+    return render(request, 'prospector/tasks/comments.html', {'obj': obj, 'form': form})
+
+
+@login_required
+def tasks_delete_comment(request, pk):
+    obj = get_object_or_404(TaskComment, pk=pk)
+    if request.method == "POST":
+        obj.delete()
+
+    return HttpResponse()
+
+
+@login_required
 def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
     qs = Task.objects.all()
     if fixed_tasktype:
@@ -302,12 +323,6 @@ def events_show(request, pk):
     obj = Event.objects.get(pk=pk)
     show_data = show_model_data(Event, obj)
     return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
-
-@login_required
-def emails_list(request):
-    waiting_list = EmailAddress.objects.filter(contact=None)
-    ignored_list = EmailAddress.objects.filter(ignore_unlinked=True)
-    return render(request, 'prospector/emails/list.html', {'waiting_list': waiting_list, 'ignored_list': ignored_list})
 
 # TODO: Find a way to select the fanzines
 

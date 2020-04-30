@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from django.db.models import Sum
 from django.utils.safestring import mark_safe
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 #
 #
 # from gmail_link.models import EmailAddress
@@ -10,6 +11,9 @@ from django.urls import reverse
 
 from datetime import timedelta
 import json
+
+
+User = get_user_model()
 
 # Create your models here.
 #
@@ -60,7 +64,6 @@ class Task(models.Model):
     todo_state_logged = models.BooleanField(default=False)
     start_date = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
     deal = models.ForeignKey('Deal', on_delete=models.CASCADE)
     tasktype = models.ForeignKey('TaskType', on_delete=models.CASCADE)
 
@@ -98,6 +101,12 @@ class TaskLog(models.Model):
     new_todo_state = models.CharField(max_length=32, choices=Task.TODO_STATES)
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
+
+class TaskComment(models.Model):
+    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
 
 class Deal(models.Model):
     DEAL_TYPES = [

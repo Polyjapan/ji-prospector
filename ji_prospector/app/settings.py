@@ -108,6 +108,8 @@ STATIC_URL = '/static/'
 ## django_cas_ng STUFF
 
 CAS_SERVER_URL = 'https://auth.japan-impact.ch/cas/'
+CAS_LOGIN_URL_NAME = 'users:cas_ng_login'
+CAS_LOGOUT_URL_NAME = 'users:cas_ng_logout'
 CAS_APPLY_ATTRIBUTES_TO_USER = True
 CAS_RENAME_ATTRIBUTES = {
     'firstname': 'first_name',

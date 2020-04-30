@@ -21,9 +21,14 @@ class NiceTable {
         // Take data from the marker. Hide the marker.
         var rows = $('rows', this.marker); // a bunch of <tr> tags
         var addform = $('add-form', this.marker); // a <form> tag with all due <d> cells inside, and the <input type="submit"> too, already connected to a callback.
+        var other = $('other', this.marker) // anything to be loaded alongside the table and needs to be *not* hidden (eg. modals..)
         this.columns = columns;
         this.modifiable = (addform.size() != 0);
         this.marker.hide();
+
+        // Move the "other" tag outside of the invisible marker
+        this.marker.after(other);
+        this.other = this.marker.next();
 
         // "Render" the component. Make a table.
         this.marker.after(`<table class="table"></table>`);
