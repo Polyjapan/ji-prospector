@@ -28,9 +28,9 @@
                     </button>
                 </d>
                 <d>
-                    <div class="text-right">
+                    <div class="text-right mt-1">
                         {% for button, link in task.tasktype.useful_views_dict.items %}
-                            <a class="btn btn-sm btn-primary" href="{% url link pk=task.pk %}">{{button}}</a>
+                            <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
                         {% endfor %}
                         <span class="state-buttons">
                             <form action="" method="post">
@@ -39,7 +39,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"
                                             data-tooltip="Basculer à {{prev | todo_state}}"
-                                            class="btn btn-sm btn-error tooltip tooltip-left">
+                                            class="btn btn-sm btn-error tooltip tooltip-left mb-1">
                                         {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
                                     </button>
                                 {% endfor %}
@@ -47,7 +47,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"
                                             data-tooltip="Basculer à {{next | todo_state}}"
-                                            class="btn btn-sm btn-success tooltip tooltip-left">
+                                            class="btn btn-sm btn-success tooltip tooltip-left mb-1">
                                         {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
                                     </button>
                                 {% endfor %}
@@ -55,7 +55,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
                                             data-tooltip="Valider le nouvel état"
-                                            class="btn btn-sm btn-primary tooltip tooltip-left">
+                                            class="btn btn-sm btn-primary tooltip tooltip-left mb-1">
                                         <i class="icon icon-check"></i>
                                     </button>
                                 {% endif %}
