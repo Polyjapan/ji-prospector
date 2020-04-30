@@ -17,7 +17,7 @@ class FanzineVoteForm(forms.Form):
 
 
 class TaskCommentForm(forms.Form):
-    text = forms.CharField(max_length=128, label='', widget=forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Ton commentaire ici', 'rows':'3'}))    
+    text = forms.CharField(max_length=128, label='', widget=forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Ton commentaire ici', 'rows':'3'}))
 
 class QuickStartForm(forms.Form):
     what = forms.CharField(max_length=128, required=False)
@@ -41,7 +41,6 @@ class QuickTaskForm(forms.Form):
     name = forms.CharField(max_length=128)
     deadline = forms.DateTimeField(required=False, widget=forms.TextInput(attrs={'class': 'form-select select-sm', 'type': 'date'}))
     state = forms.ChoiceField(choices=Task.TODO_STATES, widget=forms.Select(attrs={'class': 'form-select select-sm'}))
-    comment = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-input input-sm'}))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

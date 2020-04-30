@@ -199,7 +199,7 @@ def deals_show(request, pk):
         taskform = QuickTaskForm(request.POST)
         if taskform.is_valid():
             tasktype, created = TaskType.objects.get_or_create(name=taskform.cleaned_data['name'])
-            task = Task.objects.create(todo_state=taskform.cleaned_data['state'], deadline=taskform.cleaned_data['deadline'], deal=obj, tasktype=tasktype, comment=taskform.cleaned_data['comment'],)
+            task = Task.objects.create(todo_state=taskform.cleaned_data['state'], deadline=taskform.cleaned_data['deadline'], deal=obj, tasktype=tasktype)
             messages.success(request, mark_safe('Il faut maintenant <i>{}</i> pour <i>{}</i>.'.format(tasktype.name.lower(), obj.booth_name)))
             if created:
                 messages.info(
