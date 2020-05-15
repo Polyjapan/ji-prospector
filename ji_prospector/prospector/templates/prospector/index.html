@@ -47,7 +47,6 @@
                             <d><small>pour {{r.deal_count}} deals</small></d>
                             <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | fresh:'a'}}</d>
                             <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
-                            <d></d>
                         </r>
                     {% endfor %}
                 </rows>
