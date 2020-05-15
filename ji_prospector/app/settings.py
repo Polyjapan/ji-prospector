@@ -119,11 +119,6 @@ CAS_RENAME_ATTRIBUTES = {
     'lastname': 'last_name',
 }
 
-## crispy_forms STUFF
-CRISPY_TEMPLATE_PACK = 'spectre'
-CRISPY_FAIL_SILENTLY = not DEBUG
-CRISPY_ALLOWED_TEMPLATE_PACKS = ('spectre',)
-
 try:
     from app.settings_local import *
 except ImportError:
