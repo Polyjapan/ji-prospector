@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Historique de {{obj | model:'a'}} pour {{obj.deal | model:'a'}}{% endblock %}
+{% block title %}Historique de {{obj | fresh:'a'}} pour {{obj.deal | fresh:'a'}}{% endblock %}
 {% block subtitle %}Quand c'est que j'ai envoyé le contrat déjà ?{% endblock %}
 {% block active_menu %}tasks{% endblock %}
 
@@ -21,11 +21,11 @@
                             <div class="tile tile-centered">
                                 <div class="tile-content">
                                     <div class="tile-subtitle">{{log.date}} <small>(il y a {{log.date | timesince}})</small></div>
-                                    <div class="tile-title">Validé un changement d'état</div>
+                                    <div class="tile-title"><strong>{{log.user.get_full_name | default:'Quelqu\'un'}}</strong> a validé un changement d'état</div>
                                     <small class="tile-subtitle">
-                                        {{log | model:'old_todo_state'}}
+                                        {{log | fresh:'old_todo_state'}}
                                         <i class="icon icon-forward"></i>
-                                        {{log | model:'new_todo_state'}}
+                                        {{log | fresh:'new_todo_state'}}
                                     </small>
                                 </div>
                             </div>

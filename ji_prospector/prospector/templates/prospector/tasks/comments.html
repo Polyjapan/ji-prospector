@@ -1,18 +1,9 @@
 <div class="modal-header">
     <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
     <div class="modal-title h5">Commentaires</div>
-    <div class="modal-subtitle h6">{{obj | model:'a'}} pour {{obj.deal | model:'a'}}</div>
+    <div class="modal-subtitle h6">{{obj | fresh:'a'}} pour {{obj.deal | fresh:'a'}}</div>
 </div>
 <div class="modal-body">
-    {% if not obj.taskcomment_set.exists %}
-        <div class="empty">
-            <div class="empty-icon">
-                <i class="icon icon-4x icon-message"></i>
-            </div>
-            <p class="empty-title h5">Il n'y a rien ici</p>
-            <p class="empty-subtitle">Tout va bien :D</p>
-        </div>
-    {% endif %}
     {% for comment in obj.taskcomment_set.all %}
         <div class="card mb-2">
             <div class="card-body">
@@ -43,6 +34,14 @@
                 </div>
             </div>
         </div>
+    {% empty %}
+        <div class="empty">
+            <div class="empty-icon">
+                <i class="icon icon-4x icon-message"></i>
+            </div>
+            <p class="empty-title h5">Il n'y a rien ici</p>
+            <p class="empty-subtitle">Tout va bien :D</p>
+        </div>
     {% endfor %}
 </div>
 <div class="modal-footer">
@@ -53,8 +52,8 @@
             {{form}}
         </div>
         <div>
-            <button class="btn">Poster</button>
-            <a href="#close" class="btn btn-primary">Fermer</a>
+            <a href="#close" class="btn">Fermer</a>
+            <button class="btn btn-primary">Poster</button>
         </div>
     </form>
 </div>

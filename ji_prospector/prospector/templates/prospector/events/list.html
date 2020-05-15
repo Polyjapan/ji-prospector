@@ -16,7 +16,7 @@
                 <rows>
                     {% for item in qs %}
                         <r>
-                            <d>{{item | model:'a'}}</d>
+                            <d>{{item | fresh:'a'}}</d>
                             <d>{{item.current | then_check}}</d>
                             <d>{{item.date}}</d>
                             <d>{{item.budget | price}}</d>

@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
-
-
-
-
-{% block title %}Résumé de {{current_event | model}}{% endblock %}
+{% block title %}Résumé de {{current_event | fresh}}{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
 {% block active_menu %}index{% endblock %}
 
@@ -31,7 +27,7 @@
     </form>
     <div class="card mb-2">
         <div class="card-header">
-            <div class="container">
+            <div>
                 <div class="columns">
                     <div class="column col-auto">
                         <div class="card-title h4">Tâches à faire groupées par type</div>
@@ -47,10 +43,10 @@
                 <rows>
                     {% for r in to_do %}
                         <r>
-                            <d>{{r | model:'timed_a'}}</d>
+                            <d>{{r | fresh:'timed_a'}}</d>
                             <d><small>pour {{r.deal_count}} deals</small></d>
-                            <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | model:'a'}}</d>
-                            <d><small>{{r | model:'todo_state'}}</small></d>
+                            <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | fresh:'a'}}</d>
+                            <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
                             <d></d>
                         </r>
                     {% endfor %}
@@ -102,7 +98,7 @@
                 <rows>
                     {% for b in free_booths %}
                         <r>
-                            <d>{{b | model:'a'}}</d>
+                            <d>{{b | fresh:'a'}}</d>
                             <d>{{b.usual_price | price}}</d>
                             <d>prix des deals placés ici de manière pas sûre</d>
                             <d>

@@ -25,6 +25,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_cas_ng',
+    'django_fresh_models',
+    'widget_tweaks', # for spectre-css
+    'django-spectre-css',
     'prospector',
     'users',
     'app',
@@ -63,7 +66,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'prospector.context_processors.current_event',
             ],
-            'builtins': ['app.templatetags.filters', 'prospector.templatetags.filters'],
+            'builtins': ['app.templatetags.filters', 'prospector.templatetags.filters', 'django_fresh_models.templatetags.filters'],
         },
     },
 ]
@@ -115,6 +118,11 @@ CAS_RENAME_ATTRIBUTES = {
     'firstname': 'first_name',
     'lastname': 'last_name',
 }
+
+## crispy_forms STUFF
+CRISPY_TEMPLATE_PACK = 'spectre'
+CRISPY_FAIL_SILENTLY = not DEBUG
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('spectre',)
 
 try:
     from app.settings_local import *

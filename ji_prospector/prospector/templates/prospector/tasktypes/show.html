@@ -9,35 +9,89 @@
 {% block active_menu %}tasktypes{% endblock %}
 
 {% block content %}
-
-<div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Deals avec cette tâche</div>
-        <div class="card-subtitle text-gray">
-            Utilise cette table si tu veux faire cette tâche pour plein de stands.<br>
-            Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.
+<div class="columns">
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Détails</div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Nom de la tâche</th>
+                        <td th_data="Nom de la tâche">{{obj.name | default:'?'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td th_data="Description">{{obj.description | linebreaksbr | default:'?'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Page wiki</th>
+                        <td th_data="Page wiki">
+                            {% if obj.wiki_page %}
+                                <a href="{{obj.wiki_page}}">{{obj.wiki_page}}</a>
+                            {% else %}
+                                ?
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <button class="btn">Merger dans un autre type de tâche <i class="icon icon-refresh"></i></button>
+                <a href="{% url 'prospector:tasktypes.edit' pk=obj.pk %}" class="btn btn-primary">Éditer <i class="icon icon-edit"></i></a>
+            </div>
         </div>
     </div>
-    <div class="card-body">
-        <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_tasktype' fixed_tasktype=obj.pk %}" id="tasks_list_remote">
-        </remote-nicetable>
+
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Magie</div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Tags</th>
+                        <td th_data="Tags">
+                            {% for tag in obj.tags_list %}
+                                <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                Aucun tag.
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Type de tâche suivante typique</th>
+                        <td th_data="Type de tâche suivante typique">
+                            {{obj.typical_next_task | fresh:'a' | default:'Aucun type de tâche suivante typique.'}}
+                        </td>
+                    </tr>
+                </table>
+                <div class="mt-2">
+                    <small>Et d'autres choses que vous n'avez pas besoin de savoir en tant qu'utilisateur ^^</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column col-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Deals avec cette tâche</div>
+                <div class="card-subtitle text-gray">
+                    Utilise cette table si tu veux faire cette tâche pour plein de stands.<br>
+                    Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.
+                </div>
+            </div>
+            <div class="card-body">
+                <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_tasktype' fixed_tasktype=obj.pk %}" id="tasks_list_remote">
+                </remote-nicetable>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Données</div>
-    </div>
-    <div class="card-body">
-        Mettre un bouton pour merger into un autre tasktype si jamais deux choses sont same shit
-        {% call showdata show_data %}{% endcall %}
-        <div class="mt-2">
-            <button class="btn">Merger avec un autre type de tâche</button>
-            <button class="btn btn-error">Supprimer</button>
-            <button class="btn btn-primary">Éditer</button>
-        </div>
-    </div>
-</div>
 
 {% endblock %}
 

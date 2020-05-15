@@ -1,5 +1,5 @@
 from django import template
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.utils.timezone import now
 from django.utils.timesince import timesince, timeuntil
 
@@ -11,25 +11,29 @@ register = template.Library()
 
 @register.filter(name='price')
 def price(text):
-    little_chf = '<small>CHF</small>'
-    return mark_safe('{}{}'.format(little_chf, text))
+    return format_html('{}<small>CHF</small>', text)
 
-@register.filter(name='todo_state')
-def todo_state(str):
-    for mapping in Task.TODO_STATES:
-        if str == mapping[0]:
-            return mapping[1]
-    return ''
+@register.filter(name='todo_state_color')
+def todo_state_color(str):
+    colors = {
+        '5_contact_waits_pro': 'error',
+        '4_pro_waits_treasury': 'warning',
+        '3_pro_waits_presidence': 'warning',
+        '2_pro_waits_contact': 'gray',
+        '1_doing': 'success',
+        '0_done': 'success',
+    }
+    return colors.get(str)
 
 @register.filter(name='todo_state_short')
 def todo_state_short(str):
     translation = [
         ('0_done', 'Terminé'),
         ('1_doing', 'En cours'),
-        ('2_pro_waits_contact', 'Pro att C'),
-        ('3_pro_waits_presidence', 'Pro att P'),
-        ('4_pro_waits_treasury', 'Pro att T'),
-        ('5_contact_waits_pro', 'C att pro'),
+        ('2_pro_waits_contact', 'Attente C'),
+        ('3_pro_waits_presidence', 'Attente P'),
+        ('4_pro_waits_treasury', 'Attente T'),
+        ('5_contact_waits_pro', 'À faire'),
     ]
 
     for mapping in translation:
@@ -37,8 +41,8 @@ def todo_state_short(str):
             return mapping[1]
     return ''
 
-@register.filter(name='deadlinecolor')
-def deadlinecolor(deadline):
+@register.filter(name='deadline_color')
+def deadline_color(deadline):
     if not deadline:
         return 'gray'
 
@@ -46,7 +50,7 @@ def deadlinecolor(deadline):
     if delta > timedelta(weeks=2):
         return 'default'
     elif delta > timedelta(weeks=1):
-        return 'gray-dark'#TODO: doesn't work
+        return 'gray'#TODO: doesn't work
     elif delta > timedelta(seconds=1):
         return 'warning'
     else:
@@ -57,12 +61,18 @@ def deadline(then):
     if not then:
         return ''
 
-    span = '<span class="label label-{color}">{{text}}</span>'.format(color=deadlinecolor(then))
-
     if now() < then:
-        return mark_safe(span.format(text='dans {}'.format(timeuntil(then))))
+        return format_html(
+            '<span class="label label-{}">{}</span>',
+            deadline_color(then),
+            'dans {}'.format(timeuntil(then)).split(',')[0],
+        )
     else:
-        return mark_safe(span.format(text='il y a {} !'.format(timesince(then))))
+        return format_html(
+            '<span class="label label-{}">{}</span>',
+            deadline_color(then),
+            'il y a {} !'.format(timesince(then)).split(',')[0],
+        )
 
 @register.filter(name='sincecolor')
 def sincecolor(date):
@@ -82,5 +92,8 @@ def since(then):
     if not then:
         return ''
 
-    span = '<span class="label label-{color}">{{text}}</span>'.format(color=sincecolor(then))
-    return mark_safe(span.format(text='depuis {}'.format(timesince(then))))
+    return format_html(
+        '<span class="label label-{color}">{text}</span>',
+        color=sincecolor(then),
+        text='depuis {}'.format(timesince(then)).split(',')[0],
+    )

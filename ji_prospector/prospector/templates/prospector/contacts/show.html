@@ -11,44 +11,86 @@
 {% block active_menu %}contacts{% endblock %}
 
 {% block content %}
+<div class="columns">
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Détails</div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Nom de la personne</th>
+                        <td th_data="Nom de la personne">{{obj.person_name | default:'?'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td th_data="Email">(wip)</td>
+                    </tr>
+                    <tr>
+                        <th>Téléphone</th>
+                        <td th_data="Téléphone">{{obj.phone_number | default:'?'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Adresse complète</th>
+                        <td th_data="Adresse complète">
+                            {{obj.address_street | default:'?'}}<br/>
+                            {{obj.address_city | default:'?'}}<br/>
+                            {{obj.address_country | default:'?'}}<br/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description privée</th>
+                        <td th_data="Description privée">
+                            {{obj.private_description | linebreaksbr | default:'?'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description comm</th>
+                        <td th_data="Description comm">
+                            {{obj.pr_description | linebreaksbr | default:'?'}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <button class="btn">Mail données manquantes <i class="icon icon-mail"></i></button>
+                <a href="{% url 'prospector:contacts.edit' pk=obj.pk %}" class="btn btn-primary">Éditer <i class="icon icon-edit"></i></a>
+            </div>
+        </div>
+    </div>
 
-<div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Deals liés</div>
-    </div>
-    <div class="card-body">
-        <nicetable>
-            <rows>
-                {% for d in qs %}
-                    <r>
-                        <d>{{d | model:'a'}}</d>
-                        <d>{{d | model_display:'type'}}</d>
-                        <d>{{d | model:'price'}}</d>
-                        <d>
-                            <div>
-                                <!-- faire avec views utiles -->
-                                <button class="btn btn-sm float-right">view utile</button>
-                            </div>
-                        </d>
-                    </r>
-                {% endfor %}
-            </rows>
-        </nicetable>
-    </div>
-</div>
-
-<div class="card mb-2">
-    <div class="card-body">
-        {% call showdata show_data %}{% endcall %}
-    </div>
-    <div class="card-footer">
-        <button class="btn btn-primary">Mail données manquantes</button>
-        <div class="float-right">
-            <button class="btn btn-error">Supprimer</button>
-            <button class="btn btn-primary">Éditer</button>
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Deals liés</div>
+            </div>
+            <div class="card-body">
+                <nicetable>
+                    <rows>
+                        {% for d in qs %}
+                            <r>
+                                <d>{{d | fresh:'a'}}</d>
+                                <d>{{d | model_choice:'type'}}</d>
+                                <d>{{d | fresh:'price'}}</d>
+                                <d>
+                                    <div>
+                                        <!-- faire avec views utiles -->
+                                        <button class="btn btn-sm float-right">view utile</button>
+                                    </div>
+                                </d>
+                            </r>
+                        {% endfor %}
+                    </rows>
+                </nicetable>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'prospector:deals.create' %}?from_contact={{obj.pk}}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block js %}

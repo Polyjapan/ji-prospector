@@ -1,52 +1,147 @@
 {% extends 'base.html' %}
 
-{% load macros %}
-
-
-
-{% loadmacros 'show_data.html' %}
-
 {% block title %}Deal : {{obj.booth_name}} à {{obj.event.name}}{% endblock %}
 {% block subtitle %}Type : {{obj.get_type_display}}{% endblock %}
 {% block active_menu %}deals{% endblock %}
 
 {% block content %}
-<div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Tâches à faire pour ce deal</div>
-        <div class="card-subtitle text-gray">
-            Utilise cette table si tu veux t'occuper de ce deal.<br>
-            Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.
+<div class="columns">
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Détails</div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Nom du stand</th>
+                        <td th_data="Nom du stand">{{obj.booth_name | default:'?'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact</th>
+                        <td th_data="Contact">{{obj.contact | fresh:'a'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Événement</th>
+                        <td th_data="Événement">{{obj.event | fresh:'a'}}</td>
+                    </tr>
+                    <tr>
+                        <th>Type</th>
+                        <td th_data="Type">{{obj | model_choice:'type'}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <button class="btn">Mail données manquantes <i class="icon icon-mail"></i></button>
+                <a href="{% url 'prospector:deals.edit' pk=obj.pk %}" class="btn btn-primary">Éditer <i class="icon icon-edit"></i></a>
+            </div>
         </div>
     </div>
-    <div class="card-body">
-        <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
-            <add-form action="" method="post">
-                <d>{{taskform.name}}</d>
-                <d>{{taskform.deadline}}</d>
-                <d>{{taskform.state}}</d>
-                <d></d>
-                <d>{{taskform.comment}}</d>
-                <d>{% csrf_token %}<input type="submit" class="btn btn-sm btn-primary" value="Ajouter"></d>
-                <d></d>
-            </add-form>
-        </remote-nicetable>
+
+    <div class="column col-6 col-xs-12">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Avancement</div>
+            </div>
+            <div class="card-body">
+                <dl>
+                    <dt>Prix</dt>
+                    <dd>
+                        <div>
+                            <i class="icon icon-{{obj.price_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
+                            {% if obj.price_decided %}
+                                <i>Decidé : </i>
+                            {% else %}
+                                <i>Non décidé. Présumé : </i>
+                            {% endif %}
+                            {{obj.price | price | default:'?'}}
+                        </div>
+                        <div>
+                            {% if obj.additional_price_exists %}
+                                <i class="icon icon-{{obj.additional_price_sum | yesno:'check,cross'}} text-{{obj.additional_price_sum | yesno:'success,error'}}"></i>
+                                {% if obj.additional_price_sum %}
+                                    <i>Supplément connu : </i>
+                                    {{obj.additional_price_sum | price | default:'?'}}
+                                {% else %}
+                                    <i>Supplément inconnu. Modalités : </i>
+                                    "{{obj.additional_price_modalities | default:'?'}}"
+                                {% endif %}
+                            {% else %}
+                                <i class="icon icon-check text-success"></i>
+                                <i>Aucun supplément.</i>
+                            {% endif %}
+                        </div>
+                    </dd>
+
+                    <dt>Emplacement</dt>
+                    <dd>
+                        <i class="icon icon-{{obj.boothspace_decided | yesno:'check,cross'}} text-{{obj.boothspace_decided | yesno:'success,error'}}"></i>
+                        {% if obj.boothspace_decided %}
+                            <i>Decidé : </i>
+                        {% else %}
+                            <i>Non décidé. Présumé : </i>
+                        {% endif %}
+
+                        {% for dbs in obj.dealboothspace_set.all %}
+                            {{dbs.boothspace | fresh:'a' | default:'?'}}
+                        {% empty %}
+                            ?
+                        {% endfor %}
+                    </dd>
+                    <dt>Contrat</dt>
+                    <dd>
+                        <i class="icon icon-{{obj.contract_decided | yesno:'check,cross'}} text-{{obj.contract_decided | yesno:'success,error'}}"></i>
+                        {% if obj.contract_decided %}
+                            <i>Signé : </i>
+                            insérer lien vers le dernier contrat
+                        {% else %}
+                            <i>Non signé.</i>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'prospector:deals.explaintags' pk=obj.pk %}" class="btn">Explication <i class="icon icon-search"></i></a>
+            </div>
+        </div>
     </div>
+
+    <div class="column">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Tâches à faire pour ce deal</div>
+                <div class="card-subtitle text-gray">
+                    Utilise cette table si tu veux t'occuper de ce deal.<br>
+                    Tu peux indiquer ta progression au fur et à mesure avec les boutons de droite.
+                </div>
+            </div>
+            <div class="card-body">
+                <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_deal' fixed_deal=obj.pk %}" id="tasks_list_remote">
+                    <add-form action="" method="post">
+                        <d>{{taskform.name}}</d>
+                        <d>{{taskform.deadline}}</d>
+                        <d>{{taskform.state}}</d>
+                        <d></d>
+                        <d></d>
+                        <d>
+                            <div class="text-right mt-1">
+                                {% csrf_token %}<input type="submit" class="btn btn-sm btn-primary" value="Ajouter">
+                            </div>
+                        </d>
+                    </add-form>
+                </remote-nicetable>
+            </div>
+            <div class="card-footer">
+                {% if not obj.task_set.exists %}
+                    <a href="{% url 'prospector:deals.defaulttasks' pk=obj.pk %}" class="btn">Ajouter les tâches par défaut <i class="icon icon-plus"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<div class="card mb-2">
-    <div class="card-header">
-        <div class="card-title h4">Données</div>
-    </div>
-    <div class="card-body">
-        {% call showdata show_data %}{% endcall %}
-        <div class="mt-2">
-            <button class="btn">Mail données manquantes</button>
-            <button class="btn btn-error">Supprimer</button>
-            <button class="btn btn-primary">Éditer</button>
-        </div>
-    </div>
-</div>
+
 {% endblock %}
 
 {% block js %}

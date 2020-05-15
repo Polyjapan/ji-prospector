@@ -8,14 +8,13 @@ from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import make_aware
 from django.contrib import messages
 from django.http import HttpResponse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.contrib.auth.decorators import login_required
 
+from django_fresh_models.library import FreshFilterLibrary as ff
 
-from .models import Contact, Deal, Task, TaskComment, TaskLog, BoothSpace, TaskType, Event
-from .forms import QuickTaskForm, QuickStartForm, TaskCommentForm
-
-from prospector.templatetags.model_filters import mf as prospector_mf
+from .models import *
+from .forms import *
 
 
 def show_model_data(cls, instance, exclude=[]):
@@ -33,13 +32,13 @@ def show_model_data(cls, instance, exclude=[]):
             if f.many_to_many or f.one_to_many:
                 set = getattr(instance, f.name)
                 for related in set.all():
-                    display_value += prospector_mf.filter(related, 'a')
+                    display_value += ff.filter(related, 'a')
                 display_name = f.verbose_name or f.related_model._meta.verbose_name_plural.capitalize()
                 value = set
             else:
                 related = getattr(instance, f.name)
                 if related:
-                    display_value = prospector_mf.filter(related, 'a')
+                    display_value = ff.filter(related, 'a')
                 display_name = f.verbose_name or f.related_model._meta.verbose_name.capitalize()
                 value = related
         else:
@@ -68,7 +67,7 @@ def quickstart(request):
                     obj = Deal.objects.get(booth_name=form.cleaned_data['what'])
                     return redirect(reverse('prospector:deals.show', args=(obj.pk,)))
                 except Deal.DoesNotExist:
-                    messages.error(request, mark_safe('Il n\'y a ni type de tâche, ni deal nommé <i>{}</i>.'.format(form.cleaned_data['what'])))
+                    messages.error(request, format_html('Il n\'y a ni type de tâche, ni deal nommé <i>{}</i>.', form.cleaned_data['what']))
                     return redirect(reverse('prospector:index'))
 
     return redirect(reverse('prospector:tasks.list'))
@@ -81,7 +80,7 @@ def index(request):
     * Tasks to do and their status and their deadline
     """
 
-    free_booths = BoothSpace.objects.filter(deal__isnull=True)
+    free_booths = BoothSpace.objects.filter(dealboothspace__isnull=True)
 
     # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
     # Maybe I should just do it in <number_of_task> queries... get the tasks first, and then for each one, get the related data. but dammit... performance !!
@@ -142,12 +141,9 @@ ORDER BY t.deadline
         t.deal_count = row.deal_count
         model_to_do.append(t)
 
-    final_budget = Deal.objects.filter(price_final=True).aggregate(Sum('price'))['price__sum'] or 0
-    unsure_budget = Deal.objects.filter(price_final=False).aggregate(Sum('price'))['price__sum'] or 0
-
     quickstartform = QuickStartForm()
 
-    return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': model_to_do, 'final_budget': final_budget, 'unsure_budget': unsure_budget, 'quickstartform': quickstartform})
+    return render(request, 'prospector/index.html', {'free_booths': free_booths, 'to_do': model_to_do, 'quickstartform': quickstartform})
 
 
 @login_required
@@ -174,6 +170,20 @@ def contacts_list(request):
     qs = Contact.objects.order_by('person_name')
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
+@login_required
+def contacts_edit(request, pk):
+    obj = get_object_or_404(Contact, pk=pk)
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Modifications sauvegardées.')
+            return redirect(reverse('prospector:contacts.show', args=(pk,)))
+    else:
+        form = ContactForm(instance=obj)
+
+    return render(request, 'prospector/contacts/edit.html', {'obj': obj, 'form': form})
+
 
 @login_required
 def contacts_show(request, pk):
@@ -192,33 +202,71 @@ def deals_list(request):
 
 
 @login_required
+def deals_edit(request, pk):
+    obj = get_object_or_404(Deal, pk=pk)
+    if request.method == 'POST':
+        form = DealForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Modifications sauvegardées.')
+            return redirect(reverse('prospector:deals.show', args=(pk,)))
+    else:
+        form = DealForm(instance=obj)
+
+    return render(request, 'prospector/deals/edit.html', {'obj': obj, 'form': form})
+
+
+@login_required
 def deals_show(request, pk):
     obj = get_object_or_404(Deal, pk=pk)
 
-    if request.method == "POST":
+    if request.method == 'POST':
         taskform = QuickTaskForm(request.POST)
         if taskform.is_valid():
             tasktype, created = TaskType.objects.get_or_create(name=taskform.cleaned_data['name'])
             task = Task.objects.create(todo_state=taskform.cleaned_data['state'], deadline=taskform.cleaned_data['deadline'], deal=obj, tasktype=tasktype)
-            messages.success(request, mark_safe('Il faut maintenant <i>{}</i> pour <i>{}</i>.'.format(tasktype.name.lower(), obj.booth_name)))
+            messages.success(request, format_html('Il faut maintenant <i>{}</i> pour <i>{}</i>.', tasktype.name.lower(), obj.booth_name))
             if created:
                 messages.info(
                     request,
-                    mark_safe(
-                        'Le type de tâche <i>{}</i> a été créé car il n\'existait pas.<br><a href="{}">Voir ici</a>.'.format(tasktype.name, reverse('prospector:tasktypes.show', args=(tasktype.pk,)))
+                    format_html(
+                        'Le type de tâche <i>{}</i> a été créé car il n\'existait pas.<br><a href="{}">Voir ici</a>.', tasktype.name, reverse('prospector:tasktypes.show', args=(tasktype.pk,))
                     ),
                 )
     else:
         taskform = QuickTaskForm(initial={'state': '5_contact_waits_pro'})
 
-    show_data = show_model_data(Deal, obj, exclude=['tasks'])
-    return render(request, 'prospector/deals/show.html', {'show_data': show_data, 'obj': obj, 'taskform': taskform})
+    return render(request, 'prospector/deals/show.html', {'obj': obj, 'taskform': taskform})
 
+@login_required
+def deals_explaintags(request, pk):
+    obj = get_object_or_404(Deal, pk=pk)
+    tasks = {
+        'price': obj.any_tasks_with_tag('price'),
+        'boothspace': obj.any_tasks_with_tag('boothspace'),
+        'contract': obj.any_tasks_with_tag('contract'),
+    }
+    return render(request, 'prospector/deals/explaintags.html', {'obj': obj, 'tasks': tasks})
 
 @login_required
 def tasktypes_list(request):
     qs = TaskType.objects.annotate(Count('task__deal')).annotate(Min('task__deadline')).order_by('task__deadline__min')
     return render(request, 'prospector/tasktypes/list.html', {'qs': qs})
+
+
+@login_required
+def tasktypes_edit(request, pk):
+    obj = get_object_or_404(TaskType, pk=pk)
+    if request.method == 'POST':
+        form = TaskTypeForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Modifications sauvegardées.')
+            return redirect(reverse('prospector:tasktypes.show', args=(pk,)))
+    else:
+        form = TaskTypeForm(instance=obj)
+
+    return render(request, 'prospector/tasktypes/edit.html', {'obj': obj, 'form': form})
 
 
 @login_required
@@ -283,11 +331,11 @@ def tasks_log_todostate(request, pk):
         with transaction.atomic():
             obj = Task.objects.select_for_update().get(pk=pk)
             if not obj.tasklog_set.exists():
-                TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=None, task=obj)
+                TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=None, task=obj, user=request.user)
             else:
                 log = obj.tasklog_set.latest()
                 if log.new_todo_state != obj.todo_state:
-                    TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=log.new_todo_state, task=obj)
+                    TaskLog.objects.create(new_todo_state=obj.todo_state, old_todo_state=log.new_todo_state, task=obj, user=request.user)
 
             obj.todo_state_logged = True
             obj.save()

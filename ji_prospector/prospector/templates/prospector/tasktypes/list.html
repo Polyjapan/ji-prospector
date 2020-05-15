@@ -17,9 +17,14 @@
                 <rows>
                     {% for t in qs %}
                         <r>
-                            <d>{{t | model:'a'}}</d>
+                            <d>{{t | fresh:'a'}}</d>
                             <d>{{t.task__deal__count}} deals</d>
                             <d>{{t.description}}</d>
+                            <d>
+                                {% for tag in t.tags_list %}
+                                    <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </d>
                             <d></d>
                         </r>
                     {% endfor %}
@@ -29,13 +34,13 @@
     </div>
 </div>
 
-<div class="mt-2">
-    <button class="btn btn-success">Créer</button>
+<div class="my-2 float-right">
+    <button class="btn btn-success">Créer <i class="icon icon-plus"></i></button>
 </div>
 {% endblock %}
 
 {% block js %}
 <script>
-    var t = new NiceTable($('nicetable'), ['Type de tâche', 'Lié à', 'Description', '<search>']);
+    var t = new NiceTable($('nicetable'), ['Type de tâche', 'Lié à', 'Description', 'Tags', '<search>']);
 </script>
 {% endblock %}

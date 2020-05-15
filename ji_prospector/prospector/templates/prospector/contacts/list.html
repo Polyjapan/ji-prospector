@@ -2,8 +2,6 @@
 
 {% load macros %}
 
-
-
 {% block title %}Liste des contacts{% endblock %}
 {% block subtitle %}Les gens qui veulent des stands{% endblock %}
 {% block active_menu %}contacts{% endblock %}
@@ -17,9 +15,10 @@
                     {% for c in qs %}
                         <r>
                             {% url 'prospector:contacts.edit' pk=c.pk as edit_url %}
-                            <d>{{c | model:'a' | or_edit:edit_url}}</d>
-                            <d>{{c.email_address | or_edit:edit_url}}</d>
-                            <d><span class="text-small">{{c.private_description | linebreaksbr | or_cross}}</span></d>
+                            <d>{{c | fresh:'a'}}</d>
+                            <d>{{c.email_address}}(wip)</d>
+                            <d>{{c.phone_number}}</d>
+                            <d><span class="text-small">{{c.private_description | linebreaksbr | default:'?'}}</span></d>
                             <d>
                                 <div>
                                     <button class="btn btn-sm float-right">Éditer</button>
@@ -32,13 +31,14 @@
         </div>
     </div>
 </div>
-<div class="mt-2">
-    <button class="btn btn-success">Créer</button>
+
+<div class="my-2 float-right">
+    <button class="btn btn-success">Créer <i class="icon icon-plus"></i></button>
 </div>
 {% endblock %}
 
 {% block js %}
 <script>
-    var t = new NiceTable($('nicetable'), ['Personne', 'Email', 'Description', '<search>']);
+    var t = new NiceTable($('nicetable'), ['Personne', 'Email', 'Tel', 'Description', '<search>']);
 </script>
 {% endblock %}

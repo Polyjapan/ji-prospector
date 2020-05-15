@@ -1,13 +1,13 @@
 from django.db import models
 from django.utils.timezone import now
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-#
-#
-# from gmail_link.models import EmailAddress
 
+
+# from gmail_link.models import EmailAddress
+from django_fresh_models.library import fresh_model
 
 from datetime import timedelta
 import json
@@ -21,43 +21,56 @@ User = get_user_model()
 #     emailaddress = models.ForeignKey('EmailAddress', on_delete=models.CASCADE)
 #     contact = models.ForeignKey('Contact', on_delete=models.CASCADE)
 
+@fresh_model
 class Event(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')
     date = models.DateField(verbose_name='Date')
     current = models.BooleanField(default=False, verbose_name='Événement actuel ?')
     budget = models.FloatField(verbose_name='Budget stands')
+    agepoly_president = models.CharField(max_length=128, verbose_name='Président AGEPoly')
+    polyjapan_president = models.CharField(max_length=128, verbose_name='Président PolyJapan')
 
+@fresh_model
 class Contact(models.Model):
     person_name = models.CharField(max_length=128, blank=True, verbose_name='Nom de la personne')
     phone_number = models.CharField(max_length=16, blank=True, verbose_name='Téléphone')
 
     address_street = models.CharField(max_length=128, blank=True, verbose_name='Adresse')
     address_city = models.CharField(max_length=128, blank=True, verbose_name='Ville')
-    address_country = models.CharField(max_length=2, blank=True, verbose_name='Pays')
+    address_country = models.CharField(max_length=2, blank=True, verbose_name='Pays', help_text="Code à deux lettres")
 
     private_description = models.TextField(blank=True, verbose_name='Description privée')
     pr_description = models.TextField(blank=True, verbose_name='Description comm')
 
+@fresh_model
 class TaskType(models.Model):
     """e.g. 'Send the contract' or 'Set booth location'..."""
     name = models.CharField(max_length=128, verbose_name='Nom')
     description = models.TextField(blank=True, verbose_name='Description')
-    typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Tâche suivante typique')
+    wiki_page = models.URLField(max_length=256, blank=True, verbose_name='Lien wiki')
+
+    typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Type de tâche suivante typique')
+    tags = models.TextField(blank=True, verbose_name='Tags magiques', help_text='Line-separated list of tags') # Search with regex field lookup
     useful_views = models.TextField(blank=True, verbose_name='Liens utiles', help_text='JSON object. Key=Name of button, Value=django URL name') # A list of url names that point to views accepting an argument named pk, which is a --Task's--
 
     @property
     def useful_views_dict(self):
         return json.loads(self.useful_views) if self.useful_views else {}
 
+    @property
+    def tags_list(self):
+        return [x.strip() for x in self.tags.split('\n')] if self.tags else []
+
+@fresh_model
 class Task(models.Model):
     """Each time the todo-state changes, create a new Task object. That way, you can keep a history => No. Use another model, and show it with Spectre Timelines."""
     TODO_STATES = [
-        ('0_done', 'Tâche terminée'),
-        ('1_doing', 'Tâche en cours'),
-        ('2_pro_waits_contact', 'Pro attend sur contact'),
-        ('3_pro_waits_presidence', 'Pro attend sur présidence'),
-        ('4_pro_waits_treasury', 'Pro attend sur trésorerie'),
-        ('5_contact_waits_pro', 'Contact attend sur pro'),
+        ('0_done', 'Terminé'),
+        ('1_doing', 'En cours'),
+        ('2_pro_waits_contact', 'Attente contact'),
+        ('3_pro_waits_presidence', 'Attente prés.'),
+        ('4_pro_waits_treasury', 'Attente tréso.'),
+        ('5_contact_waits_pro', 'À faire'),
     ]
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
@@ -77,7 +90,7 @@ class Task(models.Model):
         if self.todo_state == '5_contact_waits_pro':
             return ['1_doing']
         if self.todo_state == '1_doing':
-            return ['0_done']
+            return pro_waits + ['0_done']
         if self.todo_state == '0_done':
             return []
         return ['5_contact_waits_pro']
@@ -93,6 +106,7 @@ class Task(models.Model):
             return ['2_pro_waits_contact']
         return ['5_contact_waits_pro']
 
+@fresh_model
 class TaskLog(models.Model):
     class Meta:
         get_latest_by = 'date'
@@ -101,13 +115,16 @@ class TaskLog(models.Model):
     new_todo_state = models.CharField(max_length=32, choices=Task.TODO_STATES)
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
 
+@fresh_model
 class TaskComment(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
 
+@fresh_model
 class Deal(models.Model):
     DEAL_TYPES = [
         ('pro', 'Stand pro'),
@@ -124,43 +141,74 @@ class Deal(models.Model):
     booth_name = models.CharField(max_length=128, blank=True, verbose_name='Nom du stand')
 
     price = models.FloatField(verbose_name='Prix')
-    price_final = models.BooleanField(default=False, verbose_name='Prix certain ?')
-    additional_price_modalities = models.TextField(blank=True, verbose_name='Supplément ?') # e.g. "10% CA"
-    additional_price_sum = models.FloatField(blank=True, null=True, verbose_name='Montant supplément') # to be filled when known
+    additional_price_exists = models.BooleanField(default=False, verbose_name='Supplément ?')
+    additional_price_modalities = models.TextField(blank=True, verbose_name='Modalités du supplément') # e.g. "10% CA"
+    additional_price_sum = models.FloatField(blank=True, null=True, verbose_name='Montant du supplément') # to be filled when known
 
     tasks = models.ManyToManyField('TaskType', through='Task', verbose_name='Tâches')
     attend_to_mail_alert = models.BooleanField(default=False)
     logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Besoins logistiques prévisionnels', related_name='previsional_deals')
     #actual_logistical_needs = models.ForeignKey('LogisticalNeedSet', on_delete=models.CASCADE, blank=True, verbose_name='Besoins logistiques finaux', related_name='final_deals')
 
-    @property
-    def is_floating(self):
-        return not self.price_final or not self.boothspace.final
+    def unfinished_tasks_with_tag(self, tag):
+        return self.task_set.filter(tasktype__tags__regex=r'(^|\n)\s*{}\s*($|\n)'.format(tag)).exclude(todo_state='0_done')
+
+    def any_tasks_with_tag(self, tag):
+        return self.task_set.filter(tasktype__tags__regex=r'(^|\n)\s*{}\s*($|\n)'.format(tag))
 
     @property
-    def is_finalized(self):
-        additional_price_ok = self.additional_price_sum if self.additional_price_modalities else True
-        return not additional_price_ok and self.actual_logistical_needs
+    def price_decided(self):
+        if self.any_tasks_with_tag('price'):
+            return not self.unfinished_tasks_with_tag('price').exists()
+        return False
 
     @property
-    def main_boothspace(self):
-        if self.boothspace_set.exists():
-            return self.boothspace_set.order_by('-usual_price')[0]
-        return None
+    def boothspace_decided(self):
+        if self.any_tasks_with_tag('boothspace'):
+            return not self.unfinished_tasks_with_tag('boothspace').exists()
+        return False
 
     @property
-    def boothspaces_usual_price_sum(self):
-        if self.boothspace_set.exists():
-            return self.boothspace_set.aggregate(Sum('usual_price'))[0]
-        return None
+    def contract_decided(self):
+        if self.any_tasks_with_tag('contract'):
+            return not self.unfinished_tasks_with_tag('contract').exists()
+        return False
+
+    # @property
+    # def is_floating(self):
+    #     if not self.price_final:
+    #         return True
+    #     for bs in self.boothspace_set.all():
+    #         if not bs.final:
+    #             return True
+    #     return False
+    #
+    # @property
+    # def is_finalized(self):
+    #     additional_price_ok = self.additional_price_sum if self.additional_price_modalities else True
+    #     return not additional_price_ok and self.actual_logistical_needs
+    #
+    # @property
+    # def main_boothspace(self):
+    #     if self.boothspace_set.exists():
+    #         return self.boothspace_set.order_by('-usual_price')[0]
+    #     return None
+    #
+    # @property
+    # def boothspaces_usual_price_sum(self):
+    #     if self.boothspace_set.exists():
+    #         return self.boothspace_set.aggregate(Sum('usual_price'))[0]
+    #     return None
+
+class DealBoothSpace(models.Model):
+    deal = models.ForeignKey('Deal', on_delete=models.CASCADE)
+    boothspace = models.ForeignKey('BoothSpace', on_delete=models.CASCADE)
 
 class BoothSpace(models.Model):
     name = models.CharField(max_length=32)
     building = models.CharField(max_length=32)
     usual_price = models.FloatField()
     identifier = models.CharField(max_length=256) # To identify the booth with whatever indirection of the plans we have
-    deal = models.ForeignKey('Deal', blank=True, null=True, on_delete=models.CASCADE)
-    final = models.BooleanField(default=False) # For every deal, at most 1 linked booth space must be final !
     # TODO : ^this shouldn't be here !!! it should be linked to event at least.
     # or have the entire model be linked to event ? after all, numerotation changes every year...
     # but in that case, allow easy copypaste from year to year.

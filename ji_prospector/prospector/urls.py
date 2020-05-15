@@ -25,12 +25,18 @@ urlpatterns = [
 
     path('contacts', views.contacts_list, name='contacts.list'),
     path('contacts/<int:pk>', views.contacts_show, name='contacts.show'),
+    path('contacts/<int:pk>/edit', views.contacts_edit, name='contacts.edit'),
 
     path('deals', views.deals_list, name='deals.list'),
+    path('deals/create', views.deals_edit, name='deals.create'),
     path('deals/<int:pk>', views.deals_show, name='deals.show'),
+    path('deals/<int:pk>/edit', views.deals_edit, name='deals.edit'),
+    path('deals/<int:pk>/explaintags', views.deals_explaintags, name='deals.explaintags'),
+    path('deals/<int:pk>/defaulttasks', views.index, name='deals.defaulttasks'),
 
     path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
     path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
+    path('tasktypes/<int:pk>/edit', views.tasktypes_edit, name='tasktypes.edit'),
 
     path('tasks', views.tasks_list, name='tasks.list'),
     path('tasks/history/<int:pk>', views.tasks_history, name='tasks.history'),

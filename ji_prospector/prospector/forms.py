@@ -3,7 +3,9 @@ from django.forms.widgets import SelectDateWidget
 from django.db.models import Value, CharField
 from django.utils.timezone import now
 
-from .models import Contact, Deal, Task, TaskType
+from django_fresh_models.fields import FreshModelChoiceField
+
+from .models import *
 from .fields import PrefixedDataListTextInput
 
 # Really ?
@@ -15,6 +17,38 @@ class FanzineVoteForm(forms.Form):
     """One day I'll do it"""
     pass
 
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
+class DealForm(forms.ModelForm):
+    class Meta:
+        model = Deal
+        exclude = ['tasks']
+        field_classes = {
+            'contact': FreshModelChoiceField,
+            'event': FreshModelChoiceField
+        }
+
+class TaskTypeForm(forms.ModelForm):
+    class Meta:
+        model = TaskType
+        fields = '__all__'
+        field_classes = {
+            'typical_next_task': FreshModelChoiceField,
+        }
+
+class BoothSpaceForm(forms.ModelForm):
+    class Meta:
+        model = BoothSpace
+        fields = '__all__'
+
+class LogisticalNeedSetForm(forms.ModelForm):
+    class Meta:
+        model = LogisticalNeedSet
+        fields = '__all__'
 
 class TaskCommentForm(forms.Form):
     text = forms.CharField(max_length=128, label='', widget=forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Ton commentaire ici', 'rows':'3'}))
