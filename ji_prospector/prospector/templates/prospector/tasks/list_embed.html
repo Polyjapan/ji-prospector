@@ -36,36 +36,39 @@
                 <d>
                     <div class="text-right mt-1">
                         <span class="state-buttons">
-                            <form action="" method="post">
-                                {% csrf_token %}
-                                {% for button, link in task.tasktype.useful_views_dict.items %}
-                                    <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
-                                {% endfor %}
-                                {% for prev in task.usual_prev_states %}
+                            {% for button, link in task.tasktype.useful_views_dict.items %}
+                                <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
+                            {% endfor %}
+                            {% for prev in task.usual_prev_states %}
+                                <form action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}" method="post">
+                                    {% csrf_token %}
                                     <button type="submit"
-                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}"
                                             data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
                                             class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
                                     </button>
-                                {% endfor %}
-                                {% for next in task.usual_next_states %}
+                                </form>
+                            {% endfor %}
+                            {% for next in task.usual_next_states %}
+                                <form action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}" method="post">
+                                    {% csrf_token %}
                                     <button type="submit"
-                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}"
                                             data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
                                             class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
                                     </button>
-                                {% endfor %}
-                                {% if not task.todo_state_logged %}
+                                </form>
+                            {% endfor %}
+                            {% if not task.todo_state_logged %}
+                                <form action="{% url 'prospector:tasks.log_todostate' pk=task.pk %}" method="post">
+                                    {% csrf_token %}
                                     <button type="submit"
-                                            formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
                                             data-tooltip="Valider le nouvel état"
-                                            class="btn btn-sm btn-primary tooltip tooltip-left mb-1">
+                                            class="btn btn-sm btn-action btn-primary tooltip tooltip-left mb-1">
                                         <i class="icon icon-check"></i>
                                     </button>
-                                {% endif %}
-                            </form>
+                                </form>
+                            {% endif %}
                         </span>
                     </div>
                 </d>
@@ -89,7 +92,7 @@
             $('.state-buttons form', t.rowsTbody).on('submit', function(event){
                 event.preventDefault(); // Don't open a new page on submit.
                 $.post(
-                    $(event.submitter).attr('formaction'),
+                    $(event.target).attr('action'),
                     $(event.target).serialize(),
                     function(response){
                         t.refreshRemoteRows(setupCallbacks);
