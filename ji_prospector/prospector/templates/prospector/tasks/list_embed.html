@@ -112,11 +112,12 @@
             );
         }
 
+        // This function should be in comments.html
         function setupCommentsCallbacks(){
             $('.delete-form', '#mymodal').on('submit', function(event){
                 event.preventDefault();
                 $.post(
-                    $(event.target).attr('target'),
+                    $(event.target).attr('action'),
                     $(event.target).serialize(),
                     function(response){
                         location.hash = '#close';
