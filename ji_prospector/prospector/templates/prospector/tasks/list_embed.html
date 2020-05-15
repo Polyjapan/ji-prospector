@@ -17,7 +17,7 @@
                         {% else %}
                             <span class="label label-warning">Pas validé</span>
                         {% endif %}
-                        <a class="btn btn-sm btn-link  tooltip-right"
+                        <a class="btn btn-sm btn-link tooltip tooltip-right"
                             data-tooltip="Historique des états"
                             href="{% url 'prospector:tasks.history' pk=task.pk %}">
                             <i class="icon icon-time"></i>
@@ -45,7 +45,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}"
                                             data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{prev | todo_state_color}}  tooltip-left mb-1">
+                                            class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
                                     </button>
                                 {% endfor %}
@@ -53,7 +53,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}"
                                             data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{next | todo_state_color}}  tooltip-left mb-1">
+                                            class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
                                     </button>
                                 {% endfor %}
@@ -61,7 +61,7 @@
                                     <button type="submit"
                                             formaction="{% url 'prospector:tasks.log_todostate' pk=task.pk %}"
                                             data-tooltip="Valider le nouvel état"
-                                            class="btn btn-sm btn-primary  tooltip-left mb-1">
+                                            class="btn btn-sm btn-primary tooltip tooltip-left mb-1">
                                         <i class="icon icon-check"></i>
                                     </button>
                                 {% endif %}
@@ -116,7 +116,7 @@
             $('.delete-form', '#mymodal').on('submit', function(event){
                 event.preventDefault();
                 $.post(
-                    $(event.submitter).attr('formaction'),
+                    $(event.target).attr('target'),
                     $(event.target).serialize(),
                     function(response){
                         location.hash = '#close';
