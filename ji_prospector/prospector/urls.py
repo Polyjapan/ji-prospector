@@ -24,17 +24,19 @@ urlpatterns = [
     path('plan', views.plan, name='plan'),
 
     path('contacts', views.contacts_list, name='contacts.list'),
+    path('contacts/create', views.contacts_edit, {'create': True}, name='contacts.create'),
     path('contacts/<int:pk>', views.contacts_show, name='contacts.show'),
     path('contacts/<int:pk>/edit', views.contacts_edit, name='contacts.edit'),
 
     path('deals', views.deals_list, name='deals.list'),
-    path('deals/create', views.deals_edit, name='deals.create'),
+    path('deals/create', views.deals_edit, {'create': True}, name='deals.create'),
     path('deals/<int:pk>', views.deals_show, name='deals.show'),
     path('deals/<int:pk>/edit', views.deals_edit, name='deals.edit'),
     path('deals/<int:pk>/explaintags', views.deals_explaintags, name='deals.explaintags'),
     path('deals/<int:pk>/defaulttasks', views.index, name='deals.defaulttasks'),
 
     path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
+    path('tasktypes/create', views.tasktypes_edit, {'create': True}, name='tasktypes.create'),
     path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
     path('tasktypes/<int:pk>/edit', views.tasktypes_edit, name='tasktypes.edit'),
 

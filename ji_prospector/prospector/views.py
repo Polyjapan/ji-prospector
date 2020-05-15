@@ -171,18 +171,22 @@ def contacts_list(request):
     return render(request, 'prospector/contacts/list.html', {'qs': qs})
 
 @login_required
-def contacts_edit(request, pk):
-    obj = get_object_or_404(Contact, pk=pk)
+def contacts_edit(request, pk=None, create=False):
+    if create:
+        obj = Contact()
+    else:
+        obj = get_object_or_404(Contact, pk=pk)
+
     if request.method == 'POST':
         form = ContactForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
             messages.success(request, 'Modifications sauvegardées.')
-            return redirect(reverse('prospector:contacts.show', args=(pk,)))
+            return redirect(reverse('prospector:contacts.show', args=(form.instance.pk,)))
     else:
         form = ContactForm(instance=obj)
 
-    return render(request, 'prospector/contacts/edit.html', {'obj': obj, 'form': form})
+    return render(request, 'prospector/contacts/edit.html', {'obj': obj, 'form': form, 'create': create})
 
 
 @login_required
@@ -202,18 +206,23 @@ def deals_list(request):
 
 
 @login_required
-def deals_edit(request, pk):
-    obj = get_object_or_404(Deal, pk=pk)
+def deals_edit(request, pk=None, create=False):
+    if create:
+        contact = get_object_or_404(Contact, pk=request.GET['from_contact']) if 'from_contact' in request.GET else None
+        obj = Deal(contact=contact)
+    else:
+        obj = get_object_or_404(Deal, pk=pk)
+
     if request.method == 'POST':
         form = DealForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
             messages.success(request, 'Modifications sauvegardées.')
-            return redirect(reverse('prospector:deals.show', args=(pk,)))
+            return redirect(reverse('prospector:deals.show', args=(form.instance.pk,)))
     else:
         form = DealForm(instance=obj)
 
-    return render(request, 'prospector/deals/edit.html', {'obj': obj, 'form': form})
+    return render(request, 'prospector/deals/edit.html', {'obj': obj, 'form': form, 'create': create})
 
 
 @login_required
@@ -255,18 +264,22 @@ def tasktypes_list(request):
 
 
 @login_required
-def tasktypes_edit(request, pk):
-    obj = get_object_or_404(TaskType, pk=pk)
+def tasktypes_edit(request, pk=None, create=False):
+    if create:
+        obj = TaskType()
+    else:
+        obj = get_object_or_404(TaskType, pk=pk)
+
     if request.method == 'POST':
         form = TaskTypeForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
             messages.success(request, 'Modifications sauvegardées.')
-            return redirect(reverse('prospector:tasktypes.show', args=(pk,)))
+            return redirect(reverse('prospector:tasktypes.show', args=(form.instance.pk,)))
     else:
         form = TaskTypeForm(instance=obj)
 
-    return render(request, 'prospector/tasktypes/edit.html', {'obj': obj, 'form': form})
+    return render(request, 'prospector/tasktypes/edit.html', {'obj': obj, 'form': form, 'create': create})
 
 
 @login_required
