@@ -7,7 +7,7 @@ from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subqu
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import make_aware
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.html import format_html
 from django.contrib.auth.decorators import login_required
 
@@ -315,24 +315,30 @@ def tasks_delete_comment(request, pk):
 
 
 @login_required
-def tasks_list_embed(request, fixed_tasktype=None, fixed_deal=None):
+def tasks_list_embed(request):
     qs = Task.objects.all()
-    if fixed_tasktype:
-        qs = qs.filter(tasktype__pk=fixed_tasktype)
-    if fixed_deal:
-        qs = qs.filter(deal__pk=fixed_deal)
+    fixed_tasktype = False
+    fixed_deal = False
+    if 'fixed_tasktype' in request.GET:
+        fixed_tasktype = True
+        qs = qs.filter(tasktype__pk=request.GET['fixed_tasktype'])
+    if 'fixed_deal' in request.GET:
+        fixed_deal = True
+        qs = qs.filter(deal__pk=request.GET['fixed_deal'])
 
     return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
 
 
 @login_required
-def tasks_set_todostate(request, pk, state):
+def tasks_set_todostate(request, pk):
     if request.method == "POST":
+        if not 'state' in request.GET:
+            return HttpResponseBadRequest()
         with transaction.atomic():
             obj = Task.objects.select_for_update().get(pk=pk)
-            if obj.todo_state != state:
+            if obj.todo_state != request.GET['state']:
                 obj.todo_state_logged = False
-                obj.todo_state = state
+                obj.todo_state = request.GET['state']
                 obj.save()
 
     return HttpResponse()

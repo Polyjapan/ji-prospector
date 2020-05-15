@@ -21,10 +21,9 @@
                         <small class="tile-subtitle">{{comment.text | linebreaksbr}}</small>
                     </div>
                     <div class="tile-action">
-                        <form class="delete-form" action="" method="post">
+                        <form class="delete-form" action="{% url 'prospector:tasks.delete_comment' pk=comment.pk %}" method="post">
                             {% csrf_token %}
                             <button type="submit"
-                                    formaction="{% url 'prospector:tasks.delete_comment' pk=comment.pk %}"
                                     data-tooltip="Supprimer"
                                     class="btn btn-sm btn-primary tooltip tooltip-left">
                                 <i class="icon icon-delete"></i>

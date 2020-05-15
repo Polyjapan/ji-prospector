@@ -85,7 +85,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <remote-nicetable href="{% url 'prospector:tasks.list_embed_fixed_tasktype' fixed_tasktype=obj.pk %}" id="tasks_list_remote">
+                <remote-nicetable href="{% url 'prospector:tasks.list_embed' %}?fixed_tasktype={{obj.pk}}" id="tasks_list_remote">
                 </remote-nicetable>
             </div>
         </div>

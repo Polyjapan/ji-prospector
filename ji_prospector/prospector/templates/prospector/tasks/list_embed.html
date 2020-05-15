@@ -43,7 +43,7 @@
                                 {% endfor %}
                                 {% for prev in task.usual_prev_states %}
                                     <button type="submit"
-                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=prev %}"
+                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}"
                                             data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
                                             class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
@@ -51,7 +51,7 @@
                                 {% endfor %}
                                 {% for next in task.usual_next_states %}
                                     <button type="submit"
-                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk state=next %}"
+                                            formaction="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}"
                                             data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
                                             class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
