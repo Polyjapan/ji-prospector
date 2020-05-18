@@ -13,30 +13,35 @@
 <div class="container">
     <div class="columns">
         <div class="col-12">
-            <nicetable>
-                <rows>
-                    {% for t in qs %}
-                        <r>
-                            <d>{{t | fresh:'a'}}</d>
-                            <d>{{t.task__deal__count}} deals</d>
-                            <d>{{t.description}}</d>
-                            <d>
-                                {% for tag in t.tags_list %}
-                                    <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                            </d>
-                            <d></d>
-                        </r>
-                    {% endfor %}
-                </rows>
-            </nicetable>
+            <div class="card">
+                <div class="card-body">
+                    <nicetable>
+                        <rows>
+                            {% for t in qs %}
+                                <r>
+                                    <d>{{t | fresh:'a'}}</d>
+                                    <d>{{t.task__deal__count}} deals</d>
+                                    <d>{{t.description}}</d>
+                                    <d>
+                                        {% for tag in t.tags_list %}
+                                            <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </d>
+                                    <d></d>
+                                </r>
+                            {% endfor %}
+                        </rows>
+                    </nicetable>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'prospector:tasktypes.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>
+                    <a href="{% url 'prospector:tasktypes.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="my-2">
-    <a href="{% url 'prospector:tasktypes.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
-</div>
 {% endblock %}
 
 {% block js %}

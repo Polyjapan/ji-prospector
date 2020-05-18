@@ -7,15 +7,15 @@ from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subqu
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import make_aware
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, Http404
 from django.utils.html import format_html
 from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
+import safedelete
 
 from .models import *
 from .forms import *
-
 
 def show_model_data(cls, instance, exclude=[]):
     fs = cls._meta.get_fields(include_hidden=False)
@@ -164,11 +164,49 @@ def plan(request):
 
     return render(request, 'prospector/index.html')
 
+def list_view(model_class, templates_folder, *, archive=False):
+    @login_required
+    def the_view(request):
+        if archive:
+            qs = model_class.objects.deleted_only().order_by('deleted')
+            return render(request, 'prospector/{}/archive.html'.format(templates_folder), {'qs': qs})
 
-@login_required
-def contacts_list(request):
-    qs = Contact.objects.order_by('person_name')
-    return render(request, 'prospector/contacts/list.html', {'qs': qs})
+        qs = model_class.objects.all()
+        return render(request, 'prospector/{}/list.html'.format(templates_folder), {'qs': qs})
+
+    return the_view
+
+def delete_view(model_class, view_prefix):
+    @login_required
+    def the_view(request, pk):
+        obj = get_object_or_404(model_class, pk=pk)
+
+        if request.method == 'POST':
+            obj.delete()
+            messages.success(request, 'Archivage effectué.')
+            return redirect(reverse('prospector:{}.list'.format(view_prefix)))
+
+        return HttpResponse()
+
+    return the_view
+
+def undelete_view(model_class, view_prefix):
+    @login_required
+    def the_view(request, pk):
+        try:
+            obj = model_class.objects.deleted_only().get(pk=pk)
+        except Contact.DoesNotExist:
+            return Http404()
+
+        if request.method == 'POST':
+            obj.save()
+            messages.success(request, 'Restauration effectuée.')
+            return redirect(reverse('prospector:{}.show'.format(view_prefix), args=(pk,)))
+
+        return HttpResponse()
+
+    return the_view
+
 
 @login_required
 def contacts_edit(request, pk=None, create=False):
@@ -192,17 +230,9 @@ def contacts_edit(request, pk=None, create=False):
 @login_required
 def contacts_show(request, pk):
     obj = get_object_or_404(Contact, pk=pk)
-    # Get all fields of this object, and their values, in a dictionary
-    show_data = show_model_data(Contact, obj)
     # Get all deals related to this object
     qs = Deal.objects.filter(contact__pk=obj.pk).order_by('-event__date')
-    return render(request, 'prospector/contacts/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
-
-
-@login_required
-def deals_list(request):
-    qs = Deal.objects.order_by('booth_name')
-    return render(request, 'prospector/deals/list.html', {'qs': qs})
+    return render(request, 'prospector/contacts/show.html', {'obj': obj, 'qs': qs})
 
 
 @login_required
@@ -247,6 +277,7 @@ def deals_show(request, pk):
 
     return render(request, 'prospector/deals/show.html', {'obj': obj, 'taskform': taskform})
 
+
 @login_required
 def deals_explaintags(request, pk):
     obj = get_object_or_404(Deal, pk=pk)
@@ -256,6 +287,19 @@ def deals_explaintags(request, pk):
         'contract': obj.any_tasks_with_tag('contract'),
     }
     return render(request, 'prospector/deals/explaintags.html', {'obj': obj, 'tasks': tasks})
+
+@login_required
+def deals_defaulttasks(request, pk):
+    obj = get_object_or_404(Deal, pk=pk)
+    if request.method == 'POST':
+        types = TaskType.objects.filter(default_task_type=True)
+        for type in types:
+            task = Task(deal=obj, tasktype=type, todo_state='5_contact_waits_pro')
+            task.save()
+        return redirect(reverse('prospector:deals.show', args=(pk,)))
+
+    return HttpResponse()
+
 
 @login_required
 def tasktypes_list(request):

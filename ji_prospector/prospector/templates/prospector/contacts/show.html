@@ -1,11 +1,5 @@
 {% extends 'base.html' %}
 
-{% load macros %}
-
-
-
-{% loadmacros 'show_data.html' %}
-
 {% block title %}Contact : {{obj.person_name}}{% endblock %}
 {% block subtitle %}{{obj.email_address | default:'Pas d\'adresse mail °o°'}}{% endblock %}
 {% block active_menu %}contacts{% endblock %}
@@ -56,6 +50,10 @@
             <div class="card-footer">
                 <button class="btn">Mail données manquantes <i class="icon icon-mail"></i></button>
                 <a href="{% url 'prospector:contacts.edit' pk=obj.pk %}" class="btn btn-primary">Éditer <i class="icon icon-edit"></i></a>
+                <form class="d-inline" action="{% url 'prospector:contacts.delete' pk=obj.pk %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-error">Archiver <i class="icon icon-minus"></i></button>
+                </form>
             </div>
         </div>
     </div>

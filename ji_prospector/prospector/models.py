@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 # from gmail_link.models import EmailAddress
 from django_fresh_models.library import fresh_model
 
+import safedelete.models
 from datetime import timedelta
 import json
 
@@ -31,7 +32,12 @@ class Event(models.Model):
     polyjapan_president = models.CharField(max_length=128, verbose_name='Président PolyJapan')
 
 @fresh_model
-class Contact(models.Model):
+class Contact(safedelete.models.SafeDeleteModel):
+    class Meta:
+        ordering = ['person_name']
+
+    _safedelete_policy = safedelete.models.HARD_DELETE_NOCASCADE
+
     person_name = models.CharField(max_length=128, blank=True, verbose_name='Nom de la personne')
     phone_number = models.CharField(max_length=16, blank=True, verbose_name='Téléphone')
 
@@ -43,11 +49,15 @@ class Contact(models.Model):
     pr_description = models.TextField(blank=True, verbose_name='Description comm')
 
 @fresh_model
-class TaskType(models.Model):
+class TaskType(safedelete.models.SafeDeleteModel):
     """e.g. 'Send the contract' or 'Set booth location'..."""
+
+    _safedelete_policy = safedelete.models.HARD_DELETE_NOCASCADE
+
     name = models.CharField(max_length=128, verbose_name='Nom')
     description = models.TextField(blank=True, verbose_name='Description')
     wiki_page = models.URLField(max_length=256, blank=True, verbose_name='Lien wiki')
+    default_task_type = models.BooleanField(default=False, verbose_name='Ce type de tâche est par défaut')
 
     typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Type de tâche suivante typique')
     tags = models.TextField(blank=True, verbose_name='Tags magiques', help_text='Line-separated list of tags') # Search with regex field lookup
@@ -62,8 +72,7 @@ class TaskType(models.Model):
         return [x.strip() for x in self.tags.split('\n')] if self.tags else []
 
 @fresh_model
-class Task(models.Model):
-    """Each time the todo-state changes, create a new Task object. That way, you can keep a history => No. Use another model, and show it with Spectre Timelines."""
+class Task(safedelete.models.SafeDeleteModel):
     TODO_STATES = [
         ('0_done', 'Terminé'),
         ('1_doing', 'En cours'),
@@ -72,6 +81,8 @@ class Task(models.Model):
         ('4_pro_waits_treasury', 'Attente tréso.'),
         ('5_contact_waits_pro', 'À faire'),
     ]
+
+    _safedelete_policy = safedelete.models.HARD_DELETE_NOCASCADE
 
     todo_state = models.CharField(max_length=32, choices=TODO_STATES)
     todo_state_logged = models.BooleanField(default=False)
@@ -125,7 +136,10 @@ class TaskComment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
 @fresh_model
-class Deal(models.Model):
+class Deal(safedelete.models.SafeDeleteModel):
+    class Meta:
+        ordering = ['booth_name']
+
     DEAL_TYPES = [
         ('pro', 'Stand pro'),
         ('fanzine', 'Stand fanzine/jeune créateur'),
@@ -134,6 +148,9 @@ class Deal(models.Model):
         ('association', 'Stand association'),
         ('food', 'Stand nourriture'),
     ]
+
+    _safedelete_policy = safedelete.models.HARD_DELETE_NOCASCADE
+
     type = models.CharField(max_length=32, choices=DEAL_TYPES, verbose_name='Type')
     contact = models.ForeignKey('Contact', on_delete=models.CASCADE, verbose_name='Contact')
     event = models.ForeignKey('Event', on_delete=models.CASCADE, verbose_name='Événement')

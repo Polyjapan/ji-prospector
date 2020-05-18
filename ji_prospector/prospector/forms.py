@@ -18,6 +18,19 @@ class FanzineVoteForm(forms.Form):
     pass
 
 
+class HardDeleteForm(forms.Form):
+    magic_words_field = forms.CharField(max_length=128, required=False, label='Mots magiques')
+
+    def clean_magic_words_field(self):
+        data = self.cleaned_data['magic_words_field']
+        if data.lower() != self.magic_words.lower():
+            raise forms.ValidationError('Les mots magiques ne sont pas corrects.')
+        return data
+
+    def __init__(self, *args, magic_words, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.magic_words = magic_words
+
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Contact
@@ -59,8 +72,8 @@ class QuickStartForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        qs1 = TaskType.objects.all().annotate(pouet=Value('tasktype', CharField())).values_list('name', 'pouet')
-        qs2 = Deal.objects.all().annotate(pouet=Value('deal', CharField())).values_list('booth_name', 'pouet')
+        qs1 = TaskType.objects.annotate(pouet=Value('tasktype', CharField())).values_list('name', 'pouet').order_by()
+        qs2 = Deal.objects.annotate(pouet=Value('deal', CharField())).values_list('booth_name', 'pouet').order_by()
 
         self.fields['what'].widget = PrefixedDataListTextInput(
             prefix='Je veux m\'occuper de',

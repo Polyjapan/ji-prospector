@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django_fresh_models',
     'widget_tweaks', # for spectre-css
     'django-spectre-css',
+    'safedelete',
     'prospector',
     'users',
     'app',

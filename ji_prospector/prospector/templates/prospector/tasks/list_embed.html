@@ -40,7 +40,7 @@
                                 <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
                             {% endfor %}
                             {% for prev in task.usual_prev_states %}
-                                <form action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}" method="post">
+                                <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}" method="post">
                                     {% csrf_token %}
                                     <button type="submit"
                                             data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
@@ -50,7 +50,7 @@
                                 </form>
                             {% endfor %}
                             {% for next in task.usual_next_states %}
-                                <form action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}" method="post">
+                                <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}" method="post">
                                     {% csrf_token %}
                                     <button type="submit"
                                             data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
@@ -60,7 +60,7 @@
                                 </form>
                             {% endfor %}
                             {% if not task.todo_state_logged %}
-                                <form action="{% url 'prospector:tasks.log_todostate' pk=task.pk %}" method="post">
+                                <form class="d-inline" action="{% url 'prospector:tasks.log_todostate' pk=task.pk %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit"
                                             data-tooltip="Valider le nouvel état"

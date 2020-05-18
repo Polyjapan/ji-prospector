@@ -35,11 +35,21 @@
                             {% endif %}
                         </td>
                     </tr>
+                    <tr>
+                        <th>Type de tâche par défaut ?</th>
+                        <td th_data="Type de tâche par défaut ?">
+                            {{obj.default_task_type | yesno:'Oui,Non'}}
+                        </td>
+                    </tr>
                 </table>
             </div>
             <div class="card-footer">
                 <button class="btn">Merger dans un autre type de tâche <i class="icon icon-refresh"></i></button>
                 <a href="{% url 'prospector:tasktypes.edit' pk=obj.pk %}" class="btn btn-primary">Éditer <i class="icon icon-edit"></i></a>
+                <form class="d-inline" action="{% url 'prospector:tasktypes.delete' pk=obj.pk %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-error">Archiver <i class="icon icon-minus"></i></button>
+                </form>
             </div>
         </div>
     </div>
