@@ -236,6 +236,25 @@ def contacts_show(request, pk):
 
 
 @login_required
+def events_edit(request, pk=None, create=False):
+    if create:
+        obj = Event()
+    else:
+        obj = get_object_or_404(Event, pk=pk)
+        
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Modifications sauvegardées.')
+            return redirect(reverse('prospector:events.show', args=(form.instance.pk,)))
+    else:
+        form = EventForm(instance=obj)
+        
+    return render(request, 'prospector/events/edit.html', {'obj': obj, 'form': form, 'create': create})
+
+
+@login_required
 def deals_edit(request, pk=None, create=False):
     if create:
         contact = get_object_or_404(Contact, pk=request.GET['from_contact']) if 'from_contact' in request.GET else None

@@ -33,7 +33,10 @@
     </div>
 </div>
 <div class="mt-2">
-    <button class="btn btn-success">Créer</button>
+    <div class="card-footer">
+        <a href="{% url 'prospector:events.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+    </div>
+
 </div>
 {% endblock %}
 

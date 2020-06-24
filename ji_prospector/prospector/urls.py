@@ -60,6 +60,7 @@ urlpatterns = [
     path('tasks/embed', views.tasks_list_embed, name='tasks.list_embed'),
 
     path('events', views.events_list, name='events.list'),
+    path('events/create', views.events_edit, {'create': True}, name='events.create'),
     path('events/<int:pk>', views.events_show, name='events.show'),
 
 ]

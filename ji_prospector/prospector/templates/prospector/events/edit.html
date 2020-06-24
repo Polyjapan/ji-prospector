@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load spectre_css %}
+
+{% block title %}{% if create %}Nouvel événement{% else %}Event : {{obj|fresh}}{% endif %}{% endblock %}
+{% block subtitle %}{% endblock %}
+{% block active_menu %}deals{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">{% if create %}Création d'un event{% else %}Édition de {{obj|fresh}}{% endif %}</div>
+        </div>
+        <div class="card-body">
+            {% render_form form %}
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                {% if create %}
+                    <a href="{% url 'prospector:deals.list' %}" class="btn">Annuler <i class="icon icon-back"></i></a>
+                {% else %}
+                    <a href="{% url 'prospector:deals.show' pk=obj.pk %}" class="btn">Annuler <i class="icon icon-back"></i></a>
+                {% endif %}
+                <button class="btn btn-success">Sauvegarder <i class="icon icon-check"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

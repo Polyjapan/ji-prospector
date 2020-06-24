@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 
+
 # from gmail_link.models import EmailAddress
 from django_fresh_models.library import fresh_model
 
@@ -25,7 +26,7 @@ User = get_user_model()
 @fresh_model
 class Event(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')
-    date = models.DateField(verbose_name='Date')
+    date = models.DateField(verbose_name='Date (YYYY-MM-JJ)')
     current = models.BooleanField(default=False, verbose_name='Événement actuel ?')
     budget = models.FloatField(verbose_name='Budget stands')
     agepoly_president = models.CharField(max_length=128, verbose_name='Président AGEPoly')

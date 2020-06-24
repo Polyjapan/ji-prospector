@@ -36,6 +36,11 @@ class ContactForm(forms.ModelForm):
         model = Contact
         fields = '__all__'
 
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
 class DealForm(forms.ModelForm):
     class Meta:
         model = Deal
