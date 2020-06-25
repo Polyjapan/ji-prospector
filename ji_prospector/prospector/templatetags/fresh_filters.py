@@ -6,7 +6,7 @@ from django import template
 
 from django_fresh_models.library import FreshFilterLibrary
 
-from prospector.models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event
+from prospector.models import Contact, Deal, Task, TaskLog, BoothSpace, TaskType, Event, Fanzine
 import prospector.templatetags.filters as normal_filters
 
 ff = FreshFilterLibrary()
@@ -19,6 +19,18 @@ def none(inst, argument):
 def contact(inst, argument):
     url = reverse('prospector:contacts.show', args=[inst.pk])
     string = inst.person_name
+
+    if argument == 'url':
+        return url
+    elif argument == 'a':
+        return format_html('<a href="{}">{}</a>', url, string)
+    else:
+        return string
+
+@ff.filter(Fanzine)
+def fanzine(inst, argument):
+    url = reverse('prospector:fanzines.show', args=[inst.pk])
+    string = inst.name
 
     if argument == 'url':
         return url

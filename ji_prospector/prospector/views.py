@@ -455,6 +455,27 @@ def events_show(request, pk):
     return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
 
 # TODO: Find a way to select the fanzines
-
-
 # Create your views here.
+def fanzine_register(request):
+    event = Event.objects.filter(current=True).get()
+    obj = Fanzine()
+    if request.method == 'POST':
+        form = FanzineForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Votre inscription a été effectuée avec succès')
+            return redirect('prospector:fanzines.register')
+    else:
+        form = FanzineForm(instance=obj)
+    return render(request, 'prospector/fanzines/register.html', {'event': event, 'form': form})
+
+@login_required
+def fanzine_list(request):
+    qs = Fanzine.objects.all()
+    return render(request, 'prospector/fanzines/list.html', {'qs': qs})
+
+@login_required
+def fanzines_show(request, pk):
+    obj = Fanzine.objects.get(pk=pk)
+    show_data = show_model_data(Fanzine, obj)
+    return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj})

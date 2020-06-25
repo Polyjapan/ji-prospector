@@ -62,5 +62,9 @@ urlpatterns = [
     path('events', views.events_list, name='events.list'),
     path('events/create', views.events_edit, {'create': True}, name='events.create'),
     path('events/<int:pk>', views.events_show, name='events.show'),
+    
+    path('fanzines/register', views.fanzine_register, name='fanzines.register'),
+    path('fanzines', views.fanzine_list, name='fanzines.list'),
+    path('fanzines/<int:pk>', views.fanzines_show, name='fanzines.show'),
 
 ]

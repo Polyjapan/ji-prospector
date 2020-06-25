@@ -6,7 +6,7 @@
         {% for name, data in dict.items %}
             <tr>
                 <th>{{data.display_name}}</th>
-                <td th_data="{{data.display_name}}">{{data.display_value | or_cross | linebreaksbr}}</td>
+                <td th_data="{{data.display_name}}">{{data.display_value | check_or_cross | linebreaksbr}}</td>
             </tr>
         {% endfor %}
     </table>

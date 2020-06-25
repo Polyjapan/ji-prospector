@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+
+
+
+{% loadmacros 'show_data.html' %}
+
+{% block title %}Fanzine : {{obj.name}}{% endblock %}
+{% block subtitle %}{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Données</div>
+    </div>
+    <div class="card-body">
+        {% call showdata show_data %}{% endcall %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    getRemoteNiceTable('#tasks_list_remote');
+</script>
+{% endblock %}

@@ -34,6 +34,8 @@ def or_check(value):
 
 @register.filter(name='check_or_cross', is_safe=True)
 def check_or_cross(value):
+    if type(value) != bool:
+        return value
     if value:
         return mark_safe('<span><i class="icon icon-check"></i></span>')
     else:

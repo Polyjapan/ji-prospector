@@ -1,0 +1,35 @@
+{% extends 'base_public.html' %}
+{% load spectre_css %}
+
+{% block title %}Inscriptions stands fanzines / jeunes créateurs - {{event|fresh}} {% endblock %}
+{% block subtitle %}Ce formulaire sera ouvert jusqu'au {{event.date}} à minuit.{% endblock %}
+{% block active_menu %}contacts{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    <div class="card mb-2">
+        <div class="card-header">
+          <p>MERCI DE LIRE ATTENTIVEMENT LES INFORMATIONS CI-DESSOUS 
+          <br><br>Bienvenue sur le formulaire d'inscription en ligne pour les stands amateurs (fanzines et/ou jeunes créateurs) et merci de votre intérêt à participer à {{event|fresh}} ! Avant de continuer, assurez-vous d'avoir bien pris connaissance des informations mentionnées ici :
+<ul>
+  <li> {{event|fresh}} aura lieu le {{event.date}}, assurez-vous donc d'être libre à ces dates :)
+    <li> Le lieu de l'événement sera l'Ecole Polytechnique Fédérale de Lausanne (EPFL)
+    <li> Les stands "1 table" coûteront 40.- CHF (TTC) et les stands "2 tables" coûteront 100.- CHF (TTC).
+    <li> Les dessins à l'origine des produits de "fanzinat" doivent avoir été créés par l'un des responsables du stand ; les supports de ces dessins ne sont en revanche pas limités.
+    <li> Les produits "jeunes créateurs" doivent être artisanaux et créés à la main par l'un des responsables du stand. Les produits importés, même s'ils sont artisanaux, ne sont pas acceptés.
+</ul>
+Si nous recevons plus de demandes que de places à disposition, nous effectuerons une sélection parmi les inscriptions basées sur les critères de la diversité, de la qualité et du rapport à la culture japonaise. Une inscription sur ce formulaire ne signifie donc pas forcément l'attribution automatique d'un stand =(.
+<br><br>
+Si vous ne remplissez pas les conditions pour être un stand Fanzine / Jeune Créateur, vous pouvez nous contacter à l'adresse pro@japan-impact.ch.</p>
+        </div>
+        <div class="card-body">
+            {% render_form form %}
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                <button class="btn btn-success">Sauvegarder <i class="icon icon-check"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

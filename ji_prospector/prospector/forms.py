@@ -9,8 +9,10 @@ from .models import *
 from .fields import PrefixedDataListTextInput
 
 # Really ?
-class FanzineForm(forms.Form):
-    pass
+class FanzineForm(forms.ModelForm):
+    class Meta:
+        model = Fanzine
+        fields = '__all__'
 
 
 class FanzineVoteForm(forms.Form):

@@ -253,3 +253,16 @@ class LogisticalNeedSet(models.Model):
 
     # Other
     other_material = models.TextField(blank=True)
+    
+@fresh_model
+class Fanzine(models.Model):
+    agrees = models.BooleanField(default=False, verbose_name='J\'ai lu et je confirme que mon stand correspond aux informations ci-dessus')
+    name = models.CharField(max_length=128, verbose_name='NOM Prénom')
+    address_street = models.CharField(max_length=128, verbose_name='Rue / n°')
+    address_city = models.CharField(max_length=128, verbose_name='Code Postal / Ville')
+    address_country = models.CharField(max_length=2, verbose_name='Pays', help_text="Code à deux lettres")
+    age = models.BooleanField(default=False, blank=True, verbose_name='Je serai majeur lors de Japan Impact')
+    email = models.CharField(max_length=128, verbose_name='Adresse e-mail')
+    phone_number = models.CharField(max_length=16, verbose_name='Numéro de téléphone')
+    
+    
