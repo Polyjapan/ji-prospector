@@ -66,5 +66,6 @@ urlpatterns = [
     path('fanzines/register', views.fanzine_register, name='fanzines.register'),
     path('fanzines', views.fanzine_list, name='fanzines.list'),
     path('fanzines/<int:pk>', views.fanzines_show, name='fanzines.show'),
+    path('fanzines/delete', views.fanzines_delete, name='fanzines.delete'),
 
 ]

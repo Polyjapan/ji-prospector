@@ -23,6 +23,18 @@
                     </div>
 
                     <div>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="toast {% if message.tags != 'info' %}toast-{{ message.tags }}{% endif %} mb-1">
+                                    <button class="btn btn-clear float-right"></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+
+                    <div>
                         {% block content %}
                         {% endblock %}
                     </div>
@@ -34,6 +46,7 @@
     </body>
 
     <script src="{% static 'app/node_modules/zepto/dist/zepto.js'%}"></script>
+    
     
     {% block js %}
     {% endblock %}

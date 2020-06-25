@@ -479,3 +479,8 @@ def fanzines_show(request, pk):
     obj = Fanzine.objects.get(pk=pk)
     show_data = show_model_data(Fanzine, obj)
     return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj})
+    
+@login_required
+def fanzines_delete(request):
+    Fanzine.objects.all().delete()
+    return redirect(reverse('prospector:fanzines.list'))
