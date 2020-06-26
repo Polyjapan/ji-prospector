@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load spectre_css %}
+
+{% block title %} Ajouter les fanzines {% endblock %}
+{% block subtitle %}{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<form enctype="multipart/form-data" action="" method="post">
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Explication du format attendu</div>
+            <div>Blablablablabla</div>
+        </div>
+        <div class="card-body">
+            {% render_form form %}
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                <a href="{% url 'prospector:fanzines.list' %}" class="btn">Annuler <i class="icon icon-back"></i></a>
+                <button class="btn btn-success">Importer<i class="icon icon-check"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

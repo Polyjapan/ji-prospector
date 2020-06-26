@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
 import safedelete
+import csv, io
 
 from .models import *
 from .forms import *
@@ -255,6 +256,28 @@ def events_edit(request, pk=None, create=False):
 
 
 @login_required
+def events_list(request):
+    qs = Event.objects.order_by('-date')
+    return render(request, 'prospector/events/list.html', {'qs': qs})
+
+
+@login_required
+def events_show(request, pk):
+    if request.method == 'POST':
+        if request.POST['what'] == 'please_make_this_current':
+            old_current = Event.objects.select_for_update().filter(current=True)
+            new_current = Event.objects.select_for_update().filter(pk=pk)
+            with transaction.atomic():
+                old_current.update(current=False)
+                new_current.update(current=True)
+            messages.success(request, 'L\'événement {} est maintenant actuel !'.format(new_current.get().name))
+
+    obj = Event.objects.get(pk=pk)
+    show_data = show_model_data(Event, obj)
+    return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
+
+
+@login_required
 def deals_edit(request, pk=None, create=False):
     if create:
         contact = get_object_or_404(Contact, pk=request.GET['from_contact']) if 'from_contact' in request.GET else None
@@ -432,28 +455,6 @@ def tasktypes_show(request, pk):
     qs = Task.objects.filter(tasktype__pk=obj.pk)
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
-
-@login_required
-def events_list(request):
-    qs = Event.objects.order_by('-date')
-    return render(request, 'prospector/events/list.html', {'qs': qs})
-
-
-@login_required
-def events_show(request, pk):
-    if request.method == 'POST':
-        if request.POST['what'] == 'please_make_this_current':
-            old_current = Event.objects.select_for_update().filter(current=True)
-            new_current = Event.objects.select_for_update().filter(pk=pk)
-            with transaction.atomic():
-                old_current.update(current=False)
-                new_current.update(current=True)
-            messages.success(request, 'L\'événement {} est maintenant actuel !'.format(new_current.get().name))
-
-    obj = Event.objects.get(pk=pk)
-    show_data = show_model_data(Event, obj)
-    return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
-
 # TODO: Find a way to select the fanzines
 # Create your views here.
 def fanzine_register(request):
@@ -484,3 +485,50 @@ def fanzines_show(request, pk):
 def fanzines_delete(request):
     Fanzine.objects.all().delete()
     return redirect(reverse('prospector:fanzines.list'))
+    
+@login_required
+def fanzines_add(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # TODO verify the extension (?)
+            f = request.FILES['file']
+            decoded = f.read().decode()
+            with io.StringIO(decoded) as f:
+                reader = csv.reader(f)
+                next(reader) # skip header
+                for row in reader:
+                    _, created = Fanzine.objects.get_or_create(
+                        name = row[2],
+                        full_address = row[3],
+                        age = row[4],
+                        email = row[5],
+                        phone_number = row[6],
+                        stand_name = row[7],
+                        prev_editions = row[8],
+                        tables = row[9],
+                        num_people = row[10],
+                        stand_content = row[11],
+                        logistic_needs = row[12],
+                        electric_needs = row[13],
+                        activities = row[14],
+                        stand_description = row[15],
+                        image_url = row[16],
+                        second_chance = (row[17] == 'Oui'),
+                        deadline = row[18],
+                        deviant_url = row[19],
+                        facebook_url = row[20],
+                        blog_url = row[21],
+                        deco = (row[22] == 'Oui'),
+                        remarks = row[23]
+                        )
+                    assert created
+                messages.success(request, 'Fanzines importées avec succès')
+                return redirect(reverse('prospector:fanzines.list'))
+    else:
+        form = UploadFileForm()
+    return render(request, 'prospector/fanzines/add.html', {'form': form})
+    
+    
+    
+    

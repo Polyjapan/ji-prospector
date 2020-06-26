@@ -29,7 +29,9 @@
 </div>
 <div class="mt-2">
     <div class="card-footer">
-        <a href="{% url 'prospector:fanzines.delete' %}" class="btn btn-error">Supprimer tout</i></a>
+        {% if qs %} <a href="{% url 'prospector:fanzines.delete' %}" class="btn btn-error">Tout supprimer et recommencer</i></a>
+        {% else %} <a href="{% url 'prospector:fanzines.add' %}" class="btn btn-success">Ajouter les fanzines</i></a>
+        {% endif %}
 
     </div>
 

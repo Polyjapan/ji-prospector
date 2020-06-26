@@ -14,6 +14,8 @@ class FanzineForm(forms.ModelForm):
         model = Fanzine
         fields = '__all__'
 
+class UploadFileForm(forms.Form):
+    file = forms.CharField(widget=forms.ClearableFileInput)
 
 class FanzineVoteForm(forms.Form):
     """One day I'll do it"""
