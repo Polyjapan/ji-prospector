@@ -15,11 +15,19 @@ class FanzineForm(forms.ModelForm):
         fields = '__all__'
 
 class UploadFileForm(forms.Form):
-    file = forms.CharField(widget=forms.ClearableFileInput)
+    file = forms.FileField()
 
 class FanzineVoteForm(forms.Form):
     """One day I'll do it"""
-    pass
+    #score = forms.IntegerField(min_value=0, max_value=10)
+    choices = (
+        (0, "------"),
+        (3, "Oui !!!"),
+        (2, "Pourquoi pas"),
+        (1, "Meh"),
+        (-1, "Non !!!"),
+    )
+    rating = forms.IntegerField(widget=forms.Select(choices=choices), required=True)
 
 
 class HardDeleteForm(forms.Form):

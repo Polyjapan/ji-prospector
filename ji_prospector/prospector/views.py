@@ -455,8 +455,7 @@ def tasktypes_show(request, pk):
     qs = Task.objects.filter(tasktype__pk=obj.pk)
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
-# TODO: Find a way to select the fanzines
-# Create your views here.
+# TODO: Put it in separate file?
 def fanzine_register(request):
     event = Event.objects.filter(current=True).get()
     obj = Fanzine()
@@ -472,7 +471,7 @@ def fanzine_register(request):
 
 @login_required
 def fanzine_list(request):
-    qs = Fanzine.objects.all()
+    qs = Fanzine.objects.order_by('-total_score')
     return render(request, 'prospector/fanzines/list.html', {'qs': qs})
 
 @login_required
@@ -528,7 +527,32 @@ def fanzines_add(request):
     else:
         form = UploadFileForm()
     return render(request, 'prospector/fanzines/add.html', {'form': form})
-    
-    
-    
-    
+
+@login_required
+def fanzines_vote_start(request):
+    first = Fanzine.objects.all()[0]
+    return render(request, 'prospector/fanzines/vote_start.html', {'obj': first.pk}) 
+  
+@login_required
+def fanzines_vote(request, pk):
+    obj = get_object_or_404(Fanzine, pk=pk)
+    # TODO handle the end
+    if request.method == 'POST':
+        form = FanzineVoteForm(request.POST)
+        if form.is_valid():
+            obj.total_score += form.cleaned_data['rating']
+            obj.num_ratings += 1
+            obj.save()
+            try:
+                Fanzine.objects.get(pk=pk+1)
+                return redirect(reverse('prospector:fanzines.vote', args=(pk+1,)))
+            except Fanzine.DoesNotExist: # Arrived at the end
+                return render(request, 'prospector/fanzines/vote_end.html') 
+            
+    else:
+        form = FanzineVoteForm()
+    return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form})       
+            
+            
+            
+            
