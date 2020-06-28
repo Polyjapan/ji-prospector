@@ -22,12 +22,13 @@ class FanzineVoteForm(forms.Form):
     #score = forms.IntegerField(min_value=0, max_value=10)
     choices = (
         (0, "------"),
-        (3, "Oui !!!"),
-        (2, "Pourquoi pas"),
-        (1, "Meh"),
-        (-1, "Non !!!"),
+        (2, "Oui !!!"),
+        (1, "Pourquoi pas"),
+        (-1, "Meh"),
+        (-2, "Non !!!"),
     )
-    rating = forms.IntegerField(widget=forms.Select(choices=choices), required=True)
+    rating = forms.IntegerField(widget=forms.Select(choices=choices), required=True, label='Avis')
+    comment = forms.CharField(widget=forms.Textarea(attrs={'style': 'height: 6rem;'}), max_length=512, required=False, label='Commentaire (optionnel)')
 
 
 class HardDeleteForm(forms.Form):

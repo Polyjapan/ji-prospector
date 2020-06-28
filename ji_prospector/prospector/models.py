@@ -254,10 +254,10 @@ class LogisticalNeedSet(models.Model):
     # Other
     other_material = models.TextField(blank=True)
     
-@fresh_model
+@fresh_model # TODO à quoi ça sert :')
 class Fanzine(models.Model):
-    #agrees = models.BooleanField(default=False, verbose_name='J\'ai lu et je confirme que mon stand correspond aux informations ci-dessus')
-    
+    # most important information, placed first
+    stand_name = models.CharField(max_length=128, default='', verbose_name='Nom du stand')
     # Personal information
     name = models.CharField(max_length=128, default='', verbose_name='NOM Prénom')
     full_address = models.CharField(max_length=512, default='', verbose_name='Addresse complète')
@@ -266,7 +266,6 @@ class Fanzine(models.Model):
     phone_number = models.CharField(max_length=16, verbose_name='Numéro de téléphone')
     
     # Stand information
-    stand_name = models.CharField(max_length=128, default='', verbose_name='Nom du stand')
     prev_editions = models.IntegerField(default=0, verbose_name='Participation aux précédentes éditions')
     tables = models.CharField(max_length=128, default='', verbose_name='Nombre de tables souhaité')
     num_people = models.CharField(max_length=128, default='', verbose_name='Nombre de personnes présentes')
@@ -274,7 +273,7 @@ class Fanzine(models.Model):
     logistic_needs = models.CharField(max_length=512, default='', verbose_name='Besoins logistiques')
     electric_needs = models.CharField(max_length=512, default='', blank=True, verbose_name='Besoins électriques importants')
     activities = models.CharField(max_length=512, default='', verbose_name='Activités supplémentaires')
-    stand_description = models.CharField(max_length=1024, default='', verbose_name='Description du stand')
+    stand_description = models.CharField(max_length=1024, default='', verbose_name='Description du stand') # TODO use textfield instead ? what are the advantages except from the generated form (same question with urlfield & Cie)
     image_url = models.CharField(max_length=128, default='', verbose_name='URL d\'une image du stand')
     second_chance = models.BooleanField(default=False, verbose_name='Si pas choisi mais des places se libèrent, interessé à venir ?')
     deadline = models.CharField(max_length=128, default='', verbose_name='Date limite pour être prévenu')
@@ -288,8 +287,25 @@ class Fanzine(models.Model):
     deco = models.BooleanField(default=False, verbose_name='Interessé à participer aux atelier déco')
     remarks = models.CharField(max_length=512, default='', verbose_name='Remarques')
     
-    # Score given by comitee members
-    num_ratings = models.IntegerField(default=0)
+    # Score given by comitee members # TODO voir si on garde
     total_score = models.IntegerField(default=0)
+    
+class Rating(models.Model):
+    fanzine = models.ForeignKey('Fanzine', on_delete=models.CASCADE)
+    user = models.CharField(max_length=128)
+    score = models.IntegerField()
+    comment = models.CharField(max_length=1024)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     

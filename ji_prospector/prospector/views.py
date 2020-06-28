@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
 from django.db import transaction
-from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef
+from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef, Avg
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import make_aware
 from django.contrib import messages
@@ -477,8 +477,12 @@ def fanzine_list(request):
 @login_required
 def fanzines_show(request, pk):
     obj = Fanzine.objects.get(pk=pk)
-    show_data = show_model_data(Fanzine, obj)
-    return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj})
+    show_data = show_model_data(Fanzine, obj, exclude=['total_score'])
+    # Show rating
+    ratings = Rating.objects.filter(fanzine=pk)
+    avg_score = ratings.aggregate(Avg('score'))
+    show_data['score'] = {'display_name': 'Average score', 'value': avg_score, 'display_value': avg_score['score__avg']} # TODO difference between value and display_value ??
+    return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj, 'qs': ratings})
     
 @login_required
 def fanzines_delete(request):
@@ -536,13 +540,21 @@ def fanzines_vote_start(request):
 @login_required
 def fanzines_vote(request, pk):
     obj = get_object_or_404(Fanzine, pk=pk)
-    # TODO handle the end
     if request.method == 'POST':
+        # TODO make the form dependent of the Rating model so that can only vote once (or edit vote)
         form = FanzineVoteForm(request.POST)
         if form.is_valid():
-            obj.total_score += form.cleaned_data['rating']
-            obj.num_ratings += 1
+            score = form.cleaned_data['rating']
+            
+            # Update fanzine # TODO only do if new
+            obj.total_score += score
             obj.save()
+            
+            # Update ratings
+            username = request.user.get_full_name()
+            rating = Rating(fanzine=obj, user=username, score=score, comment=form.cleaned_data['comment'])
+            rating.save()
+            
             try:
                 Fanzine.objects.get(pk=pk+1)
                 return redirect(reverse('prospector:fanzines.vote', args=(pk+1,)))

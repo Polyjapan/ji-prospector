@@ -19,7 +19,22 @@
     <div class="card-body">
         {% call showdata show_data %}{% endcall %}
     </div>
+    <div class="card-footer">
+        <button class="btn">Créer Contact & Deal </button>
+
+    </div>
 </div>
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Commentaires du comité</div>
+    </div>
+    <div class="card-body">
+        {% for item in qs %}
+          <div class="card-title h5">{{item.user}}</div>
+          <p class="card-text">{{item.comment}}</div>
+        {% endfor %}
+    </div>
+
 {% endblock %}
 
 
