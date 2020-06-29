@@ -535,25 +535,39 @@ def fanzines_add(request):
 @login_required
 def fanzines_vote_start(request):
     first = Fanzine.objects.all()[0]
-    return render(request, 'prospector/fanzines/vote_start.html', {'obj': first.pk}) 
+    total = Fanzine.objects.count()
+    return render(request, 'prospector/fanzines/vote_start.html', {'obj': first.pk, 'total': total}) 
   
 @login_required
 def fanzines_vote(request, pk):
     obj = get_object_or_404(Fanzine, pk=pk)
+    username = request.user.get_full_name()
+    try:
+        obj_rating = Rating.objects.filter(fanzine=obj).get(user=username)
+    except Rating.DoesNotExist:
+        obj_rating = None
+    
     if request.method == 'POST':
-        # TODO make the form dependent of the Rating model so that can only vote once (or edit vote)
+        # TODO make the form according to Rating model would be easier ?
         form = FanzineVoteForm(request.POST)
         if form.is_valid():
             score = form.cleaned_data['rating']
+            comment = form.cleaned_data['comment']
+            #if comment == '': comment = None
             
-            # Update fanzine # TODO only do if new
-            obj.total_score += score
-            obj.save()
+            if obj_rating == None:
+                # Update fanzine (only if new)
+                obj.total_score += score
+                obj.save()
+                
+                # Create rating
+                obj_rating = Rating(fanzine=obj, user=username, score=score, comment=comment)
+            else:
+                # Update rating
+                obj_rating.score = score
+                obj_rating.comment = comment
             
-            # Update ratings
-            username = request.user.get_full_name()
-            rating = Rating(fanzine=obj, user=username, score=score, comment=form.cleaned_data['comment'])
-            rating.save()
+            obj_rating.save()
             
             try:
                 Fanzine.objects.get(pk=pk+1)
@@ -562,7 +576,10 @@ def fanzines_vote(request, pk):
                 return render(request, 'prospector/fanzines/vote_end.html') 
             
     else:
-        form = FanzineVoteForm()
+        if obj_rating != None:
+            form = FanzineVoteForm(initial={'rating': obj_rating.score, 'comment': obj_rating.comment})
+        else:
+            form = FanzineVoteForm()
     return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form})       
             
             

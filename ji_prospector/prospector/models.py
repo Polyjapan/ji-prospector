@@ -296,16 +296,3 @@ class Rating(models.Model):
     score = models.IntegerField()
     comment = models.CharField(max_length=1024)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

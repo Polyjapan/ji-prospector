@@ -1,5 +1,6 @@
 {% extends 'base_public.html' %}
 {% load spectre_css %}
+{% load mathfilters %}
 
 {% block title %}Sélection fanzines 2021 {% endblock %}
 {% block subtitle %}{{request.user.get_full_name}}{% endblock %}
@@ -22,6 +23,8 @@
             {% render_form form %}
             
             <div class="float-right">
+              <a href="{% url 'prospector:fanzines.vote' pk=obj.pk|sub:1 %}" class="btn">Précédent <i class="icon icon-back"></i></a>
+
                 <button class="btn btn-success">Sauvegarder et continuer <i class="icon icon-forward"></i></button>
             </div>
         </div>

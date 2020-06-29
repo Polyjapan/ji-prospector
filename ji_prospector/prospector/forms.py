@@ -18,8 +18,6 @@ class UploadFileForm(forms.Form):
     file = forms.FileField()
 
 class FanzineVoteForm(forms.Form):
-    """One day I'll do it"""
-    #score = forms.IntegerField(min_value=0, max_value=10)
     choices = (
         (0, "------"),
         (2, "Oui !!!"),
