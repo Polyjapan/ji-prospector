@@ -1,1 +1,3 @@
-/* For carets in sortable tables */
+body {
+    font-family: "IBM Plex Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
+}
