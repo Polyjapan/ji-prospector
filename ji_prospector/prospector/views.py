@@ -370,6 +370,8 @@ def tasks_list_embed(request):
         fixed_deal = True
         qs = qs.filter(deal__pk=request.GET['fixed_deal'])
 
+    # Not crazy efficient. However, "depth" is a recursively-computed property, so doing it in the DB is not standard. If you're motivated, see https://mariadb.com/kb/en/recursive-common-table-expressions-overview/
+    qs = sorted(qs, key=lambda task: task.tasktype.depth)
     return render(request, 'prospector/tasks/list_embed.html', {'qs': qs, 'fixed_deal': fixed_deal, 'fixed_tasktype': fixed_tasktype})
 
 
