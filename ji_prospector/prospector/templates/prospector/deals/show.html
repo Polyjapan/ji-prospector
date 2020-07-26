@@ -122,6 +122,7 @@
             <div class="card-body">
                 <remote-nicetable href="{% url 'prospector:tasks.list_embed' %}?fixed_deal={{obj.pk}}" id="tasks_list_remote">
                     <add-form action="" method="post">
+                        <d></d>
                         <d>{{taskform.name}}</d>
                         <d>{{taskform.deadline}}</d>
                         <d>{{taskform.state}}</d>

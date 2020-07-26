@@ -59,9 +59,16 @@ class TaskType(safedelete.models.SafeDeleteModel):
     wiki_page = models.URLField(max_length=256, blank=True, verbose_name='Lien wiki')
     default_task_type = models.BooleanField(default=False, verbose_name='Ce type de tâche est par défaut')
 
-    typical_next_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Type de tâche suivante typique')
+    typical_prev_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='typical_next_tasks', verbose_name='Type de tâche précédent typique')
     tags = models.TextField(blank=True, verbose_name='Tags magiques', help_text='Line-separated list of tags') # Search with regex field lookup
     useful_views = models.TextField(blank=True, verbose_name='Liens utiles', help_text='JSON object. Key=Name of button, Value=django URL name') # A list of url names that point to views accepting an argument named pk, which is a --Task's--
+
+    @property
+    def depth(self):
+        if self.typical_prev_task:
+            return self.typical_prev_task.depth + 1
+        else:
+            return 0
 
     @property
     def useful_views_dict(self):
