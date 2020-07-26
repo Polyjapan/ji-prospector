@@ -1,149 +1,156 @@
 {% load humanize %}
-<embed-nicetable>
-    <rows>
-        {% for task in qs %}
-            <r>
-                <d>{{task.tasktype.depth | add:1 | ordinal}}</d>
-                {% if not fixed_tasktype %}<d>{{task | fresh:'timed_a'}}</d>{% endif %}
-                {% if not fixed_deal %}<d>{{task.deal | fresh:'a'}}<small> ({{task.deal.event | fresh:'a'}})</small></d>{% endif %}
-                {% if task.todo_state != '0_done' and task.deadline %}
-                    <d class="bg-{{task.deadline | deadline_color}}"><small>{{task | fresh:'deadline'}}</small></d>
-                {% else %}
-                    <d><small>{{task | fresh:'deadline'}}</small></d>
-                {% endif %}
-                <d class="bg-{{task.todo_state | todo_state_color}}"><small>{{task.todo_state | choice:'prospector.Task.todo_state'}}</small> </d>
-                <d>
-                    <small>
-                        {% if task.todo_state_logged %}
-                            {{task.tasklog_set.latest.date | timesince}}
-                        {% else %}
-                            <span class="label label-warning">Pas validé</span>
-                        {% endif %}
-                        <a class="btn btn-sm btn-link tooltip tooltip-right"
-                            data-tooltip="Historique des états"
-                            href="{% url 'prospector:tasks.history' pk=task.pk %}">
-                            <i class="icon icon-time"></i>
-                        </a>
-                    </small>
-                </d>
-                <d>
-                    <button class="btn btn-sm btn-link"
-                        onclick="getCommentModal({{task.pk}});">
-                        <i class="icon icon-message"></i>
-                        {% if task.taskcomment_set.count != 0 %}
-                            {{task.taskcomment_set.count}}
-                        {% endif %}
-                    </button>
-                </d>
-                <d>
-                    <div class="text-right mt-1">
-                        <span class="state-buttons">
-                            {% for button, link in task.tasktype.useful_views_dict.items %}
-                                <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
-                            {% endfor %}
-                            {% for prev in task.usual_prev_states %}
-                                <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
-                                        {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
-                                    </button>
-                                </form>
-                            {% endfor %}
-                            {% for next in task.usual_next_states %}
-                                <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
-                                        {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
-                                    </button>
-                                </form>
-                            {% endfor %}
-                            {% if not task.todo_state_logged %}
-                                <form class="d-inline" action="{% url 'prospector:tasks.log_todostate' pk=task.pk %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            data-tooltip="Valider le nouvel état"
-                                            class="btn btn-sm btn-action btn-primary tooltip tooltip-left mb-1">
-                                        <i class="icon icon-check"></i>
-                                    </button>
-                                </form>
+{% if qs %}
+    <embed-nicetable>
+        <rows>
+            {% for task in qs %}
+                <r>
+                    <d>{{task.tasktype.depth | add:1 | ordinal}}</d>
+                    {% if not fixed_tasktype %}<d>{{task | fresh:'timed_a'}}</d>{% endif %}
+                    {% if not fixed_deal %}<d>{{task.deal | fresh:'a'}}<small> ({{task.deal.event | fresh:'a'}})</small></d>{% endif %}
+                    {% if task.todo_state != '0_done' and task.deadline %}
+                        <d class="bg-{{task.deadline | deadline_color}}"><small>{{task | fresh:'deadline'}}</small></d>
+                    {% else %}
+                        <d><small>{{task | fresh:'deadline'}}</small></d>
+                    {% endif %}
+                    <d class="bg-{{task.todo_state | todo_state_color}}"><small>{{task.todo_state | choice:'prospector.Task.todo_state'}}</small> </d>
+                    <d>
+                        <small>
+                            {% if task.todo_state_logged %}
+                                {{task.tasklog_set.latest.date | timesince}}
+                            {% else %}
+                                <span class="label label-warning">Pas validé</span>
                             {% endif %}
-                        </span>
-                    </div>
-                </d>
-            </r>
-        {% endfor %}
-    </rows>
-    <other>
-        <div class="modal fade" id="mymodal">
-            <a href="#close" class="modal-overlay" aria-label="Close"></a>
-            <div class="modal-container">
-                <!-- content here. -->
+                            <a class="btn btn-sm btn-link tooltip tooltip-right"
+                                data-tooltip="Historique des états"
+                                href="{% url 'prospector:tasks.history' pk=task.pk %}">
+                                <i class="icon icon-time"></i>
+                            </a>
+                        </small>
+                    </d>
+                    <d>
+                        <button class="btn btn-sm btn-link"
+                            onclick="getCommentModal({{task.pk}});">
+                            <i class="icon icon-message"></i>
+                            {% if task.taskcomment_set.count != 0 %}
+                                {{task.taskcomment_set.count}}
+                            {% endif %}
+                        </button>
+                    </d>
+                    <d>
+                        <div class="text-right mt-1">
+                            <span class="state-buttons">
+                                {% for button, link in task.tasktype.useful_views_dict.items %}
+                                    <a class="btn btn-sm btn-primary mb-1" href="{% url link pk=task.pk %}">{{button}}</a>
+                                {% endfor %}
+                                {% for prev in task.usual_prev_states %}
+                                    <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{prev}}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
+                                                class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
+                                            {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
+                                        </button>
+                                    </form>
+                                {% endfor %}
+                                {% for next in task.usual_next_states %}
+                                    <form class="d-inline" action="{% url 'prospector:tasks.set_todostate' pk=task.pk %}?state={{next}}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
+                                                class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
+                                            {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
+                                        </button>
+                                    </form>
+                                {% endfor %}
+                                {% if not task.todo_state_logged %}
+                                    <form class="d-inline" action="{% url 'prospector:tasks.log_todostate' pk=task.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                data-tooltip="Valider le nouvel état"
+                                                class="btn btn-sm btn-action btn-primary tooltip tooltip-left mb-1">
+                                            <i class="icon icon-check"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </d>
+                </r>
+            {% endfor %}
+        </rows>
+        <other>
+            <div class="modal fade" id="mymodal">
+                <a href="#close" class="modal-overlay" aria-label="Close"></a>
+                <div class="modal-container">
+                    <!-- content here. -->
+                </div>
             </div>
-        </div>
-    </other>
-    <script>
-        // The table's placeholder must be a <remote-nicetable> tag with id #tasks_list_remote.
-        var columns = ['Ordre', {% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'Depuis', '', '<search>'];
-        var t = new NiceTable($('#tasks_list_remote'), columns);
+        </other>
+        <script>
+            // The table's placeholder must be a <remote-nicetable> tag with id #tasks_list_remote.
+            var columns = ['Ordre', {% if not fixed_tasktype %}'Nom', {% endif %}{% if not fixed_deal %}'Deal', {% endif %}'Échéance', 'État', 'Depuis', '', '<search>'];
+            var t = new NiceTable($('#tasks_list_remote'), columns);
 
-        function setupCallbacks(){
-            $('.state-buttons form', t.rowsTbody).on('submit', function(event){
-                event.preventDefault(); // Don't open a new page on submit.
-                $.post(
-                    $(event.target).attr('action'),
-                    $(event.target).serialize(),
+            function setupCallbacks(){
+                $('.state-buttons form', t.rowsTbody).on('submit', function(event){
+                    event.preventDefault(); // Don't open a new page on submit.
+                    $.post(
+                        $(event.target).attr('action'),
+                        $(event.target).serialize(),
+                        function(response){
+                            t.refreshRemoteRows(setupCallbacks);
+                        }
+                    );
+                    return false; // Don't open a new page on submit.
+                });
+            }
+            setupCallbacks();
+
+            function getCommentModal(task_pk){
+                $.get(
+                    '{% url "prospector:tasks.comments" pk=42 %}'.replace(42, task_pk),
                     function(response){
-                        t.refreshRemoteRows(setupCallbacks);
+                        $('#mymodal .modal-container').empty();
+                        $('#mymodal .modal-container').append(response);
+                        setupCommentsCallbacks();
+                        location.hash = '#mymodal';
                     }
                 );
-                return false; // Don't open a new page on submit.
-            });
-        }
-        setupCallbacks();
+            }
 
-        function getCommentModal(task_pk){
-            $.get(
-                '{% url "prospector:tasks.comments" pk=42 %}'.replace(42, task_pk),
-                function(response){
-                    $('#mymodal .modal-container').empty();
-                    $('#mymodal .modal-container').append(response);
-                    setupCommentsCallbacks();
-                    location.hash = '#mymodal';
-                }
-            );
-        }
+            // This function should be in comments.html
+            function setupCommentsCallbacks(){
+                $('.delete-form', '#mymodal').on('submit', function(event){
+                    event.preventDefault();
+                    $.post(
+                        $(event.target).attr('action'),
+                        $(event.target).serialize(),
+                        function(response){
+                            location.hash = '#close';
+                            t.refreshRemoteRows(setupCallbacks);
+                        }
+                    );
+                    return false; // Don't open a new page on submit.
+                });
+                $('.post-form', '#mymodal').on('submit', function(event){
+                    event.preventDefault();
+                    $.post(
+                        $(event.target).attr('action'),
+                        $(event.target).serialize(),
+                        function(response){
+                            location.hash = '#close';
+                            t.refreshRemoteRows(setupCallbacks);
+                        }
+                    );
+                    return false; // Don't open a new page on submit.
+                });
+            }
 
-        // This function should be in comments.html
-        function setupCommentsCallbacks(){
-            $('.delete-form', '#mymodal').on('submit', function(event){
-                event.preventDefault();
-                $.post(
-                    $(event.target).attr('action'),
-                    $(event.target).serialize(),
-                    function(response){
-                        location.hash = '#close';
-                        t.refreshRemoteRows(setupCallbacks);
-                    }
-                );
-                return false; // Don't open a new page on submit.
-            });
-            $('.post-form', '#mymodal').on('submit', function(event){
-                event.preventDefault();
-                $.post(
-                    $(event.target).attr('action'),
-                    $(event.target).serialize(),
-                    function(response){
-                        location.hash = '#close';
-                        t.refreshRemoteRows(setupCallbacks);
-                    }
-                );
-                return false; // Don't open a new page on submit.
-            });
-        }
-
-    </script>
-</embed-nicetable>
+        </script>
+    </embed-nicetable>
+{% else %}
+    <div class="empty">
+        <p class="empty-title h5">Il n'y a rien ici.</p>
+        <p class="empty-subtitle">Aucune tâche n'a été planifiée.</p>
+    </div>
+{% endif %}
