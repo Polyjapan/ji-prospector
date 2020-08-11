@@ -12,20 +12,20 @@ from .fields import PrefixedDataListTextInput
 class FanzineForm(forms.ModelForm):
     class Meta:
         model = Fanzine
-        fields = '__all__'
+        exclude = ('total_score',)
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
 
 class FanzineVoteForm(forms.Form):
-    choices = (
+    OPINIONS = (
         (0, "------"),
         (2, "Oui !!!"),
         (1, "Pourquoi pas"),
         (-1, "Meh"),
         (-2, "Non !!!"),
     )
-    rating = forms.IntegerField(widget=forms.Select(choices=choices), required=True, label='Avis')
+    rating = forms.IntegerField(widget=forms.Select(choices=OPINIONS), required=True, label='Avis')
     comment = forms.CharField(widget=forms.Textarea(attrs={'style': 'height: 6rem;'}), max_length=512, required=False, label='Commentaire (optionnel)')
 
 
@@ -51,6 +51,9 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = '__all__'
+        widgets = {
+            'date': forms.SelectDateWidget()
+        }
 
 class DealForm(forms.ModelForm):
     class Meta:

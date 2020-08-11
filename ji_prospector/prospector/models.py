@@ -26,7 +26,7 @@ User = get_user_model()
 @fresh_model
 class Event(models.Model):
     name = models.CharField(max_length=128, verbose_name='Nom')
-    date = models.DateField(verbose_name='Date (YYYY-MM-JJ)')
+    date = models.DateField(verbose_name='Date')
     current = models.BooleanField(default=False, verbose_name='Événement actuel ?')
     budget = models.FloatField(verbose_name='Budget stands')
     agepoly_president = models.CharField(max_length=128, verbose_name='Président AGEPoly')
@@ -254,13 +254,14 @@ class LogisticalNeedSet(models.Model):
     # Other
     other_material = models.TextField(blank=True)
     
-@fresh_model # TODO à quoi ça sert :')
+@fresh_model
 class Fanzine(models.Model):
     # most important information, placed first
     stand_name = models.CharField(max_length=128, default='', verbose_name='Nom du stand')
     # Personal information
     name = models.CharField(max_length=128, default='', verbose_name='NOM Prénom')
-    full_address = models.CharField(max_length=512, default='', verbose_name='Addresse complète')
+    address_street = models.CharField(max_length=128, default='', verbose_name='Adresse: Rue / n°')
+    address_city = models.CharField(max_length=128, default='', verbose_name='Adresse: Code postal / Ville')
     age = models.CharField(max_length=128, default='', verbose_name='Age')
     email = models.CharField(max_length=128, verbose_name='Adresse e-mail')
     phone_number = models.CharField(max_length=16, verbose_name='Numéro de téléphone')
@@ -273,7 +274,7 @@ class Fanzine(models.Model):
     logistic_needs = models.CharField(max_length=512, default='', verbose_name='Besoins logistiques')
     electric_needs = models.CharField(max_length=512, default='', blank=True, verbose_name='Besoins électriques importants')
     activities = models.CharField(max_length=512, default='', verbose_name='Activités supplémentaires')
-    stand_description = models.CharField(max_length=1024, default='', verbose_name='Description du stand') # TODO use textfield instead ? what are the advantages except from the generated form (same question with urlfield & Cie)
+    stand_description = models.TextField(default='', verbose_name='Description du stand')
     image_url = models.CharField(max_length=128, default='', verbose_name='URL d\'une image du stand')
     second_chance = models.BooleanField(default=False, verbose_name='Si pas choisi mais des places se libèrent, interessé à venir ?')
     deadline = models.CharField(max_length=128, default='', verbose_name='Date limite pour être prévenu')
@@ -287,10 +288,10 @@ class Fanzine(models.Model):
     deco = models.BooleanField(default=False, verbose_name='Interessé à participer aux atelier déco')
     remarks = models.CharField(max_length=512, default='', verbose_name='Remarques')
     
-    # Score given by comitee members # TODO voir si on garde
+    # Score given by comitee members 
     total_score = models.IntegerField(default=0)
     
-class Rating(models.Model):
+class FanzineRating(models.Model):
     fanzine = models.ForeignKey('Fanzine', on_delete=models.CASCADE)
     user = models.CharField(max_length=128)
     score = models.IntegerField()

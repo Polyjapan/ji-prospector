@@ -9,6 +9,7 @@
         <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre.min.css' %}">
         <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-exp.min.css' %}">
         <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-icons.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/custom.css' %}">
     </head>
     <body>
         <div class="off-canvas off-canvas-sidebar-show">
@@ -17,8 +18,8 @@
                 <div class="container py-2">
 
                     <div class="mb-2">
-                        <h2 class="mb-1" style="padding:.5em 1em;font-weight:bold;">{% block title %}{% endblock %}</h2>
-                        <h6 class="text-gray" style="padding: .25em 2em;">{% block subtitle %}{% endblock %}</h6>
+                        <h2 class="pt-1 px-2">{% block title %}{% endblock %}</h2>
+                        <h6 class="text-gray pt-1 px-2">{% block subtitle %}{% endblock %}</h6>
                         <div class="divider"></div>
                     </div>
 

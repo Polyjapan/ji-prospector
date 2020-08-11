@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'prospector',
     'users',
     'app',
-    'mathfilters',
 ]
 
 MIDDLEWARE = [

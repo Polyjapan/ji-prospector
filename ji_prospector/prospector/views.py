@@ -479,9 +479,9 @@ def fanzines_show(request, pk):
     obj = Fanzine.objects.get(pk=pk)
     show_data = show_model_data(Fanzine, obj, exclude=['total_score'])
     # Show rating
-    ratings = Rating.objects.filter(fanzine=pk)
+    ratings = FanzineRating.objects.filter(fanzine=pk)
     avg_score = ratings.aggregate(Avg('score'))
-    show_data['score'] = {'display_name': 'Average score', 'value': avg_score, 'display_value': avg_score['score__avg']} # TODO difference between value and display_value ??
+    show_data['score'] = {'display_name': 'Average score', 'value': avg_score, 'display_value': avg_score['score__avg']}
     return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj, 'qs': ratings})
     
 @login_required
@@ -494,36 +494,43 @@ def fanzines_add(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            # TODO verify the extension (?)
-            f = request.FILES['file']
-            decoded = f.read().decode()
+            file = request.FILES['file']
+            try:
+                decoded = file.read().decode()
+            except:
+                messages.error(request, 'Le format du fichier n\'est pas valide')
+                return redirect(reverse('prospector:fanzines.add'))
             with io.StringIO(decoded) as f:
                 reader = csv.reader(f)
                 next(reader) # skip header
                 for row in reader:
+                    if (len(row) != 27):
+                        messages.error(request, 'Le contenu du fichier n\'est pas valide')
+                        return redirect(reverse('prospector:fanzines.add'))
                     _, created = Fanzine.objects.get_or_create(
                         name = row[2],
-                        full_address = row[3],
-                        age = row[4],
-                        email = row[5],
-                        phone_number = row[6],
-                        stand_name = row[7],
-                        prev_editions = row[8],
-                        tables = row[9],
-                        num_people = row[10],
-                        stand_content = row[11],
-                        logistic_needs = row[12],
-                        electric_needs = row[13],
-                        activities = row[14],
-                        stand_description = row[15],
-                        image_url = row[16],
-                        second_chance = (row[17] == 'Oui'),
-                        deadline = row[18],
-                        deviant_url = row[19],
-                        facebook_url = row[20],
-                        blog_url = row[21],
-                        deco = (row[22] == 'Oui'),
-                        remarks = row[23]
+                        address_street = row[3],
+                        address_city = row[4],
+                        age = row[5],
+                        email = row[6],
+                        phone_number = row[7],
+                        stand_name = row[8],
+                        prev_editions = row[9],
+                        tables = row[10],
+                        num_people = row[11],
+                        stand_content = row[12],
+                        logistic_needs = row[13],
+                        electric_needs = row[14],
+                        activities = row[15],
+                        stand_description = row[16],
+                        image_url = row[17],
+                        second_chance = (row[18] == 'Oui'),
+                        deadline = row[19],
+                        deviant_url = row[20],
+                        facebook_url = row[21],
+                        blog_url = row[22],
+                        deco = (row[23] == 'Oui'),
+                        remarks = row[24]
                         )
                     assert created
                 messages.success(request, 'Fanzines importées avec succès')
@@ -534,21 +541,39 @@ def fanzines_add(request):
 
 @login_required
 def fanzines_vote_start(request):
-    first = Fanzine.objects.all()[0]
-    total = Fanzine.objects.count()
-    return render(request, 'prospector/fanzines/vote_start.html', {'obj': first.pk, 'total': total}) 
+    all_fanzines = list(Fanzine.objects.all()) # We assume that the number of fanzines is not too big, which seems a reasonable assumption
+    username = request.user.get_full_name()
+    user_ratings = FanzineRating.objects.all().filter(user=username)
+    remaining = {fz.pk for fz in all_fanzines} - {rt.fanzine.pk for rt in user_ratings}
+    empty = {rt.fanzine.pk for rt in user_ratings if rt.score == 0}
+    remaining = list(remaining.union(empty))
+    from_start = True
+    if len(remaining) != 0 and len(remaining) != len(all_fanzines):
+        remaining.sort()
+        next = remaining[0]
+        from_start = False
+    else:
+        next = all_fanzines[0].pk
+    return render(request, 'prospector/fanzines/vote_start.html', {'start_from': next, 'total': len(all_fanzines), 'start': from_start}) 
   
 @login_required
 def fanzines_vote(request, pk):
     obj = get_object_or_404(Fanzine, pk=pk)
+    all_fanzines = list(Fanzine.objects.all())
+    current_index = all_fanzines.index(obj) # Seems awfully inefficient but I couldn't see any other way...
     username = request.user.get_full_name()
     try:
-        obj_rating = Rating.objects.filter(fanzine=obj).get(user=username)
-    except Rating.DoesNotExist:
+        obj_rating = FanzineRating.objects.filter(fanzine=obj).get(user=username)
+    except FanzineRating.DoesNotExist:
         obj_rating = None
     
+    # Get previous element (for returning back)
+    prev = None
+    if current_index != 0:
+        prev = all_fanzines[current_index-1].pk
+    
+    # Handle user input
     if request.method == 'POST':
-        # TODO make the form according to Rating model would be easier ?
         form = FanzineVoteForm(request.POST)
         if form.is_valid():
             score = form.cleaned_data['rating']
@@ -561,26 +586,29 @@ def fanzines_vote(request, pk):
                 obj.save()
                 
                 # Create rating
-                obj_rating = Rating(fanzine=obj, user=username, score=score, comment=comment)
+                obj_rating = FanzineRating(fanzine=obj, user=username, score=score, comment=comment)
             else:
                 # Update rating
                 obj_rating.score = score
                 obj_rating.comment = comment
             
             obj_rating.save()
-            
-            try:
-                Fanzine.objects.get(pk=pk+1)
-                return redirect(reverse('prospector:fanzines.vote', args=(pk+1,)))
-            except Fanzine.DoesNotExist: # Arrived at the end
-                return render(request, 'prospector/fanzines/vote_end.html') 
-            
+
+            next_index = current_index+1
+            if next_index >= len(all_fanzines): # Arrived at the end
+                return render(request, 'prospector/fanzines/vote_end.html')
+            else:
+                next_pk = all_fanzines[next_index].pk
+                # TODO can we remove this indirection ?
+                return redirect(reverse('prospector:fanzines.vote', args=(next_pk,)))
+
+    # Display form
+    if obj_rating != None:
+        form = FanzineVoteForm(initial={'rating': obj_rating.score, 'comment': obj_rating.comment})
     else:
-        if obj_rating != None:
-            form = FanzineVoteForm(initial={'rating': obj_rating.score, 'comment': obj_rating.comment})
-        else:
-            form = FanzineVoteForm()
-    return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form})       
+        form = FanzineVoteForm()
+
+    return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form, 'prev': prev, 'index': current_index+1, 'total':len(all_fanzines)})       
             
             
             
