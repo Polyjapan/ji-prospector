@@ -13,7 +13,8 @@ from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
 import safedelete
-import csv, io
+import csv
+import io
 
 from .models import *
 from .forms import *
