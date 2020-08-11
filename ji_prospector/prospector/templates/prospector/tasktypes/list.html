@@ -15,23 +15,30 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <nicetable>
-                        <rows>
-                            {% for t in qs %}
-                                <r>
-                                    <d>{{t | fresh:'a'}}</d>
-                                    <d>{{t.task__deal__count}} deals</d>
-                                    <d>{{t.description}}</d>
-                                    <d>
-                                        {% for tag in t.tags_list %}
-                                            <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
-                                        {% endfor %}
-                                    </d>
-                                    <d></d>
-                                </r>
-                            {% endfor %}
-                        </rows>
-                    </nicetable>
+                    {% if qs.exists %}
+                        <nicetable>
+                            <rows>
+                                {% for t in qs %}
+                                    <r>
+                                        <d>{{t | fresh:'a'}}</d>
+                                        <d>{{t.task__deal__count}} deals</d>
+                                        <d>{{t.description}}</d>
+                                        <d>
+                                            {% for tag in t.tags_list %}
+                                                <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </d>
+                                        <d></d>
+                                    </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    {% else %}
+                        <div class="empty">
+                            <p class="empty-title h5">Il n'y a rien ici.</p>
+                            <p class="empty-subtitle">Aucun type de tâche n'a été défini.</p>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'prospector:tasktypes.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>

@@ -39,18 +39,25 @@
             </div>
         </div>
         <div class="card-body">
-            <nicetable id="tasks_table">
-                <rows>
-                    {% for r in to_do %}
-                        <r>
-                            <d>{{r | fresh:'timed_a'}}</d>
-                            <d><small>pour {{r.deal_count}} deals</small></d>
-                            <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | fresh:'a'}}</d>
-                            <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
-                        </r>
-                    {% endfor %}
-                </rows>
-            </nicetable>
+            {% if to_do %}
+                <nicetable id="tasks_table">
+                    <rows>
+                        {% for r in to_do %}
+                            <r>
+                                <d>{{r | fresh:'timed_a'}}</d>
+                                <d><small>pour {{r.deal_count}} deals</small></d>
+                                <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | fresh:'a'}}</d>
+                                <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
+                            </r>
+                        {% endfor %}
+                    </rows>
+                </nicetable>
+            {% else %}
+                <div class="empty">
+                    <p class="empty-title h5">Il n'y a rien ici.</p>
+                    <p class="empty-subtitle">Aucune tâche n'a été planifiée.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -93,22 +100,29 @@
             <div class="card-title h4">Emplacements libres</div>
         </div>
         <div class="card-body">
-            <nicetable id="free_booths_table">
-                <rows>
-                    {% for b in free_booths %}
-                        <r>
-                            <d>{{b | fresh:'a'}}</d>
-                            <d>{{b.usual_price | price}}</d>
-                            <d>prix des deals placés ici de manière pas sûre</d>
-                            <d>
-                                <div>
-                                    <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
-                                </div>
-                            </d>
-                        </r>
-                    {% endfor %}
-                </rows>
-            </nicetable>
+            {% if free_booths %}
+                <nicetable id="free_booths_table">
+                    <rows>
+                        {% for b in free_booths %}
+                            <r>
+                                <d>{{b | fresh:'a'}}</d>
+                                <d>{{b.usual_price | price}}</d>
+                                <d>prix des deals placés ici de manière pas sûre</d>
+                                <d>
+                                    <div>
+                                        <button class="btn btn-sm float-right">Détails emplacement</button>lien show emplacement
+                                    </div>
+                                </d>
+                            </r>
+                        {% endfor %}
+                    </rows>
+                </nicetable>
+            {% else %}
+                <div class="empty">
+                    <p class="empty-title h5">Il n'y a rien ici.</p>
+                    <p class="empty-subtitle">Aucun emplacement n'a été défini.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

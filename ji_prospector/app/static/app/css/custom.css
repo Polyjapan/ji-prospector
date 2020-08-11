@@ -1,5 +1,3 @@
-/* For carets in sortable tables */
-
 /* For fanzine votes */
 #fanzines-card {
     width: 30rem;
@@ -11,4 +9,6 @@
 .fanzines-link {
     line-height: 2;
 }
-
+body {
+    font-family: "IBM Plex Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
+}

@@ -15,38 +15,45 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <nicetable>
-                        <rows>
-                            {% for d in qs %}
-                            <r>
-                                {% url 'prospector:deals.edit' pk=d.pk as edit_url %}
-                                <d>{{d | fresh:'a'}}</d>
-                                <d>{{d.event | fresh:'a'}}</d>
-                                <d>{{d | model_choice:'type'}}</d>
-                                <d>
-                                    <i class="icon icon-{{d.price_decided | yesno:'check,cross'}} text-{{d.price_decided | yesno:'success,error'}}"></i>
-                                    {{d | fresh:'price' | default:'?'}}
-                                </d>
-                                <d>
-                                    <i class="icon icon-{{obj.boothspace_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
-                                    {% for dbs in obj.dealboothspace_set.all %}
-                                        {{dbs.boothspace | fresh:'a' | default:'?'}}
-                                    {% empty %}
-                                        ?
-                                    {% endfor %}
-                                </d>
-                                <d>
-                                    <i class="icon icon-{{obj.contract_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
-                                </d>
-                                <d>
-                                    <div>
-                                        <a href="{{edit_url}}" class="btn btn-sm float-right">Éditer</a>
-                                    </div>
-                                </d>
-                            </r>
-                            {% endfor %}
-                        </rows>
-                    </nicetable>
+                    {% if qs.exists %}
+                        <nicetable>
+                            <rows>
+                                {% for d in qs %}
+                                <r>
+                                    {% url 'prospector:deals.edit' pk=d.pk as edit_url %}
+                                    <d>{{d | fresh:'a'}}</d>
+                                    <d>{{d.event | fresh:'a'}}</d>
+                                    <d>{{d | model_choice:'type'}}</d>
+                                    <d>
+                                        <i class="icon icon-{{d.price_decided | yesno:'check,cross'}} text-{{d.price_decided | yesno:'success,error'}}"></i>
+                                        {{d | fresh:'price' | default:'?'}}
+                                    </d>
+                                    <d>
+                                        <i class="icon icon-{{obj.boothspace_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
+                                        {% for dbs in obj.dealboothspace_set.all %}
+                                            {{dbs.boothspace | fresh:'a' | default:'?'}}
+                                        {% empty %}
+                                            ?
+                                        {% endfor %}
+                                    </d>
+                                    <d>
+                                        <i class="icon icon-{{obj.contract_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
+                                    </d>
+                                    <d>
+                                        <div>
+                                            <a href="{{edit_url}}" class="btn btn-sm float-right">Éditer</a>
+                                        </div>
+                                    </d>
+                                </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    {% else %}
+                        <div class="empty">
+                            <p class="empty-title h5">Il n'y a rien ici.</p>
+                            <p class="empty-subtitle">Aucun deal n'a été proposé.</p>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'prospector:deals.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>
