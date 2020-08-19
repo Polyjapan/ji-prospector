@@ -9,14 +9,23 @@
 
 {% block content %}
 <div class="container">
-    <div class="columns">
-        <div class="col-12">
+    <table class="table">
+        <thead>
+            <th scope="col">Rank</th>
+            <th scope="col">Nom</th>
+            <th scope="col">Adresse email</th>
+            <!-- More info... (don't know what's crucial for a pro lol) !-->
+        </thead>
+        <tbody>
             {% for item in qs %}
-                <!-- je compte faire un truc mieux soonish --!>
-                    <a href="{% url 'prospector:fanzines.show' pk=item.pk %}">{{item.stand_name}}</a></br>
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td><a href="{% url 'prospector:fanzines.show' pk=item.pk %}">{{item.stand_name}}</a></td>
+                    <td>{{item.email}}</td>
+                </tr>
             {% endfor %}
-        </div>
-    </div>
+        </tbody>
+    </table>
 </div>
 <div class="mt-2">
     <div class="card-footer">
