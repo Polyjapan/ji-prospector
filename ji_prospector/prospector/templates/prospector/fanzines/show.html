@@ -17,7 +17,16 @@
         <div class="card-title h4">Données</div>
     </div>
     <div class="card-body">
-        {% call showdata show_data %}{% endcall %}
+        <table class="table">
+            {% for k,v in show_data.items %}
+                <tr>
+                    <th>{{v.display_name}}</th>
+                    <td>{% if v.value|slice:":4" == "http" %} <a href="{{v.value}}">{{v.display_value}}</a> <!-- Yup it's ugly ahah --!>
+                        {% else %} {{v.display_value}}
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table>
     </div>
     <div class="card-footer">
         <a href="{% url 'prospector:fanzines.create_contact' pk=obj.pk %}" class="btn">Créer Contact & Deal </a>

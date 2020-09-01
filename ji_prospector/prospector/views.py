@@ -484,7 +484,7 @@ def fanzines_show(request, pk):
     # Show rating
     ratings = FanzineRating.objects.filter(fanzine=pk)
     avg_score = ratings.aggregate(Avg('score'))
-    show_data['score'] = {'display_name': 'Average score', 'value': avg_score, 'display_value': avg_score['score__avg']}
+    show_data['score'] = {'display_name': 'Average score [-2, 2]', 'value': avg_score, 'display_value': avg_score['score__avg']}
     return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj, 'qs': ratings})
     
 @login_required
