@@ -18,11 +18,11 @@
     </div>
     <div class="card-body">
         <table class="table">
-            {% for k,v in show_data.items %}
+            {% for name, data in show_data.items %}
                 <tr>
-                    <th>{{v.display_name}}</th>
-                    <td>{% if v.value|slice:":4" == "http" %} <a href="{{v.value}}">{{v.display_value}}</a> <!-- Yup it's ugly ahah --!>
-                        {% else %} {{v.display_value}}
+                    <th span="row">{{data.display_name}}</th>
+                    <td>{% if data.value|slice:":4" == "http" %} <a href="{{data.value}}">{{data.display_value}}</a> <!-- Yup it's ugly ahah (and it's more or less a copy from the macro so...?) --!>
+                        {% else %} {{data.display_value | check_or_cross}}
                         {% endif %}</td>
                 </tr>
             {% endfor %}
