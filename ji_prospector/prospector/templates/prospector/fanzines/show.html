@@ -20,7 +20,7 @@
         {% call showdata show_data %}{% endcall %}
     </div>
     <div class="card-footer">
-        <button class="btn">Créer Contact & Deal </button>
+        <a href="{% url 'prospector:fanzines.create_contact' pk=obj.pk %}" class="btn">Créer Contact & Deal </a>
 
     </div>
 </div>

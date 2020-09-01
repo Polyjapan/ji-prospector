@@ -69,5 +69,7 @@ urlpatterns = [
     path('fanzines/delete', views.fanzines_delete, name='fanzines.delete'),
     path('fanzines/add', views.fanzines_add, name='fanzines.add'),
     path('fanzines/vote', views.fanzines_vote_start, name='fanzines.vote_start'),
-    path('fanzines/vote/<int:pk>', views.fanzines_vote, name='fanzines.vote'), # TODO question: les "objets" qu'on veut faire passer sont obligés d'être dans l'url ??
+    path('fanzines/vote/<int:pk>', views.fanzines_vote, name='fanzines.vote'), 
+    path('fanzines/create_contact/<int:pk>', views.fanzine_create_contact, name='fanzines.create_contact'),
+    path('fanzines/create_deal/<int:fanzine_pk>/<int:contact_pk>', views.fanzine_create_deal, name='fanzines.create_deal'),
 ]

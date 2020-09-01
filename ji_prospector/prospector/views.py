@@ -602,7 +602,6 @@ def fanzines_vote(request, pk):
                 return render(request, 'prospector/fanzines/vote_end.html')
             else:
                 next_pk = all_fanzines[next_index].pk
-                # TODO can we remove this indirection ?
                 return redirect(reverse('prospector:fanzines.vote', args=(next_pk,)))
 
     # Display form
@@ -613,6 +612,32 @@ def fanzines_vote(request, pk):
 
     return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form, 'prev': prev, 'index': current_index+1, 'total':len(all_fanzines)})       
             
-            
-            
-            
+@login_required
+def fanzine_create_contact(request, pk):
+    fanzine_obj = get_object_or_404(Fanzine, pk=pk)
+    contact_obj = Contact(person_name=fanzine_obj.name, phone_number=fanzine_obj.phone_number, address_street=fanzine_obj.address_street, address_city=fanzine_obj.address_city)
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Contact créé avec succès')
+            return redirect(reverse('prospector:fanzines.create_deal', args=(pk, contact_obj.pk,)))
+    else:
+        form = ContactForm(instance=contact_obj)
+    return render(request, 'prospector/contacts/edit.html', {'form': form, 'obj': contact_obj, 'create': True})
+    
+@login_required
+def fanzine_create_deal(request, fanzine_pk, contact_pk):
+    fanzine_obj = get_object_or_404(Fanzine, pk=fanzine_pk)
+    contact_obj = get_object_or_404(Contact, pk=contact_pk)
+    deal_obj = Deal(type='fanzine', contact=contact_obj, booth_name=fanzine_obj.stand_name) #TODO how to translate logistical needs from words to a finite list ??
+    if request.method == 'POST':
+        form = DealForm(request.POST, instance=deal_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Deal créé avec succès')
+            return redirect(reverse('prospector:fanzines.list'))
+    else:
+        form = DealForm(instance=deal_obj)
+    return render(request, 'prospector/deals/edit.html', {'form': form, 'obj': deal_obj, 'create': True})
+    
