@@ -544,7 +544,7 @@ def fanzines_add(request):
 
 @login_required
 def fanzines_vote_start(request):
-    all_fanzines = list(Fanzine.objects.all()) # We assume that the number of fanzines is not too big, which seems a reasonable assumption
+    all_fanzines = list(Fanzine.objects.all()) # We assume that the number of fanzines is not too big (max 100), which seems a reasonable assumption
     username = request.user.get_full_name()
     user_ratings = FanzineRating.objects.all().filter(user=username)
     remaining = {fz.pk for fz in all_fanzines} - {rt.fanzine.pk for rt in user_ratings}
@@ -630,7 +630,7 @@ def fanzine_create_contact(request, pk):
 def fanzine_create_deal(request, fanzine_pk, contact_pk):
     fanzine_obj = get_object_or_404(Fanzine, pk=fanzine_pk)
     contact_obj = get_object_or_404(Contact, pk=contact_pk)
-    deal_obj = Deal(type='fanzine', contact=contact_obj, booth_name=fanzine_obj.stand_name) #TODO how to translate logistical needs from words to a finite list ??
+    deal_obj = Deal(type='fanzine', contact=contact_obj, booth_name=fanzine_obj.stand_name) #TODO logistical needs and price still need to be added manually (don't know how to do otherwise)
     if request.method == 'POST':
         form = DealForm(request.POST, instance=deal_obj)
         if form.is_valid():
@@ -641,3 +641,45 @@ def fanzine_create_deal(request, fanzine_pk, contact_pk):
         form = DealForm(instance=deal_obj)
     return render(request, 'prospector/deals/edit.html', {'form': form, 'obj': deal_obj, 'create': True})
     
+
+@login_required
+def fanzines_overview(request):
+    # TODO je m'y connais pas trop en django, si ça se trouve ce que je fais est une totale horreur
+    all_ratings = FanzineRating.objects.all()
+    ordered = list(all_ratings.order_by('fanzine', 'user'))
+    for r in ordered:
+        print(r.fanzine.stand_name, r.user)
+    users = all_ratings.order_by('user').values('user').distinct()
+    
+    # Construct user list + initials
+    user_dict = {}
+    for i in range(len(users)):
+        username = users[i]['user']
+        user_dict[username] = ''.join(c for c in username if c.isupper())
+    
+    # Build the array of ratings
+    curr_fanzine = ""
+    data = {}
+    curr_list = []
+    user_iter = 0
+
+    for rating in ordered:
+        if curr_fanzine != rating.fanzine.stand_name:
+            if curr_fanzine:
+                # Finish filling up line
+                while user_iter < len(users):
+                    curr_list.append(False)
+                    user_iter += 1
+                data[curr_fanzine] = curr_list
+            curr_fanzine = rating.fanzine.stand_name
+            curr_list = []
+            user_iter = 0
+            
+        while rating.user != users[user_iter]['user']:
+            curr_list.append(False)
+            user_iter += 1
+        curr_list.append(rating.score != 0)
+        user_iter += 1
+
+        
+    return render(request, 'prospector/fanzines/overview.html', {'data': data, 'users': user_dict})

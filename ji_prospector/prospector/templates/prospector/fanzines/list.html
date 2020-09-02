@@ -31,6 +31,7 @@
     <div class="card-footer">
     {% if qs %} <!--<a href="{% url 'prospector:fanzines.delete' %}" class="btn btn-error">Tout supprimer et recommencer</i></a>--!>
         <a href="{% url 'prospector:fanzines.register' %}" class="btn btn-success"><i class="icon icon-plus"></i> Ajouter</a>
+        <a href="{% url 'prospector:fanzines.overview' %}" class="btn">Suivi des votes</a>
 
         {% else %} <a href="{% url 'prospector:fanzines.add' %}" class="btn btn-success">Ajouter les fanzines</a>
         {% endif %}

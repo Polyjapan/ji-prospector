@@ -9,6 +9,23 @@
 .fanzines-link {
     line-height: 2;
 }
+
 body {
     font-family: "IBM Plex Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif !important;
 }
+
+#rating-table {
+    width: auto;
+}
+
+#rating-table td,
+#rating-table th {
+    border-bottom: .05rem solid #ababab;
+}
+
+.ratings-entry {
+    border: .05rem solid #ababab;
+    width: 2rem;
+    text-align: center;
+}
+
