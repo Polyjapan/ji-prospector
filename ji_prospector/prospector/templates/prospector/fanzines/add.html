@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load spectre_css %}
+
+{% block title %} Ajouter les fanzines {% endblock %}
+{% block subtitle %}{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<form enctype="multipart/form-data" action="" method="post">
+    <div class="card mb-2">
+        <div class="card-header">
+            <div class="card-title h4">Explication du format attendu</div>
+            <div>La feuille de calcul liée au formulaire doit avoir 25 colonnes (de A à Y) occupées. L'information "NOM prénom" correspond à la colonne C. À partir de là les champs sont les suivants :
+                <ul>
+                    <li>Adresse: Rue / n°</li>
+                    <li>Adresse: Code postal / Ville</li>
+                    <li>Âge</li>
+                    <li>Adresse email</li>
+                    <li>Numéro de téléphone</li>
+                    <li>Nom du stand</li>
+                    <li>À combien d'éditions de Japan Impact avez-vous participé en tant que fanzine ou jeune créateur ?</li>
+                    <li>Combien de tables aimeriez-vous ?</li>
+                    <li>Combien de personnes seront présentes ?</li>
+                    <li>Que contiendrait votre stand ?</li>
+                    <li>Avez-vous des besoins logistiques pour votre stand ?</li>
+                    <li>Besoins électriques importants</li>
+                    <li>Souhaiteriez-vous organiser quelque chose sur votre stand, indépendamment de la vente ? Si oui, quoi ?</li>
+                    <li>Décrivez votre stand !</li>
+                    <li>Un lien vers une image / photo pour représenter votre stand</li>
+                    <li>Si vous n'être malheureusement pas choisi lors de la sélection mi-novembre mais que des places se libèrent, seriez-vous intéressé(e) à venir ?</li>
+                    <li>Si oui, quand devez-vous être prévenu(e) au plus tard ?</li>
+                    <li>Page Deviantart</li>
+                    <li>Page Facebook</li>
+                    <li>Site / Blog / Autre </li>
+                    <li>Seriez-vous intéressé(e) à venir la semaine qui précède la convention pour aider aux ateliers décoration ?</li>
+                    <li>Remarques ?</li>
+                </ul>
+                Si l'un des champs ne correspond pas, veuillez prévenir le resp. info pour que les changements soient effectués. Si tout est correct, vous pouvez exporter les données en fichier csv (File > Download > Comma-separated values), et les importer ici en sélectionant le fichier généré de cette manière. <br>Soyez bien sûr que tout est en ordre avant de valider, sinon certaines informations seront incorrectes.
+            </div>
+        </div>
+        <div class="card-body">
+            {% render_form form %}
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                <a href="{% url 'prospector:fanzines.list' %}" class="btn">Annuler <i class="icon icon-back"></i></a>
+                <button class="btn btn-success">Importer<i class="icon icon-check"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

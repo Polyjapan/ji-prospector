@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
 from django.db import transaction
-from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef
+from django.db.models import Sum, Min, Max, Count, FilteredRelation, Q, F, Subquery, OuterRef, Avg
 from django.db.models.fields import DateTimeField, Field
 from django.utils.timezone import make_aware
 from django.contrib import messages
@@ -13,6 +13,8 @@ from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
 import safedelete
+import csv
+import io
 
 from .models import *
 from .forms import *
@@ -236,6 +238,47 @@ def contacts_show(request, pk):
 
 
 @login_required
+def events_edit(request, pk=None, create=False):
+    if create:
+        obj = Event()
+    else:
+        obj = get_object_or_404(Event, pk=pk)
+        
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Modifications sauvegardées.')
+            return redirect(reverse('prospector:events.show', args=(form.instance.pk,)))
+    else:
+        form = EventForm(instance=obj)
+        
+    return render(request, 'prospector/events/edit.html', {'obj': obj, 'form': form, 'create': create})
+
+
+@login_required
+def events_list(request):
+    qs = Event.objects.order_by('-date')
+    return render(request, 'prospector/events/list.html', {'qs': qs})
+
+
+@login_required
+def events_show(request, pk):
+    if request.method == 'POST':
+        if request.POST['what'] == 'please_make_this_current':
+            old_current = Event.objects.select_for_update().filter(current=True)
+            new_current = Event.objects.select_for_update().filter(pk=pk)
+            with transaction.atomic():
+                old_current.update(current=False)
+                new_current.update(current=True)
+            messages.success(request, 'L\'événement {} est maintenant actuel !'.format(new_current.get().name))
+
+    obj = Event.objects.get(pk=pk)
+    show_data = show_model_data(Event, obj)
+    return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
+
+
+@login_required
 def deals_edit(request, pk=None, create=False):
     if create:
         contact = get_object_or_404(Contact, pk=request.GET['from_contact']) if 'from_contact' in request.GET else None
@@ -415,29 +458,228 @@ def tasktypes_show(request, pk):
     qs = Task.objects.filter(tasktype__pk=obj.pk)
     return render(request, 'prospector/tasktypes/show.html', {'show_data': show_data, 'obj': obj, 'qs': qs})
 
-
-@login_required
-def events_list(request):
-    qs = Event.objects.order_by('-date')
-    return render(request, 'prospector/events/list.html', {'qs': qs})
-
-
-@login_required
-def events_show(request, pk):
+# TODO: Put it in separate file?
+def fanzine_register(request):
+    event = Event.objects.filter(current=True).get()
+    obj = Fanzine()
     if request.method == 'POST':
-        if request.POST['what'] == 'please_make_this_current':
-            old_current = Event.objects.select_for_update().filter(current=True)
-            new_current = Event.objects.select_for_update().filter(pk=pk)
-            with transaction.atomic():
-                old_current.update(current=False)
-                new_current.update(current=True)
-            messages.success(request, 'L\'événement {} est maintenant actuel !'.format(new_current.get().name))
+        form = FanzineForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Votre inscription a été effectuée avec succès')
+            return redirect('prospector:fanzines.register')
+    else:
+        form = FanzineForm(instance=obj)
+    return render(request, 'prospector/fanzines/register.html', {'event': event, 'form': form})
 
-    obj = Event.objects.get(pk=pk)
-    show_data = show_model_data(Event, obj)
-    return render(request, 'prospector/events/show.html', {'show_data': show_data, 'obj': obj})
+@login_required
+def fanzine_list(request):
+    qs = Fanzine.objects.order_by('-total_score')
+    return render(request, 'prospector/fanzines/list.html', {'qs': qs})
 
-# TODO: Find a way to select the fanzines
+@login_required
+def fanzines_show(request, pk):
+    obj = Fanzine.objects.get(pk=pk)
+    show_data = show_model_data(Fanzine, obj, exclude=['total_score'])
+    # Show rating
+    ratings = FanzineRating.objects.filter(fanzine=pk)
+    avg_score = ratings.aggregate(Avg('score'))
+    show_data['score'] = {'display_name': 'Average score [-2, 2]', 'value': avg_score, 'display_value': avg_score['score__avg']}
+    return render(request, 'prospector/fanzines/show.html', {'show_data': show_data, 'obj': obj, 'qs': ratings})
+    
+@login_required
+def fanzines_delete(request):
+    Fanzine.objects.all().delete()
+    return redirect(reverse('prospector:fanzines.list'))
+    
+@login_required
+def fanzines_add(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            try:
+                decoded = file.read().decode()
+            except:
+                messages.error(request, 'Le format du fichier n\'est pas valide')
+                return redirect(reverse('prospector:fanzines.add'))
+            with io.StringIO(decoded) as f:
+                reader = csv.reader(f)
+                next(reader) # skip header
+                for row in reader:
+                    if (len(row) != 27):
+                        messages.error(request, 'Le contenu du fichier n\'est pas valide')
+                        return redirect(reverse('prospector:fanzines.add'))
+                    _, created = Fanzine.objects.get_or_create(
+                        name = row[2],
+                        address_street = row[3],
+                        address_city = row[4],
+                        age = row[5],
+                        email = row[6],
+                        phone_number = row[7],
+                        stand_name = row[8],
+                        prev_editions = row[9],
+                        tables = row[10],
+                        num_people = row[11],
+                        stand_content = row[12],
+                        logistic_needs = row[13],
+                        electric_needs = row[14],
+                        activities = row[15],
+                        stand_description = row[16],
+                        image_url = row[17],
+                        second_chance = (row[18] == 'Oui'),
+                        deadline = row[19],
+                        deviant_url = row[20],
+                        facebook_url = row[21],
+                        blog_url = row[22],
+                        deco = (row[23] == 'Oui'),
+                        remarks = row[24]
+                        )
+                    assert created
+                messages.success(request, 'Fanzines importées avec succès')
+                return redirect(reverse('prospector:fanzines.list'))
+    else:
+        form = UploadFileForm()
+    return render(request, 'prospector/fanzines/add.html', {'form': form})
 
+@login_required
+def fanzines_vote_start(request):
+    all_fanzines = list(Fanzine.objects.all()) # We assume that the number of fanzines is not too big (max 100), which seems a reasonable assumption
+    username = request.user.get_full_name()
+    user_ratings = FanzineRating.objects.all().filter(user=username)
+    remaining = {fz.pk for fz in all_fanzines} - {rt.fanzine.pk for rt in user_ratings}
+    empty = {rt.fanzine.pk for rt in user_ratings if rt.score == 0}
+    remaining = list(remaining.union(empty))
+    from_start = True
+    if len(remaining) != 0 and len(remaining) != len(all_fanzines):
+        remaining.sort()
+        next = remaining[0]
+        from_start = False
+    else:
+        next = all_fanzines[0].pk
+    return render(request, 'prospector/fanzines/vote_start.html', {'start_from': next, 'total': len(all_fanzines), 'start': from_start}) 
+  
+@login_required
+def fanzines_vote(request, pk):
+    obj = get_object_or_404(Fanzine, pk=pk)
+    all_fanzines = list(Fanzine.objects.all())
+    current_index = all_fanzines.index(obj) # Seems awfully inefficient but I couldn't see any other way...
+    username = request.user.get_full_name()
+    try:
+        obj_rating = FanzineRating.objects.filter(fanzine=obj).get(user=username)
+    except FanzineRating.DoesNotExist:
+        obj_rating = None
+    
+    # Get previous element (for returning back)
+    prev = None
+    if current_index != 0:
+        prev = all_fanzines[current_index-1].pk
+    
+    # Handle user input
+    if request.method == 'POST':
+        form = FanzineVoteForm(request.POST)
+        if form.is_valid():
+            score = form.cleaned_data['rating']
+            comment = form.cleaned_data['comment']
+            #if comment == '': comment = None
+            
+            if obj_rating == None:
+                # Update fanzine (only if new)
+                obj.total_score += score
+                obj.save()
+                
+                # Create rating
+                obj_rating = FanzineRating(fanzine=obj, user=username, score=score, comment=comment)
+            else:
+                # Update rating
+                obj_rating.score = score
+                obj_rating.comment = comment
+            
+            obj_rating.save()
 
-# Create your views here.
+            next_index = current_index+1
+            if next_index >= len(all_fanzines): # Arrived at the end
+                return render(request, 'prospector/fanzines/vote_end.html')
+            else:
+                next_pk = all_fanzines[next_index].pk
+                return redirect(reverse('prospector:fanzines.vote', args=(next_pk,)))
+
+    # Display form
+    if obj_rating != None:
+        form = FanzineVoteForm(initial={'rating': obj_rating.score, 'comment': obj_rating.comment})
+    else:
+        form = FanzineVoteForm()
+
+    return render(request, 'prospector/fanzines/vote.html', {'obj': obj, 'form': form, 'prev': prev, 'index': current_index+1, 'total':len(all_fanzines)})       
+            
+@login_required
+def fanzine_create_contact(request, pk):
+    fanzine_obj = get_object_or_404(Fanzine, pk=pk)
+    contact_obj = Contact(person_name=fanzine_obj.name, phone_number=fanzine_obj.phone_number, address_street=fanzine_obj.address_street, address_city=fanzine_obj.address_city)
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Contact créé avec succès')
+            return redirect(reverse('prospector:fanzines.create_deal', args=(pk, contact_obj.pk,)))
+    else:
+        form = ContactForm(instance=contact_obj)
+    return render(request, 'prospector/contacts/edit.html', {'form': form, 'obj': contact_obj, 'create': True})
+    
+@login_required
+def fanzine_create_deal(request, fanzine_pk, contact_pk):
+    fanzine_obj = get_object_or_404(Fanzine, pk=fanzine_pk)
+    contact_obj = get_object_or_404(Contact, pk=contact_pk)
+    deal_obj = Deal(type='fanzine', contact=contact_obj, booth_name=fanzine_obj.stand_name) #TODO logistical needs and price still need to be added manually (don't know how to do otherwise)
+    if request.method == 'POST':
+        form = DealForm(request.POST, instance=deal_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Deal créé avec succès')
+            return redirect(reverse('prospector:fanzines.list'))
+    else:
+        form = DealForm(instance=deal_obj)
+    return render(request, 'prospector/deals/edit.html', {'form': form, 'obj': deal_obj, 'create': True})
+    
+
+@login_required
+def fanzines_overview(request):
+    # TODO je m'y connais pas trop en django, si ça se trouve ce que je fais est une totale horreur
+    all_ratings = FanzineRating.objects.all()
+    ordered = list(all_ratings.order_by('fanzine', 'user'))
+    for r in ordered:
+        print(r.fanzine.stand_name, r.user)
+    users = all_ratings.order_by('user').values('user').distinct()
+    
+    # Construct user list + initials
+    user_dict = {}
+    for i in range(len(users)):
+        username = users[i]['user']
+        user_dict[username] = ''.join(c for c in username if c.isupper())
+    
+    # Build the array of ratings
+    curr_fanzine = ""
+    data = {}
+    curr_list = []
+    user_iter = 0
+
+    for rating in ordered:
+        if curr_fanzine != rating.fanzine.stand_name:
+            if curr_fanzine:
+                # Finish filling up line
+                while user_iter < len(users):
+                    curr_list.append(False)
+                    user_iter += 1
+                data[curr_fanzine] = curr_list
+            curr_fanzine = rating.fanzine.stand_name
+            curr_list = []
+            user_iter = 0
+            
+        while rating.user != users[user_iter]['user']:
+            curr_list.append(False)
+            user_iter += 1
+        curr_list.append(rating.score != 0)
+        user_iter += 1
+
+        
+    return render(request, 'prospector/fanzines/overview.html', {'data': data, 'users': user_dict})

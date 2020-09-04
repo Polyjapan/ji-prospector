@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load spectre_css %}
+
+{% block title %}Inscrire manuellement une fanzine {% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    <div class="card mb-2">
+        <div class="card-header">
+        </div>
+        <div class="card-body">
+            {% render_form form %}
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                <button class="btn btn-success">Sauvegarder <i class="icon icon-check"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

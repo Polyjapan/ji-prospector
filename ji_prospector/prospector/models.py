@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 
+
 # from gmail_link.models import EmailAddress
 from django_fresh_models.library import fresh_model
 
@@ -259,3 +260,47 @@ class LogisticalNeedSet(models.Model):
 
     # Other
     other_material = models.TextField(blank=True)
+    
+@fresh_model
+class Fanzine(models.Model):
+    # most important information, placed first
+    stand_name = models.CharField(max_length=128, default='', verbose_name='Nom du stand')
+    # Personal information
+    name = models.CharField(max_length=128, default='', verbose_name='NOM Prénom')
+    address_street = models.CharField(max_length=128, default='', verbose_name='Adresse: Rue / n°')
+    address_city = models.CharField(max_length=128, default='', verbose_name='Adresse: Code postal / Ville')
+    age = models.CharField(max_length=128, default='', verbose_name='Age')
+    email = models.CharField(max_length=128, verbose_name='Adresse e-mail')
+    phone_number = models.CharField(max_length=16, verbose_name='Numéro de téléphone')
+    
+    # Stand information
+    prev_editions = models.IntegerField(default=0, verbose_name='Participation aux précédentes éditions')
+    tables = models.CharField(max_length=128, default='', verbose_name='Nombre de tables souhaité')
+    num_people = models.CharField(max_length=128, default='', verbose_name='Nombre de personnes présentes')
+    stand_content = models.CharField(max_length=512, default='', verbose_name='Contenu du stand')
+    logistic_needs = models.CharField(max_length=512, default='', verbose_name='Besoins logistiques')
+    electric_needs = models.CharField(max_length=512, default='', blank=True, verbose_name='Besoins électriques importants')
+    activities = models.CharField(max_length=512, default='', verbose_name='Activités supplémentaires')
+    stand_description = models.TextField(default='', verbose_name='Description du stand')
+    image_url = models.CharField(max_length=128, default='', verbose_name='URL d\'une image du stand')
+    second_chance = models.BooleanField(default=False, verbose_name='Si pas choisi mais des places se libèrent, interessé à venir ?')
+    deadline = models.CharField(max_length=128, default='', verbose_name='Date limite pour être prévenu')
+    
+    # Creation links
+    deviant_url = models.CharField(max_length=128, default='', verbose_name='Page DeviantArt')
+    facebook_url = models.CharField(max_length=128, default='', verbose_name='Page Facebook')
+    blog_url = models.CharField(max_length=128, default='', verbose_name='Site/Blog/Autre')
+    
+    # Miscelanious
+    deco = models.BooleanField(default=False, verbose_name='Interessé à participer aux atelier déco')
+    remarks = models.CharField(max_length=512, default='', verbose_name='Remarques')
+    
+    # Score given by comitee members 
+    total_score = models.IntegerField(default=0)
+    
+class FanzineRating(models.Model):
+    fanzine = models.ForeignKey('Fanzine', on_delete=models.CASCADE)
+    user = models.CharField(max_length=128)
+    score = models.IntegerField()
+    comment = models.CharField(max_length=1024)
+    

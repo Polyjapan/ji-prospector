@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Vue d'ensemble des votes du comité{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<div class="container">
+    <table class="table table-scroll" id="rating-table">
+        <tr>
+            <td>&nbsp;</td>
+            {% for name, initials in users.items %}
+            <th class="ratings-entry"><abbr title="{{name}}">{{initials}}</abbr></th>
+            {% endfor %}
+        </tr>
+        {% for name, ratings in data.items %}
+        <tr>
+            <th>{{name}}</th>
+            {% for rating in ratings %}
+            <td class="ratings-entry" style="background-color: {% if rating %}#cde8c8{% else %}#e8c8c8{% endif %};">{{rating | check_or_cross}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

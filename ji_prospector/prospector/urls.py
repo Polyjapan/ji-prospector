@@ -60,6 +60,17 @@ urlpatterns = [
     path('tasks/embed', views.tasks_list_embed, name='tasks.list_embed'),
 
     path('events', views.events_list, name='events.list'),
+    path('events/create', views.events_edit, {'create': True}, name='events.create'),
     path('events/<int:pk>', views.events_show, name='events.show'),
-
+    
+    path('fanzines/register', views.fanzine_register, name='fanzines.register'),
+    path('fanzines', views.fanzine_list, name='fanzines.list'),
+    path('fanzines/<int:pk>', views.fanzines_show, name='fanzines.show'),
+    path('fanzines/delete', views.fanzines_delete, name='fanzines.delete'),
+    path('fanzines/add', views.fanzines_add, name='fanzines.add'),
+    path('fanzines/vote', views.fanzines_vote_start, name='fanzines.vote_start'),
+    path('fanzines/vote/<int:pk>', views.fanzines_vote, name='fanzines.vote'), 
+    path('fanzines/create_contact/<int:pk>', views.fanzine_create_contact, name='fanzines.create_contact'),
+    path('fanzines/create_deal/<int:fanzine_pk>/<int:contact_pk>', views.fanzine_create_deal, name='fanzines.create_deal'),
+    path('fanzines/overview', views.fanzines_overview, name='fanzines.overview'),
 ]

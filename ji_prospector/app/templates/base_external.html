@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Prospector</title>
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-exp.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-icons.min.css' %}">
+        <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/custom.css' %}">
+    </head>
+    <body>
+        <div class="off-canvas off-canvas-sidebar-show">
+            
+            <div class="off-canvas-content p-0">
+                <div class="container py-2">
+
+                    <div class="mb-2">
+                        <h2 class="pt-1 px-2">{% block title %}{% endblock %}</h2>
+                        <h6 class="text-gray pt-1 px-2">{% block subtitle %}{% endblock %}</h6>
+                        <div class="divider"></div>
+                    </div>
+
+                    <div>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="toast {% if message.tags != 'info' %}toast-{{ message.tags }}{% endif %} mb-1">
+                                    <button class="btn btn-clear float-right"></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+
+                    <div>
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </body>
+
+    <script src="{% static 'app/node_modules/zepto/dist/zepto.js'%}"></script>
+    
+    
+    {% block js %}
+    {% endblock %}
+</html>

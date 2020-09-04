@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+
+
+
+{% block title %}Liste des fanzines{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<div class="container">
+    <table class="table">
+        <thead>
+            <th scope="col">Rank</th>
+            <th scope="col">Nom</th>
+            <th scope="col">Adresse email</th>
+            <!-- More info... (don't know what's crucial for a pro lol) !-->
+        </thead>
+        <tbody>
+            {% for item in qs %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td><a href="{% url 'prospector:fanzines.show' pk=item.pk %}">{{item.stand_name}}</a></td>
+                    <td>{{item.email}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="mt-2">
+    <div class="card-footer">
+    {% if qs %} <!--<a href="{% url 'prospector:fanzines.delete' %}" class="btn btn-error">Tout supprimer et recommencer</i></a>--!>
+        <a href="{% url 'prospector:fanzines.register' %}" class="btn btn-success"><i class="icon icon-plus"></i> Ajouter</a>
+        <a href="{% url 'prospector:fanzines.overview' %}" class="btn">Suivi des votes</a>
+
+        {% else %} <a href="{% url 'prospector:fanzines.add' %}" class="btn btn-success">Ajouter les fanzines</a>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}
+

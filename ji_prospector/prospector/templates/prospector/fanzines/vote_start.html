@@ -1,0 +1,24 @@
+{% extends 'base_external.html' %}
+{% load spectre_css %}
+
+{% block title %}Sélection fanzines 2021 {% endblock %}
+{% block subtitle %}{{request.user.get_full_name}}{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    <div class="card" id="fanzines-card">
+        <div class="card-header">
+          <div class="card-title h4">Bienvenue sur le vote des fanzines</div>
+        </div>
+        <div class="card-body">
+          <p class="card-text">Pour chaque fanzine, visitez les pages de ses réseaux et donnez votre avis à son sujet. <br>Il y a {{total}} fanzines en tout. Vous pouvez vous arrêter à tout moment pour y revenir plus tard, vous serez redirigé depuis cette page là où vous vous étiez arrêtés. Vous pouvez aussi revenir en arrière pour éditer votre vote.<br>Merci pour votre aide !</p>
+        </div>
+        <div class="card-footer">
+            <div class="float-right">
+                <a href="{% url 'prospector:fanzines.vote' pk=start_from %}" class="btn btn-success">{% if start %}Commencer{% else %}Reprendre{%endif%}</i></a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

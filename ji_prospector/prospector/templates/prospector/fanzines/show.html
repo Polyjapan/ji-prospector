@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+
+
+
+{% loadmacros 'show_data.html' %}
+
+{% block title %}Fanzine : {{obj.name}}{% endblock %}
+{% block subtitle %}{% endblock %}
+{% block active_menu %}fanzines{% endblock %}
+
+{% block content %}
+
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Données</div>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            {% for name, data in show_data.items %}
+                <tr>
+                    <th span="row">{{data.display_name}}</th>
+                    <td>{% if data.value|slice:":4" == "http" %} <a href="{{data.value}}">{{data.display_value}}</a> <!-- Yup it's ugly ahah (and it's more or less a copy from the macro so...?) --!>
+                        {% else %} {{data.display_value | check_or_cross}}
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'prospector:fanzines.create_contact' pk=obj.pk %}" class="btn">Créer Contact & Deal </a>
+
+    </div>
+</div>
+<div class="card mb-2">
+    <div class="card-header">
+        <div class="card-title h4">Commentaires du comité</div>
+    </div>
+    <div class="card-body">
+        {% for item in qs %}
+            {% if item.comment %}
+                <div class="card-title h5">{{item.user}}</div>
+                <p class="card-text">{{item.comment}}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+
