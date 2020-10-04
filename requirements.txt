@@ -1,4 +1,4 @@
-Django==3
+Django==3.0.7
 google-api-python-client<=1.8
 django-cas-ng<=4.1
 django-spectre-css
