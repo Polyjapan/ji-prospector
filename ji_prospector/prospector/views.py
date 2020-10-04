@@ -10,8 +10,24 @@ from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
 
-from .models import Contact, Deal, TaskType, Task, BoothSpace, TaskComment, TaskLog, Event
-from .forms import ContactForm, DealForm, TaskTypeForm, QuickTaskForm, QuickStartForm, TaskCommentForm
+from .models import (
+    Contact,
+    Deal,
+    TaskType,
+    Task,
+    BoothSpace,
+    TaskComment,
+    TaskLog,
+    Event,
+)
+from .forms import (
+    ContactForm,
+    DealForm,
+    TaskTypeForm,
+    QuickTaskForm,
+    QuickStartForm,
+    TaskCommentForm,
+)
 
 
 def show_model_data(cls, instance, exclude=[]):
@@ -457,7 +473,8 @@ def tasks_list_embed(request):
         fixed_deal = True
         qs = qs.filter(deal__pk=request.GET["fixed_deal"])
 
-    # Not crazy efficient. However, "depth" is a recursively-computed property, so doing it in the DB is not standard. If you're motivated, see https://mariadb.com/kb/en/recursive-common-table-expressions-overview/
+    # Not crazy efficient. However, "depth" is a recursively-computed property, so doing it in the DB is not standard.
+    # If you're motivated, see https://mariadb.com/kb/en/recursive-common-table-expressions-overview/
     qs = sorted(qs, key=lambda task: task.tasktype.depth)
     return render(
         request,

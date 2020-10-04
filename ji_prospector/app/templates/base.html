@@ -11,12 +11,8 @@
         <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-exp.min.css' %}">
         <link rel="stylesheet" type="text/css" media="all" href="{% static 'app/css/spectre-icons.min.css' %}">
     </head>
-    <body class="plex">
+    <body>
         <div class="off-canvas off-canvas-sidebar-show">
-            <a class="off-canvas-toggle p-fixed btn" href="#sidebar">
-                <i class="icon icon-menu"></i>
-            </a>
-
             <div id="sidebar" class="off-canvas-sidebar">
                 <div class="container py-2">
 
@@ -52,8 +48,11 @@
 
             <a class="off-canvas-overlay" href="#close"></a>
 
-            <div class="off-canvas-content py-0 px-2">
-                <div class="container py-2">
+            <div class="off-canvas-content py-0 px-0">
+                <div class="container py-2 px-2">
+                    <a class="off-canvas-toggle btn btn-block btn-lg mb-2" style="position: relative; left: 0; top:0;" href="#sidebar">
+                        <i class="icon icon-menu"></i>
+                    </a>
 
                     <div class="mb-2">
                         <h2 class="mb-1">{% block title %}{% endblock %}</h2>
