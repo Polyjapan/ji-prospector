@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django_cas_ng',
     'django_fresh_models',
-    'widget_tweaks', # for spectre-css
+    'widget_tweaks',  # for spectre-css
     'django-spectre-css',
     'safedelete',
     'prospector',

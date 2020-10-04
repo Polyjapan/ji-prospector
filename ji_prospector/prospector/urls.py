@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path
 
 import prospector.views as views
-from prospector.models import *
+from prospector.models import Contact, Deal, TaskType, Task
 
 app_name = 'prospector'
 urlpatterns = [

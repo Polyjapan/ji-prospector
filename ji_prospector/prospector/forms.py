@@ -1,12 +1,11 @@
 from django import forms
-from django.forms.widgets import SelectDateWidget
 from django.db.models import Value, CharField
-from django.utils.timezone import now
 
 from django_fresh_models.fields import FreshModelChoiceField
 
-from .models import *
+from .models import Contact, Deal, TaskType, Task, BoothSpace, LogisticalNeedSet
 from .fields import PrefixedDataListTextInput
+
 
 # Really ?
 class FanzineForm(forms.Form):
@@ -15,56 +14,76 @@ class FanzineForm(forms.Form):
 
 class FanzineVoteForm(forms.Form):
     """One day I'll do it"""
+
     pass
 
 
 class HardDeleteForm(forms.Form):
-    magic_words_field = forms.CharField(max_length=128, required=False, label='Mots magiques')
+    magic_words_field = forms.CharField(
+        max_length=128, required=False, label="Mots magiques"
+    )
 
     def clean_magic_words_field(self):
-        data = self.cleaned_data['magic_words_field']
+        data = self.cleaned_data["magic_words_field"]
         if data.lower() != self.magic_words.lower():
-            raise forms.ValidationError('Les mots magiques ne sont pas corrects.')
+            raise forms.ValidationError("Les mots magiques ne sont pas corrects.")
         return data
 
     def __init__(self, *args, magic_words, **kwargs):
         super().__init__(*args, **kwargs)
         self.magic_words = magic_words
 
+
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Contact
-        fields = '__all__'
+        fields = "__all__"
+
 
 class DealForm(forms.ModelForm):
     class Meta:
         model = Deal
-        exclude = ['tasks']
+        exclude = ["tasks"]
         field_classes = {
-            'contact': FreshModelChoiceField,
-            'event': FreshModelChoiceField
+            "contact": FreshModelChoiceField,
+            "event": FreshModelChoiceField,
         }
+
 
 class TaskTypeForm(forms.ModelForm):
     class Meta:
         model = TaskType
-        fields = '__all__'
+        fields = "__all__"
         field_classes = {
-            'typical_next_task': FreshModelChoiceField,
+            "typical_next_task": FreshModelChoiceField,
         }
+
 
 class BoothSpaceForm(forms.ModelForm):
     class Meta:
         model = BoothSpace
-        fields = '__all__'
+        fields = "__all__"
+
 
 class LogisticalNeedSetForm(forms.ModelForm):
     class Meta:
         model = LogisticalNeedSet
-        fields = '__all__'
+        fields = "__all__"
+
 
 class TaskCommentForm(forms.Form):
-    text = forms.CharField(max_length=128, label='', widget=forms.Textarea(attrs={'class': 'form-input', 'placeholder': 'Ton commentaire ici', 'rows':'3'}))
+    text = forms.CharField(
+        max_length=128,
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-input",
+                "placeholder": "Ton commentaire ici",
+                "rows": "3",
+            }
+        ),
+    )
+
 
 class QuickStartForm(forms.Form):
     what = forms.CharField(max_length=128, required=False)
@@ -72,34 +91,55 @@ class QuickStartForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        qs1 = TaskType.objects.annotate(pouet=Value('tasktype', CharField())).values_list('name', 'pouet').order_by()
-        qs2 = Deal.objects.annotate(pouet=Value('deal', CharField())).values_list('booth_name', 'pouet').order_by()
+        qs1 = (
+            TaskType.objects.annotate(pouet=Value("tasktype", CharField()))
+            .values_list("name", "pouet")
+            .order_by()
+        )
+        qs2 = (
+            Deal.objects.annotate(pouet=Value("deal", CharField()))
+            .values_list("booth_name", "pouet")
+            .order_by()
+        )
 
-        self.fields['what'].widget = PrefixedDataListTextInput(
-            prefix='Je veux m\'occuper de',
-            prefix_attrs={'class': 'text-large'},
+        self.fields["what"].widget = PrefixedDataListTextInput(
+            prefix="Je veux m'occuper de",
+            prefix_attrs={"class": "text-large"},
             tuplelist=qs1.union(qs2),
-            name='quickstart-list1',
-            attrs={'class': 'form-input input-lg d-inline', 'autocomplete': 'off', 'placeholder': 'plusieurs tâches en vrac'}
+            name="quickstart-list1",
+            attrs={
+                "class": "form-input input-lg d-inline",
+                "autocomplete": "off",
+                "placeholder": "plusieurs tâches en vrac",
+            },
         )
 
 
 class QuickTaskForm(forms.Form):
     name = forms.CharField(max_length=128)
-    deadline = forms.DateTimeField(required=False, widget=forms.TextInput(attrs={'class': 'form-select select-sm', 'type': 'date'}))
-    state = forms.ChoiceField(choices=Task.TODO_STATES, widget=forms.Select(attrs={'class': 'form-select select-sm'}))
+    deadline = forms.DateTimeField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={"class": "form-select select-sm", "type": "date"}
+        ),
+    )
+    state = forms.ChoiceField(
+        choices=Task.TODO_STATES,
+        widget=forms.Select(attrs={"class": "form-select select-sm"}),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['name'].widget = PrefixedDataListTextInput(
-            prefix='Il faut',
-            tuplelist=TaskType.objects.values_list('name', 'id'),
-            name='quicktask-list',
-            attrs={'class': 'form-input input-sm d-inline', 'autocomplete': 'off'}
+        self.fields["name"].widget = PrefixedDataListTextInput(
+            prefix="Il faut",
+            tuplelist=TaskType.objects.values_list("name", "id"),
+            name="quicktask-list",
+            attrs={"class": "form-input input-sm d-inline", "autocomplete": "off"},
         )
 
-### Generic ones
+
+# Generic ones
 # class ContactForm(forms.ModelForm):
 #     class Meta:
 #         model = Contact
