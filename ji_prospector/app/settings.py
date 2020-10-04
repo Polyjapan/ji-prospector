@@ -110,7 +110,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-## django_cas_ng STUFF
+# django_cas_ng STUFF
 
 CAS_SERVER_URL = 'https://auth.japan-impact.ch/cas/'
 CAS_LOGIN_URL_NAME = 'users:cas_ng_login'

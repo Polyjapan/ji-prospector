@@ -22,7 +22,7 @@ DATABASES = {
 
 STATIC_ROOT = ''
 
-## django_cas_ng STUFF
+# django_cas_ng STUFF
 
 # Depends on your server
 CAS_FORCE_SSL_SERVICE_URL = False
