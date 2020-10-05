@@ -29,6 +29,8 @@ from .forms import (
     TaskCommentForm,
 )
 
+import datetime
+
 
 def show_model_data(cls, instance, exclude=[]):
     fs = cls._meta.get_fields(include_hidden=False)
@@ -115,68 +117,24 @@ def index(request):
 
     free_booths = BoothSpace.objects.filter(dealboothspace__isnull=True)
 
-    # Yeah I know. The ORM would not let me group by one thing only. Fuck the ORM (and/or me)
-    # Maybe I should just do it in <number_of_task> queries... get the tasks first, and then for each one, get the related data. but dammit... performance !!
-    to_do = TaskType.objects.raw(
-        """
-SELECT
-    tt.id,
-    tt.name,
-    d.booth_name,
-    t.deadline,
-    t2.deal_count,
-    t2.worst_todo,
-    d.id AS deal_id
-FROM
-    prospector_task t
-    JOIN prospector_tasktype tt
-    ON t.tasktype_id = tt.id
-    JOIN prospector_deal d
-    ON t.deal_id = d.id
-    JOIN (
-        SELECT MIN(deadline) as min_deadline, tasktype_id, COUNT(*) AS deal_count, MAX(todo_state) AS worst_todo
-        FROM prospector_task
-        WHERE todo_state <> '0_done'
-        GROUP BY tasktype_id
-    ) t2
-    ON t.tasktype_id = t2.tasktype_id
-WHERE t.deadline = t2.min_deadline OR t.deadline IS NULL
-ORDER BY t.deadline
-    """
-    )
+    # Show todos : (next tasks to do OR late tasks OR soon to be late tasks) grouped by tasktype
+    next_task_pks_to_do = []
+    for deal in Deal.objects.filter(task__isnull=False).distinct():
+        tasks = deal.task_set.exclude(todo_state='0_done')
+        minimum_depth = None
+        for task in tasks:
+            if not minimum_depth or task.tasktype.depth < minimum_depth:
+                minimum_depth = task.tasktype.depth
 
-    # There exists this query too, which was submitted by a dude on SO.
-    # It works, although it is disgustingly inefficient.
-    # I chose not to use it.
+        for task in tasks:
+            if task.tasktype.depth == minimum_depth:
+                next_task_pks_to_do.append(task.pk)
 
-    # to_do_rows2 = TaskType.objects.annotate(
-    #     booth_name=Subquery(
-    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deal__booth_name')[:1]
-    #     ),
-    #     deal_id=Subquery(
-    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deal_id')[:1]
-    #     ),
-    #     deadline=Subquery(
-    #         Task.objects.exclude(todo_state='0_done').filter(tasktype_id=OuterRef('id')).order_by('deadline').values('deadline')[:1]
-    #     ),
-    #     deal_count=Count('task__deal'),
-    #     worst_todo=Max('task__todo_state'),
-    # )
-    #
-    # print(to_do_rows2.query)
-    # print(to_do_rows2.values())
+    next_tasks_to_do = Task.objects.filter(pk__in=next_task_pks_to_do)
+    late_tasks = Task.objects.exclude(todo_state='0_done').filter(deadline__lt=datetime.datetime.now())
+    deadline_soon_tasks = Task.objects.exclude(todo_state='0_done').filter(deadline__lt=datetime.datetime.now()+datetime.timedelta(days=7))
 
-    # Fake models so we can use the model filters
-    model_to_do = []
-    for row in to_do:
-        t = Task.from_db(
-            Task.objects.all().db,
-            ["todo_state", "deadline", "deal_id", "tasktype_id"],
-            [row.worst_todo, row.deadline, row.deal_id, row.id],
-        )
-        # Attribute specific to that query
-        t.deal_count = row.deal_count
-        model_to_do.append(t)
+    to_do = next_tasks_to_do.union(late_tasks).union(deadline_soon_tasks).order_by('deadline')
 
     quickstartform = QuickStartForm()
 
@@ -185,7 +143,7 @@ ORDER BY t.deadline
         "prospector/index.html",
         {
             "free_booths": free_booths,
-            "to_do": model_to_do,
+            "to_do": to_do,
             "quickstartform": quickstartform,
         },
     )

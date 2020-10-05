@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Value, CharField
 
-from django_fresh_models.fields import FreshModelChoiceField
+from django_fresh_models.library import fresh_modelform_meta
 
 from .models import Contact, Deal, TaskType, Task, BoothSpace, LogisticalNeedSet
 from .fields import PrefixedDataListTextInput
@@ -35,37 +35,35 @@ class HardDeleteForm(forms.Form):
 
 
 class ContactForm(forms.ModelForm):
+    @fresh_modelform_meta
     class Meta:
         model = Contact
         fields = "__all__"
 
 
 class DealForm(forms.ModelForm):
+    @fresh_modelform_meta
     class Meta:
         model = Deal
         exclude = ["tasks"]
-        field_classes = {
-            "contact": FreshModelChoiceField,
-            "event": FreshModelChoiceField,
-        }
 
 
 class TaskTypeForm(forms.ModelForm):
+    @fresh_modelform_meta
     class Meta:
         model = TaskType
         fields = "__all__"
-        field_classes = {
-            "typical_next_task": FreshModelChoiceField,
-        }
 
 
 class BoothSpaceForm(forms.ModelForm):
+    @fresh_modelform_meta
     class Meta:
         model = BoothSpace
         fields = "__all__"
 
 
 class LogisticalNeedSetForm(forms.ModelForm):
+    @fresh_modelform_meta
     class Meta:
         model = LogisticalNeedSet
         fields = "__all__"

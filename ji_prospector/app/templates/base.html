@@ -63,7 +63,7 @@
                     <div>
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="toast {% if message.tags != 'info' %}toast-{{ message.tags }}{% endif %} mb-1">
+                                <div class="toast {% if message.tags != 'info' %}toast-{{ message.tags }}{% endif %} mb-2">
                                     <button class="btn btn-clear float-right"></button>
                                     {{ message }}
                                 </div>

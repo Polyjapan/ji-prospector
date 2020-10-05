@@ -30,7 +30,7 @@
             <div>
                 <div class="columns">
                     <div class="column col-auto">
-                        <div class="card-title h4">Tâches à faire groupées par type</div>
+                        <div class="card-title h4">Prochaines tâches</div>
                     </div>
                     <div class="column col">
                         <input class="search form-input" placeholder="Rechercher" id="tasks_table_search"/>
@@ -44,9 +44,9 @@
                     <rows>
                         {% for r in to_do %}
                             <r>
-                                <d>{{r | fresh:'timed_a'}}</d>
-                                <d><small>pour {{r.deal_count}} deals</small></d>
-                                <d><small>{{r.deadline | deadline | or_cross}}</small> pour {{r.deal | fresh:'a'}}</d>
+                                <d>{{r.deal | fresh:'a'}}</d>
+                                <d>{{r | fresh:'a'}}</d>
+                                <d><small>{{r.deadline | deadline | or_cross}}</small></d>
                                 <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
                             </r>
                         {% endfor %}
@@ -54,7 +54,7 @@
                 </nicetable>
             {% else %}
                 <div class="empty">
-                    <p class="empty-title h5">Il n'y a rien ici.</p>
+                    <p class="empty-title h5">Rien à faire.</p>
                     <p class="empty-subtitle">Aucune tâche n'a été planifiée.</p>
                 </div>
             {% endif %}
@@ -130,7 +130,7 @@
 
 {% block js %}
 <script>
-    var t = new NiceTable($('#tasks_table'), ['Type de tâche', '', 'Deadline la plus proche', 'État le plus en retard']);
+    var t = new NiceTable($('#tasks_table'), ['Deal', 'Tâche', 'Échéance', 'État']);
     t.setSearchBox($('#tasks_table_search'))
     var t2 = new NiceTable($('#free_booths_table'), ['Emplacement', 'Prix usuel', 'Prix des deals qui vont peut-être ici', '<search>']);
 </script>
