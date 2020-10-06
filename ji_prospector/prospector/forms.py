@@ -2,6 +2,7 @@ from django import forms
 from django.db.models import Value, CharField
 
 from django_fresh_models.library import fresh_modelform_meta
+from django_fresh_models.fields import FreshModelMultipleChoiceField
 
 from .models import Contact, Deal, TaskType, Task, BoothSpace, LogisticalNeedSet
 from .fields import PrefixedDataListTextInput
@@ -136,6 +137,20 @@ class QuickTaskForm(forms.Form):
             attrs={"class": "form-input input-sm d-inline", "autocomplete": "off"},
         )
 
+
+class ImportTaskTypesForm(forms.Form):
+    json_list = forms.CharField(
+        label="Liste JSON",
+        help_text="Copier-coller ce que l'export a produit",
+        widget=forms.Textarea(),
+    )
+
+
+class ExportTaskTypesForm(forms.Form):
+    which_tasktypes = FreshModelMultipleChoiceField(
+        label="Quels types?",
+        queryset=TaskType.objects.all()
+    )
 
 # Generic ones
 # class ContactForm(forms.ModelForm):

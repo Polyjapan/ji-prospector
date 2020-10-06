@@ -7,6 +7,7 @@ from django_fresh_models.library import fresh_model
 
 import safedelete.models
 import json
+import math
 
 
 User = get_user_model()
@@ -30,6 +31,47 @@ class Event(models.Model):
     polyjapan_president = models.CharField(
         max_length=128, verbose_name="Président PolyJapan"
     )
+
+    @property
+    def budget_data(self):
+        budgeted_income = self.budget
+
+        boothspaces = BoothSpace.objects.all()
+        usual_income_for_all_boothspaces = boothspaces.aggregate(models.Sum("usual_price"))[
+            "usual_price__sum"
+        ]
+
+        deals = Deal.objects.filter(event__pk=self.pk)
+        expected_income = deals.aggregate(models.Sum("price"))["price__sum"]
+        deals_number = deals.count()
+
+        signed_deals = [
+            deal
+            for deal in Deal.objects.filter(event__pk=self.pk)
+            if deal.price_decided
+        ]
+        signed_income = sum([deal.price for deal in signed_deals])
+        signed_deals_number = len(signed_deals)
+
+        # Use Truffe API when it exists
+        paid_deals = []
+        received_income = 0
+        paid_deals_number = 0
+
+        return {
+            "budgeted_income": budgeted_income,
+            "boothspaces": boothspaces,
+            "usual_income_for_all_boothspaces": usual_income_for_all_boothspaces,
+            "deals": deals,
+            "expected_income": expected_income,
+            "deals_number": deals_number,
+            "signed_deals": signed_deals,
+            "signed_income": signed_income,
+            "signed_deals_number": signed_deals_number,
+            "paid_deals": paid_deals,
+            "received_income": received_income,
+            "paid_deals_number": paid_deals_number,
+        }
 
 
 @fresh_model
@@ -92,10 +134,14 @@ class TaskType(safedelete.models.SafeDeleteModel):
 
     @property
     def depth(self):
-        if self.typical_prev_task:
-            return self.typical_prev_task.depth + 1
-        else:
-            return 0
+        x = self.typical_prev_task
+        depth = 1
+
+        while x and x != self:
+            depth += 1
+            x = x.typical_prev_task
+
+        return -1 if x == self else depth
 
     @property
     def useful_views_dict(self):

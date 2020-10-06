@@ -20,7 +20,6 @@
                             <rows>
                                 {% for d in qs %}
                                 <r>
-                                    {% url 'prospector:deals.edit' pk=d.pk as edit_url %}
                                     <d>{{d | fresh:'a'}}</d>
                                     <d>{{d.event | fresh:'a'}}</d>
                                     <d>{{d | model_choice:'type'}}</d>
@@ -40,8 +39,12 @@
                                         <i class="icon icon-{{obj.contract_decided | yesno:'check,cross'}} text-{{obj.price_decided | yesno:'success,error'}}"></i>
                                     </d>
                                     <d>
-                                        <div>
-                                            <a href="{{edit_url}}" class="btn btn-sm float-right">Éditer</a>
+                                        <div class="float-right">
+                                            <form class="d-inline" action="{% url 'prospector:deals.delete' pk=d.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn btn-outline-error btn-sm">Archiver <i class="icon icon-minus"></i></button>
+                                            </form>
+                                            <a href="{% url 'prospector:deals.edit' pk=d.pk %}" class="btn btn-sm">Éditer <i class="icon icon-edit"></i></a>
                                         </div>
                                     </d>
                                 </r>
@@ -57,7 +60,7 @@
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'prospector:deals.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>
-                    <a href="{% url 'prospector:deals.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+                    <a href="{% url 'prospector:deals.create' %}" class="btn btn-outline-success">Créer <i class="icon icon-plus"></i></a>
                 </div>
             </div>
         </div>

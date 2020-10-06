@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% load macros %}
+{% block title %}Budget pro de {{current_event | fresh:'a'}}{% endblock %}
+{% block subtitle %}«L'argent n'est pas un problème à l'AGEPoly.» —Fouco Tabourin{% endblock %}
+{% block active_menu %}budget{% endblock %}
+
+{% block content %}
+<div class="columns">
+    <div class="column col-lg-12 col-6">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Recettes budgetées</div>
+            </div>
+            <div class="card-body">
+                <span class="h5">CHF </span><span class="h5 text-primary">{{budgeted_income}}</span><br>
+                C'est la somme que la Trésorerie nous a demandé de gagner.
+            </div>
+        </div>
+    </div>
+
+    <div class="column col-lg-12 col-6">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Recettes usuelles des emplacements</div>
+            </div>
+            <div class="card-body">
+                <span class="h5">CHF </span>
+                <span class="h5 text-{% if usual_income_for_all_boothspaces < budgeted_income %}error{% else %}success{% endif %}">{{usual_income_for_all_boothspaces}}</span>
+                <span>/{{budgeted_income}}</span><br>
+                Tous les emplacements ont un "prix habituel". C'est la somme de ces prix.
+
+                <div class="accordion">
+                    <input id="accordion-2" type="checkbox" hidden="">
+                    <label class="accordion-header c-hand" for="accordion-2">
+                        <i class="icon icon-arrow-right"></i> <strong>Détails</strong>
+                    </label>
+                    <div class="accordion-body">
+                        <nicetable id="usual_income_table">
+                            <rows>
+                                {% for b in boothspaces %}
+                                    <r>
+                                        <d>{{b | fresh:'a'}}</d>
+                                        <d>{{b.usual_price | price}}</d>
+                                        <d></d>
+                                    </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column col-lg-12 col-6">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Recettes attendues</div>
+            </div>
+            <div class="card-body">
+                <span class="h5">CHF </span>
+                <span class="h5 text-{% if expected_income < budgeted_income %}error{% else %}success{% endif %}">{{expected_income}}</span>
+                <span>/{{budgeted_income}}</span><br>
+                Chaque deal a un prix, mais il peut être amené à changer au fur et à mesure des négociations. C'est la somme de ces prix.
+
+                <div class="accordion">
+                    <input id="accordion-3" type="checkbox" hidden="">
+                    <label class="accordion-header c-hand" for="accordion-3">
+                        <i class="icon icon-arrow-right"></i> <strong>Détails</strong>
+                    </label>
+                    <div class="accordion-body">
+                        <nicetable id="expected_income_table">
+                            <rows>
+                                {% for d in deals %}
+                                    <r>
+                                        <d>{{d | fresh:'a'}}</d>
+                                        <d>{{d.price | price}}</d>
+                                        <d></d>
+                                    </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column col-lg-12 col-6">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Recettes des stands signés</div>
+            </div>
+            <div class="card-body">
+                <span class="h5">CHF </span>
+                <span class="h5 text-{% if signed_income < budgeted_income %}error{% else %}success{% endif %}">{{signed_income}}</span>
+                <span>/{{budgeted_income}}</span><br>
+
+                C'est la somme des prix des stands qui ont signé. Normalement, ça ne peut que monter.<br>
+                {% if deals_number == signed_deals_number %}
+                    <strong>Tous les stands ont signé.</strong>
+                {% else %}
+                    Sur les <strong>{{deals_number}}</strong> stands, seuls <strong>{{signed_deals_number}}</strong> ont signé.
+                {% endif %}
+
+                <div class="accordion">
+                    <input id="accordion-4" type="checkbox" hidden="">
+                    <label class="accordion-header c-hand" for="accordion-4">
+                        <i class="icon icon-arrow-right"></i> <strong>Détails</strong>
+                    </label>
+                    <div class="accordion-body">
+                        <nicetable id="signed_income_table">
+                            <rows>
+                                {% for d in signed_deals %}
+                                    <r>
+                                        <d>{{d | fresh:'a'}}</d>
+                                        <d>{{d.price | price}}</d>
+                                        <d></d>
+                                    </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column col-lg-12 col-6">
+        <div class="card mb-2">
+            <div class="card-header">
+                <div class="card-title h4">Recettes des stands reçues</div>
+            </div>
+            <div class="card-body">
+                <span class="h5">CHF </span>
+                <span class="h5 text-{% if received_income < budgeted_income %}error{% else %}success{% endif %}">{{received_income}}</span>
+                <span>/{{budgeted_income}}</span><br>
+                C'est la somme de tout l'argent reçu. Normalement, ça ne peut que monter.<br>
+                {% if deals_number == paid_deals_number %}
+                    <strong>Tous les stands ont payé.</strong>
+                {% else %}
+                    Sur les <strong>{{deals_number}}</strong> stands, seuls <strong>{{paid_deals_number}}</strong> ont payé.
+                {% endif %}
+
+                <div class="accordion">
+                    <input id="accordion-5" type="checkbox" hidden="">
+                    <label class="accordion-header c-hand" for="accordion-5">
+                        <i class="icon icon-arrow-right"></i> <strong>Détails</strong>
+                    </label>
+                    <div class="accordion-body">
+                        <nicetable id="received_income_table">
+                            <rows>
+                                {% for d in paid_deals %}
+                                    <r>
+                                        <d>{{d | fresh:'a'}}</d>
+                                        <d>{{d.price | price}}</d>
+                                        <d></d>
+                                    </r>
+                                {% endfor %}
+                            </rows>
+                        </nicetable>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    var t = new NiceTable($('#usual_income_table'), ['Emplacement', 'Prix usuel', '<search>']);
+    var t2 = new NiceTable($('#expected_income_table'), ['Deal', 'Prix attendu', '<search>']);
+    var t3 = new NiceTable($('#signed_income_table'), ['Deal', 'Prix signé', '<search>']);
+    var t4 = new NiceTable($('#received_income_table'), ['Deal', 'Argent reçu', '<search>']);
+</script>
+{% endblock %}

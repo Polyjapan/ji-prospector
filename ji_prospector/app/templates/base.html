@@ -13,9 +13,9 @@
     </head>
     <body>
         <div class="d-flex">
-            <div style="height: 100vh;">
+            <div style="height: 100vh;"> <!-- Needed for correct sizing of the sidebar -->
             </div>
-            <div class="off-canvas off-canvas-sidebar-show" style="height: unset;">
+            <div class="off-canvas off-canvas-sidebar-show" style="height: unset;"> <!-- Style needed for correct sizing of the sidebar -->
                 <div id="sidebar" class="off-canvas-sidebar">
                     <div class="container py-2">
 
@@ -30,7 +30,7 @@
 
                         <ul class="nav p-2">
                             <li class="nav-item nav-index"><a href="{% url 'prospector:index' %}">Résumé</a></li>
-                            <li class="nav-item nav-budgets"><a href="{% url 'prospector:plan' %}">Budget (WIP)</a></li>
+                            <li class="nav-item nav-budget"><a href="{% url 'prospector:budget' %}">Budget</a></li>
                             <li class="nav-item nav-plan"><a href="{% url 'prospector:plan' %}">Plan (WIP)</a></li>
                             <li class="nav-item nav-events"><a href="{% url 'prospector:events.list' %}">Événements (WIP)</a></li>
                             <li class="nav-item nav-contacts"><a href="{% url 'prospector:contacts.list' %}">Contacts</a></li>

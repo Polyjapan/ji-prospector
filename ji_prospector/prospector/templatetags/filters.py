@@ -13,6 +13,11 @@ def price(text):
     return format_html("{}<small>CHF</small>", text)
 
 
+@register.filter(name="plus")
+def plus(number):
+    return '+{}'.format(number) if number > 0 else number
+
+
 @register.filter(name="todo_state_color")
 def todo_state_color(str):
     colors = {

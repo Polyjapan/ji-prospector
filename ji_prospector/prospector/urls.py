@@ -18,11 +18,17 @@ from django.urls import path
 import prospector.views as views
 from prospector.models import Contact, Deal, TaskType, Task
 
+from django.shortcuts import render
+
 app_name = 'prospector'
 urlpatterns = [
     path('', views.index, name='index'),
     path('quickstart', views.quickstart, name='quickstart'),
+    path('budget', views.budget, name='budget'),
     path('plan', views.plan, name='plan'),
+
+    # Temporary
+    path('emails', lambda req: render(req, 'prospector/emails/list.html')),
 
     path('contacts', views.list_view(Contact, 'contacts'), name='contacts.list'),
     path('contacts/archive', views.list_view(Contact, 'contacts', archive=True), name='contacts.archive'),
@@ -45,6 +51,8 @@ urlpatterns = [
     path('tasktypes', views.tasktypes_list, name='tasktypes.list'),
     path('tasktypes/archive', views.list_view(TaskType, 'tasktypes', archive=True), name='tasktypes.archive'),
     path('tasktypes/create', views.tasktypes_edit, {'create': True}, name='tasktypes.create'),
+    path('tasktypes/import', views.tasktypes_import, name='tasktypes.import'),
+    path('tasktypes/export', views.tasktypes_export, name='tasktypes.export'),
     path('tasktypes/<int:pk>', views.tasktypes_show, name='tasktypes.show'),
     path('tasktypes/<int:pk>/edit', views.tasktypes_edit, name='tasktypes.edit'),
     path('tasktypes/<int:pk>/delete', views.delete_view(TaskType, 'tasktypes'), name='tasktypes.delete'),

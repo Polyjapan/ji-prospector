@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% load macros %}
-{% block title %}Résumé de {{current_event | fresh}}{% endblock %}
+{% block title %}Résumé de {{current_event | fresh:'a'}}{% endblock %}
 {% block subtitle %}Survol rapide des choses importantes{% endblock %}
 {% block active_menu %}index{% endblock %}
 
@@ -19,9 +19,6 @@
                 {% for field in quickstartform %}
                     <div>{% if not field.is_hidden %}{{ field.errors }}{{ field }}{% endif %}</div>
                 {% endfor %}
-            </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-primary float-right">Allez!</button>
             </div>
         </div>
     </form>
@@ -47,7 +44,7 @@
                                 <d>{{r.deal | fresh:'a'}}</d>
                                 <d>{{r | fresh:'a'}}</d>
                                 <d><small>{{r.deadline | deadline | or_cross}}</small></d>
-                                <d class="bg-{{r.todo_state | todo_state_color}}"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
+                                <d class="bg-{{r.todo_state | todo_state_color}}-dark"><small>{{r.todo_state | choice:'prospector.Task.todo_state'}}</small></d>
                             </r>
                         {% endfor %}
                     </rows>
@@ -70,25 +67,41 @@
                 <div class="columns">
                     <div class="column text-center">
                         <small>RECETTES BUDGÉTÉES DES EMPLACEMENTS</small>
-                        <p><span class="h3">CHF </span><span class="h3 text-primary">+a</span></p>
+                        <p><span class="h4">CHF </span><span class="h4 text-primary">{{budgeted_income}}</span></p>
                     </div>
                     <div class="column text-center">
                         <small>RECETTES USUELLES DE TOUS LES EMPLACEMENTS</small>
-                        <p><span class="h3">CHF </span><span class="h3">+b</span></p>
+                        <p>
+                            <span class="h4">CHF </span>
+                            <span class="h4 text-{% if usual_income_for_all_boothspaces < budgeted_income %}error{% else %}success{% endif %}">{{usual_income_for_all_boothspaces}}</span>
+                            <span>/{{budgeted_income}}</span>
+                        </p>
                     </div>
                     <div class="column text-center">
-                        <small>RECETTES DES STANDS SAUF SURPRISE</small>
-                        <p><span class="h3">CHF </span><span class="h3 text-success">+c</span></p>
+                        <small>RECETTES DES STANDS ATTENDUES</small>
+                        <p>
+                            <span class="h4">CHF </span>
+                            <span class="h4 text-{% if expected_income < budgeted_income %}error{% else %}success{% endif %}">{{expected_income}}</span>
+                            <span>/{{budgeted_income}}</span>
+                        </p>
                     </div>
                     <div class="column text-center">
                         <small>RECETTES DES STANDS SIGNÉS</small><br/>
-                        <small>x stands / y sont déjà signés</small>
-                        <p><span class="h3">CHF </span><span class="h3 text-success">+d</span></p>
+                        <p>
+                            <span class="h4">CHF </span>
+                            <span class="h4 text-{% if signed_income < budgeted_income %}error{% else %}success{% endif %}">{{signed_income}}</span>
+                            <span>/{{budgeted_income}}</span>
+                        </p>
+                        <small>{{signed_deals_number}} stands / {{deals_number}} sont déjà signés</small>
                     </div>
                     <div class="column text-center">
                         <small>RECETTES REÇUES</small><br/>
-                        <small>x stands / y ont déjà payé</small>
-                        <p><span class="h3">CHF </span><span class="h3 text-success">+e</span>(taper dans truffe ici)</p>
+                        <p>
+                            <span class="h4">CHF </span>
+                            <span class="h4 text-{% if received_income < budgeted_income %}error{% else %}success{% endif %}">{{received_income}}</span>
+                            <span>/{{budgeted_income}}</span>
+                        </p>
+                        <small>{{paid_deals_number}} stands / {{deals_number}} ont déjà payé</small>
                     </div>
                 </div>
             </div>

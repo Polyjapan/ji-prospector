@@ -17,14 +17,17 @@
                             <rows>
                                 {% for c in qs %}
                                     <r>
-                                        {% url 'prospector:contacts.edit' pk=c.pk as edit_url %}
                                         <d>{{c | fresh:'a'}}</d>
                                         <d>{{c.email_address}}(wip)</d>
                                         <d>{{c.phone_number}}</d>
                                         <d><span class="text-small">{{c.private_description | linebreaksbr | default:'?'}}</span></d>
                                         <d>
-                                            <div>
-                                                <button class="btn btn-sm float-right">Éditer</button>
+                                            <div class="float-right">
+                                                <form class="d-inline" action="{% url 'prospector:contacts.delete' pk=c.pk %}" method="post">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-outline-error btn-sm">Archiver <i class="icon icon-minus"></i></button>
+                                                </form>
+                                                <a href="{% url 'prospector:contacts.edit' pk=c.pk %}" class="btn btn-sm">Éditer <i class="icon icon-edit"></i></a>
                                             </div>
                                         </d>
                                     </r>
@@ -40,7 +43,7 @@
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'prospector:contacts.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>
-                    <a href="{% url 'prospector:contacts.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+                    <a href="{% url 'prospector:contacts.create' %}" class="btn btn-outline-success">Créer <i class="icon icon-plus"></i></a>
                 </div>
             </div>
         </div>

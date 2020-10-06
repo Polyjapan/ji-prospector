@@ -28,7 +28,15 @@
                                                 <code>{{tag}}</code>{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </d>
-                                        <d></d>
+                                        <d>
+                                            <div class="float-right">
+                                                <form class="d-inline" action="{% url 'prospector:tasktypes.delete' pk=t.pk %}" method="post">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-outline-error btn-sm">Archiver <i class="icon icon-minus"></i></button>
+                                                </form>
+                                                <a href="{% url 'prospector:tasktypes.edit' pk=t.pk %}" class="btn btn-sm">Éditer <i class="icon icon-edit"></i></a>
+                                            </div>
+                                        </d>
                                     </r>
                                 {% endfor %}
                             </rows>
@@ -41,8 +49,10 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
+                    <a href="{% url 'prospector:tasktypes.import' %}" class="btn">Importer un pack <i class="icon icon-upload"></i></a>
+                    <a href="{% url 'prospector:tasktypes.export' %}" class="btn">Exporter un pack <i class="icon icon-download"></i></a>
                     <a href="{% url 'prospector:tasktypes.archive' %}" class="btn">Archive <i class="icon icon-time"></i></a>
-                    <a href="{% url 'prospector:tasktypes.create' %}" class="btn btn-success">Créer <i class="icon icon-plus"></i></a>
+                    <a href="{% url 'prospector:tasktypes.create' %}" class="btn btn-outline-success">Créer <i class="icon icon-plus"></i></a>
                 </div>
             </div>
         </div>

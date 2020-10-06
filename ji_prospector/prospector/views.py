@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.db import transaction
 from django.db.models import Min, Count
 from django.db.models.fields import Field
+from django.core import serializers
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseBadRequest, Http404
 from django.utils.html import format_html
@@ -10,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 
 from django_fresh_models.library import FreshFilterLibrary as ff
 
+from .context_processors import current_event
 from .models import (
     Contact,
     Deal,
@@ -27,9 +29,12 @@ from .forms import (
     QuickTaskForm,
     QuickStartForm,
     TaskCommentForm,
+    ImportTaskTypesForm,
+    ExportTaskTypesForm,
 )
 
 import datetime
+import json
 
 
 def show_model_data(cls, instance, exclude=[]):
@@ -120,7 +125,7 @@ def index(request):
     # Show todos : (next tasks to do OR late tasks OR soon to be late tasks) grouped by tasktype
     next_task_pks_to_do = []
     for deal in Deal.objects.filter(task__isnull=False).distinct():
-        tasks = deal.task_set.exclude(todo_state='0_done')
+        tasks = deal.task_set.exclude(todo_state="0_done")
         minimum_depth = None
         for task in tasks:
             if not minimum_depth or task.tasktype.depth < minimum_depth:
@@ -131,12 +136,22 @@ def index(request):
                 next_task_pks_to_do.append(task.pk)
 
     next_tasks_to_do = Task.objects.filter(pk__in=next_task_pks_to_do)
-    late_tasks = Task.objects.exclude(todo_state='0_done').filter(deadline__lt=datetime.datetime.now())
-    deadline_soon_tasks = Task.objects.exclude(todo_state='0_done').filter(deadline__lt=datetime.datetime.now()+datetime.timedelta(days=7))
+    late_tasks = Task.objects.exclude(todo_state="0_done").filter(
+        deadline__lt=datetime.datetime.now()
+    )
+    deadline_soon_tasks = Task.objects.exclude(todo_state="0_done").filter(
+        deadline__lt=datetime.datetime.now() + datetime.timedelta(days=7)
+    )
 
-    to_do = next_tasks_to_do.union(late_tasks).union(deadline_soon_tasks).order_by('deadline')
+    to_do = (
+        next_tasks_to_do.union(late_tasks)
+        .union(deadline_soon_tasks)
+        .order_by("deadline")
+    )
 
     quickstartform = QuickStartForm()
+
+    event = current_event(request)["current_event"]
 
     return render(
         request,
@@ -145,7 +160,17 @@ def index(request):
             "free_booths": free_booths,
             "to_do": to_do,
             "quickstartform": quickstartform,
+            **(event.budget_data if event else {}),
         },
+    )
+
+
+@login_required
+def budget(request):
+    event = current_event(request)["current_event"]
+
+    return render(
+        request, "prospector/budget.html", event.budget_data if event else {},
     )
 
 
@@ -382,6 +407,96 @@ def tasktypes_edit(request, pk=None, create=False):
         request,
         "prospector/tasktypes/edit.html",
         {"obj": obj, "form": form, "create": create},
+    )
+
+
+@login_required
+def tasktypes_import(request):
+    if request.method == "POST":
+        form = ImportTaskTypesForm(request.POST)
+
+        if form.is_valid():
+            try:
+                id_mapping = {}
+                json_list = list(
+                    serializers.deserialize("json", form.cleaned_data["json_list"])
+                )
+                retry_list = []
+                number_of_iterations_since_last_resolution = 0
+
+                # Renumber id's
+                with transaction.atomic():
+                    while len(json_list) + len(retry_list):
+                        if len(json_list):
+                            obj = json_list.pop(0)
+
+                            id_in_json = obj.object.id
+                            obj.object.id = None
+                            obj.save()
+                            id_mapping[id_in_json] = obj.object.id
+                        elif len(retry_list):
+                            obj = retry_list.pop(0)
+
+                        prev_id = obj.object.typical_prev_task_id
+                        if prev_id:
+                            if prev_id in id_mapping:
+                                obj.object.typical_prev_task_id = id_mapping[prev_id]
+                                number_of_iterations_since_last_resolution = 0
+                                obj.save()
+                            else:
+                                retry_list.append(obj)
+                                number_of_iterations_since_last_resolution += 1
+
+                        if number_of_iterations_since_last_resolution > len(json_list):
+                            # We have made a full iteration of the list without resolving.
+                            # This implies the submitted data refers to absent data, which is not supported.
+                            raise ValueError(
+                                "The submitted data contains references to absent data."
+                            )
+
+                messages.success(request, "Import effectué.")
+                return redirect(reverse("prospector:tasktypes.list", args=[]))
+
+            except Exception as e:
+                messages.error(request, "Exception lors de l'import : {}".format(e))
+    else:
+        form = ImportTaskTypesForm()
+
+    return render(request, "prospector/tasktypes/import.html", {"form": form})
+
+
+@login_required
+def tasktypes_export(request):
+    if request.method == "POST":
+        form = ExportTaskTypesForm(request.POST)
+
+        if form.is_valid():
+            try:
+                result = serializers.serialize(
+                    "json",
+                    form.cleaned_data["which_tasktypes"],
+                    fields=[
+                        "default_task_type",
+                        "description",
+                        "name",
+                        "tags",
+                        "typical_prev_task",
+                        "useful_views",
+                        "wiki_page",
+                    ],
+                )
+                result = json.dumps(json.loads(result), indent=4, sort_keys=True)
+
+                messages.success(request, "Export effectué.")
+            except Exception as e:
+                messages.error(request, "Exception lors de l'export : {}".format(e))
+
+    else:
+        form = ExportTaskTypesForm()
+        result = ""
+
+    return render(
+        request, "prospector/tasktypes/export.html", {"form": form, "result": result}
     )
 
 

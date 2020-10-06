@@ -3,15 +3,15 @@
     <rows>
         {% for task in qs %}
             <r>
-                <d>{{task.tasktype.depth | add:1 | ordinal}}</d>
+                <d>{{task.tasktype.depth | ordinal}}</d>
                 {% if not fixed_tasktype %}<d>{{task | fresh:'timed_a'}}</d>{% endif %}
                 {% if not fixed_deal %}<d>{{task.deal | fresh:'a'}}<small> ({{task.deal.event | fresh:'a'}})</small></d>{% endif %}
                 {% if task.todo_state != '0_done' and task.deadline %}
-                    <d class="bg-{{task.deadline | deadline_color}}"><small>{{task | fresh:'deadline'}}</small></d>
+                    <d class="bg-{{task.deadline | deadline_color}}-dark"><small>{{task | fresh:'deadline'}}</small></d>
                 {% else %}
                     <d><small>{{task | fresh:'deadline'}}</small></d>
                 {% endif %}
-                <d class="bg-{{task.todo_state | todo_state_color}}"><small>{{task.todo_state | choice:'prospector.Task.todo_state'}}</small> </d>
+                <d class="bg-{{task.todo_state | todo_state_color}}-dark"><small>{{task.todo_state | choice:'prospector.Task.todo_state'}}</small> </d>
                 <d>
                     <small>
                         {% if task.todo_state_logged %}
@@ -46,7 +46,7 @@
                                     {% csrf_token %}
                                     <button type="submit"
                                             data-tooltip="Basculer à {{prev | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
+                                            class="btn btn-sm btn-outline-{{prev | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{prev | todo_state_short}}<i class="icon icon-arrow-left"></i>
                                     </button>
                                 </form>
@@ -56,7 +56,7 @@
                                     {% csrf_token %}
                                     <button type="submit"
                                             data-tooltip="Basculer à {{next | choice:'prospector.Task.todo_state'}}"
-                                            class="btn btn-sm btn-{{next | todo_state_color}} tooltip tooltip-left mb-1">
+                                            class="btn btn-sm btn-outline-{{next | todo_state_color}} tooltip tooltip-left mb-1">
                                         {{next | todo_state_short}}<i class="icon icon-arrow-right"></i>
                                     </button>
                                 </form>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load spectre_css %}
+{% load macros %}
+
+{% block title %}Import d'un pack de types de tâches{% endblock %}
+{% block subtitle %}Pratique, car en général c'est pareil partout{% endblock %}
+{% block active_menu %}tasktypes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="columns">
+        <div class="col-12">
+            <form class="" action="" method="post">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-body">
+                        {% render_form form %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'prospector:tasktypes.list' %}" class="btn">Revenir <i class="icon icon-back"></i></a>
+                        <button class="btn btn-outline-success">Importer <i class="icon icon-download"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}
